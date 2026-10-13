@@ -1,0 +1,97 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-customer-contact",
+  "version": 1,
+  "procedure": "Workloads/Write/CustomerContact.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "CustomerContact",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "CustomerContact.CustomerContactId:int64",
+    "CustomerContact.RandomInt10:integer",
+    "CustomerContact.RandomInt100:integer",
+    "CustomerContact.RandomInt1000:integer",
+    "CustomerContact.CreatedAt:datetime-tz",
+    "CustomerContact.CustomerId:int64",
+    "CustomerContact.ContactKind:character",
+    "CustomerContact.ContactValue:character",
+    "CustomerContact.IsPrimary:logical",
+    "CustomerContact.IsVerified:logical",
+    "CustomerContact.VerifiedAt:datetime-tz",
+    "CustomerContact.UpdatedAt:datetime-tz",
+    "Customer.CustomerId:int64"
+  ],
+  "requiredIndexes": [
+    "CustomerContact.PkCustomerContact",
+    "CustomerContact.IxRandomInt10",
+    "CustomerContact.IxRandomInt100",
+    "CustomerContact.IxRandomInt1000",
+    "CustomerContact.IxCustomer",
+    "CustomerContact.IxContactValue",
+    "Customer.PkCustomer"
+  ],
+  "requiredSequences": [
+    "SeqCustomerContactId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "CustomerContact"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "CustomerContact"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "CustomerContact"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

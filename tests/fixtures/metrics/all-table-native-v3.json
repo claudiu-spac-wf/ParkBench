@@ -1,0 +1,648 @@
+{
+  "protocolVersion": 3,
+  "database": {
+    "productVersion": "12.8.11.1",
+    "startedAt": "2026-09-30T00:00:00Z",
+    "statisticsResetAt": "2026-09-30T00:00:00Z"
+  },
+  "collectedAt": "2026-09-30T00:01:00Z",
+  "labels": {
+    "tables": [
+      "Table0000",
+      "Table0001",
+      "Table0002",
+      "Table0003",
+      "Table0004",
+      "Table0005",
+      "Table0006",
+      "Table0007",
+      "Table0008",
+      "Table0009",
+      "Table0010",
+      "Table0011",
+      "Table0012",
+      "Table0013",
+      "Table0014",
+      "Table0015",
+      "Table0016",
+      "Table0017",
+      "Table0018",
+      "Table0019",
+      "Table0020",
+      "Table0021",
+      "Table0022",
+      "Table0023",
+      "Table0024",
+      "Table0025",
+      "Table0026",
+      "Table0027",
+      "Table0028",
+      "Table0029",
+      "Table0030",
+      "Table0031",
+      "Table0032",
+      "Table0033",
+      "Table0034",
+      "Table0035",
+      "Table0036",
+      "Table0037",
+      "Table0038",
+      "Table0039",
+      "Table0040",
+      "Table0041",
+      "Table0042",
+      "Table0043",
+      "Table0044",
+      "Table0045",
+      "Table0046",
+      "Table0047",
+      "Table0048",
+      "Table0049",
+      "Table0050",
+      "Table0051",
+      "Table0052",
+      "Table0053",
+      "Table0054",
+      "Table0055",
+      "Table0056",
+      "Table0057",
+      "Table0058",
+      "Table0059",
+      "Table0060",
+      "Table0061",
+      "Table0062",
+      "Table0063",
+      "Table0064",
+      "Table0065",
+      "Table0066",
+      "Table0067",
+      "Table0068",
+      "Table0069"
+    ],
+    "indexes": []
+  },
+  "snapshot": {
+    "_TableStat": [
+      {
+        "table": "Table0000",
+        "_TableStat-Create": 0,
+        "_TableStat-Read": 0,
+        "_TableStat-Update": 0,
+        "_TableStat-Delete": 0,
+        "_TableStat-OSRead": 0
+      },
+      {
+        "table": "Table0001",
+        "_TableStat-Create": 1,
+        "_TableStat-Read": 1,
+        "_TableStat-Update": 1,
+        "_TableStat-Delete": 1,
+        "_TableStat-OSRead": 1
+      },
+      {
+        "table": "Table0002",
+        "_TableStat-Create": 2,
+        "_TableStat-Read": 2,
+        "_TableStat-Update": 2,
+        "_TableStat-Delete": 2,
+        "_TableStat-OSRead": 2
+      },
+      {
+        "table": "Table0003",
+        "_TableStat-Create": 3,
+        "_TableStat-Read": 3,
+        "_TableStat-Update": 3,
+        "_TableStat-Delete": 3,
+        "_TableStat-OSRead": 3
+      },
+      {
+        "table": "Table0004",
+        "_TableStat-Create": 4,
+        "_TableStat-Read": 4,
+        "_TableStat-Update": 4,
+        "_TableStat-Delete": 4,
+        "_TableStat-OSRead": 4
+      },
+      {
+        "table": "Table0005",
+        "_TableStat-Create": 5,
+        "_TableStat-Read": 5,
+        "_TableStat-Update": 5,
+        "_TableStat-Delete": 5,
+        "_TableStat-OSRead": 5
+      },
+      {
+        "table": "Table0006",
+        "_TableStat-Create": 6,
+        "_TableStat-Read": 6,
+        "_TableStat-Update": 6,
+        "_TableStat-Delete": 6,
+        "_TableStat-OSRead": 6
+      },
+      {
+        "table": "Table0007",
+        "_TableStat-Create": 7,
+        "_TableStat-Read": 7,
+        "_TableStat-Update": 7,
+        "_TableStat-Delete": 7,
+        "_TableStat-OSRead": 7
+      },
+      {
+        "table": "Table0008",
+        "_TableStat-Create": 8,
+        "_TableStat-Read": 8,
+        "_TableStat-Update": 8,
+        "_TableStat-Delete": 8,
+        "_TableStat-OSRead": 8
+      },
+      {
+        "table": "Table0009",
+        "_TableStat-Create": 9,
+        "_TableStat-Read": 9,
+        "_TableStat-Update": 9,
+        "_TableStat-Delete": 9,
+        "_TableStat-OSRead": 9
+      },
+      {
+        "table": "Table0010",
+        "_TableStat-Create": 10,
+        "_TableStat-Read": 10,
+        "_TableStat-Update": 10,
+        "_TableStat-Delete": 10,
+        "_TableStat-OSRead": 10
+      },
+      {
+        "table": "Table0011",
+        "_TableStat-Create": 11,
+        "_TableStat-Read": 11,
+        "_TableStat-Update": 11,
+        "_TableStat-Delete": 11,
+        "_TableStat-OSRead": 11
+      },
+      {
+        "table": "Table0012",
+        "_TableStat-Create": 12,
+        "_TableStat-Read": 12,
+        "_TableStat-Update": 12,
+        "_TableStat-Delete": 12,
+        "_TableStat-OSRead": 12
+      },
+      {
+        "table": "Table0013",
+        "_TableStat-Create": 13,
+        "_TableStat-Read": 13,
+        "_TableStat-Update": 13,
+        "_TableStat-Delete": 13,
+        "_TableStat-OSRead": 13
+      },
+      {
+        "table": "Table0014",
+        "_TableStat-Create": 14,
+        "_TableStat-Read": 14,
+        "_TableStat-Update": 14,
+        "_TableStat-Delete": 14,
+        "_TableStat-OSRead": 14
+      },
+      {
+        "table": "Table0015",
+        "_TableStat-Create": 15,
+        "_TableStat-Read": 15,
+        "_TableStat-Update": 15,
+        "_TableStat-Delete": 15,
+        "_TableStat-OSRead": 15
+      },
+      {
+        "table": "Table0016",
+        "_TableStat-Create": 16,
+        "_TableStat-Read": 16,
+        "_TableStat-Update": 16,
+        "_TableStat-Delete": 16,
+        "_TableStat-OSRead": 16
+      },
+      {
+        "table": "Table0017",
+        "_TableStat-Create": 17,
+        "_TableStat-Read": 17,
+        "_TableStat-Update": 17,
+        "_TableStat-Delete": 17,
+        "_TableStat-OSRead": 17
+      },
+      {
+        "table": "Table0018",
+        "_TableStat-Create": 18,
+        "_TableStat-Read": 18,
+        "_TableStat-Update": 18,
+        "_TableStat-Delete": 18,
+        "_TableStat-OSRead": 18
+      },
+      {
+        "table": "Table0019",
+        "_TableStat-Create": 19,
+        "_TableStat-Read": 19,
+        "_TableStat-Update": 19,
+        "_TableStat-Delete": 19,
+        "_TableStat-OSRead": 19
+      },
+      {
+        "table": "Table0020",
+        "_TableStat-Create": 20,
+        "_TableStat-Read": 20,
+        "_TableStat-Update": 20,
+        "_TableStat-Delete": 20,
+        "_TableStat-OSRead": 20
+      },
+      {
+        "table": "Table0021",
+        "_TableStat-Create": 21,
+        "_TableStat-Read": 21,
+        "_TableStat-Update": 21,
+        "_TableStat-Delete": 21,
+        "_TableStat-OSRead": 21
+      },
+      {
+        "table": "Table0022",
+        "_TableStat-Create": 22,
+        "_TableStat-Read": 22,
+        "_TableStat-Update": 22,
+        "_TableStat-Delete": 22,
+        "_TableStat-OSRead": 22
+      },
+      {
+        "table": "Table0023",
+        "_TableStat-Create": 23,
+        "_TableStat-Read": 23,
+        "_TableStat-Update": 23,
+        "_TableStat-Delete": 23,
+        "_TableStat-OSRead": 23
+      },
+      {
+        "table": "Table0024",
+        "_TableStat-Create": 24,
+        "_TableStat-Read": 24,
+        "_TableStat-Update": 24,
+        "_TableStat-Delete": 24,
+        "_TableStat-OSRead": 24
+      },
+      {
+        "table": "Table0025",
+        "_TableStat-Create": 25,
+        "_TableStat-Read": 25,
+        "_TableStat-Update": 25,
+        "_TableStat-Delete": 25,
+        "_TableStat-OSRead": 25
+      },
+      {
+        "table": "Table0026",
+        "_TableStat-Create": 26,
+        "_TableStat-Read": 26,
+        "_TableStat-Update": 26,
+        "_TableStat-Delete": 26,
+        "_TableStat-OSRead": 26
+      },
+      {
+        "table": "Table0027",
+        "_TableStat-Create": 27,
+        "_TableStat-Read": 27,
+        "_TableStat-Update": 27,
+        "_TableStat-Delete": 27,
+        "_TableStat-OSRead": 27
+      },
+      {
+        "table": "Table0028",
+        "_TableStat-Create": 28,
+        "_TableStat-Read": 28,
+        "_TableStat-Update": 28,
+        "_TableStat-Delete": 28,
+        "_TableStat-OSRead": 28
+      },
+      {
+        "table": "Table0029",
+        "_TableStat-Create": 29,
+        "_TableStat-Read": 29,
+        "_TableStat-Update": 29,
+        "_TableStat-Delete": 29,
+        "_TableStat-OSRead": 29
+      },
+      {
+        "table": "Table0030",
+        "_TableStat-Create": 30,
+        "_TableStat-Read": 30,
+        "_TableStat-Update": 30,
+        "_TableStat-Delete": 30,
+        "_TableStat-OSRead": 30
+      },
+      {
+        "table": "Table0031",
+        "_TableStat-Create": 31,
+        "_TableStat-Read": 31,
+        "_TableStat-Update": 31,
+        "_TableStat-Delete": 31,
+        "_TableStat-OSRead": 31
+      },
+      {
+        "table": "Table0032",
+        "_TableStat-Create": 32,
+        "_TableStat-Read": 32,
+        "_TableStat-Update": 32,
+        "_TableStat-Delete": 32,
+        "_TableStat-OSRead": 32
+      },
+      {
+        "table": "Table0033",
+        "_TableStat-Create": 33,
+        "_TableStat-Read": 33,
+        "_TableStat-Update": 33,
+        "_TableStat-Delete": 33,
+        "_TableStat-OSRead": 33
+      },
+      {
+        "table": "Table0034",
+        "_TableStat-Create": 34,
+        "_TableStat-Read": 34,
+        "_TableStat-Update": 34,
+        "_TableStat-Delete": 34,
+        "_TableStat-OSRead": 34
+      },
+      {
+        "table": "Table0035",
+        "_TableStat-Create": 35,
+        "_TableStat-Read": 35,
+        "_TableStat-Update": 35,
+        "_TableStat-Delete": 35,
+        "_TableStat-OSRead": 35
+      },
+      {
+        "table": "Table0036",
+        "_TableStat-Create": 36,
+        "_TableStat-Read": 36,
+        "_TableStat-Update": 36,
+        "_TableStat-Delete": 36,
+        "_TableStat-OSRead": 36
+      },
+      {
+        "table": "Table0037",
+        "_TableStat-Create": 37,
+        "_TableStat-Read": 37,
+        "_TableStat-Update": 37,
+        "_TableStat-Delete": 37,
+        "_TableStat-OSRead": 37
+      },
+      {
+        "table": "Table0038",
+        "_TableStat-Create": 38,
+        "_TableStat-Read": 38,
+        "_TableStat-Update": 38,
+        "_TableStat-Delete": 38,
+        "_TableStat-OSRead": 38
+      },
+      {
+        "table": "Table0039",
+        "_TableStat-Create": 39,
+        "_TableStat-Read": 39,
+        "_TableStat-Update": 39,
+        "_TableStat-Delete": 39,
+        "_TableStat-OSRead": 39
+      },
+      {
+        "table": "Table0040",
+        "_TableStat-Create": 40,
+        "_TableStat-Read": 40,
+        "_TableStat-Update": 40,
+        "_TableStat-Delete": 40,
+        "_TableStat-OSRead": 40
+      },
+      {
+        "table": "Table0041",
+        "_TableStat-Create": 41,
+        "_TableStat-Read": 41,
+        "_TableStat-Update": 41,
+        "_TableStat-Delete": 41,
+        "_TableStat-OSRead": 41
+      },
+      {
+        "table": "Table0042",
+        "_TableStat-Create": 42,
+        "_TableStat-Read": 42,
+        "_TableStat-Update": 42,
+        "_TableStat-Delete": 42,
+        "_TableStat-OSRead": 42
+      },
+      {
+        "table": "Table0043",
+        "_TableStat-Create": 43,
+        "_TableStat-Read": 43,
+        "_TableStat-Update": 43,
+        "_TableStat-Delete": 43,
+        "_TableStat-OSRead": 43
+      },
+      {
+        "table": "Table0044",
+        "_TableStat-Create": 44,
+        "_TableStat-Read": 44,
+        "_TableStat-Update": 44,
+        "_TableStat-Delete": 44,
+        "_TableStat-OSRead": 44
+      },
+      {
+        "table": "Table0045",
+        "_TableStat-Create": 45,
+        "_TableStat-Read": 45,
+        "_TableStat-Update": 45,
+        "_TableStat-Delete": 45,
+        "_TableStat-OSRead": 45
+      },
+      {
+        "table": "Table0046",
+        "_TableStat-Create": 46,
+        "_TableStat-Read": 46,
+        "_TableStat-Update": 46,
+        "_TableStat-Delete": 46,
+        "_TableStat-OSRead": 46
+      },
+      {
+        "table": "Table0047",
+        "_TableStat-Create": 47,
+        "_TableStat-Read": 47,
+        "_TableStat-Update": 47,
+        "_TableStat-Delete": 47,
+        "_TableStat-OSRead": 47
+      },
+      {
+        "table": "Table0048",
+        "_TableStat-Create": 48,
+        "_TableStat-Read": 48,
+        "_TableStat-Update": 48,
+        "_TableStat-Delete": 48,
+        "_TableStat-OSRead": 48
+      },
+      {
+        "table": "Table0049",
+        "_TableStat-Create": 49,
+        "_TableStat-Read": 49,
+        "_TableStat-Update": 49,
+        "_TableStat-Delete": 49,
+        "_TableStat-OSRead": 49
+      },
+      {
+        "table": "Table0050",
+        "_TableStat-Create": 50,
+        "_TableStat-Read": 50,
+        "_TableStat-Update": 50,
+        "_TableStat-Delete": 50,
+        "_TableStat-OSRead": 50
+      },
+      {
+        "table": "Table0051",
+        "_TableStat-Create": 51,
+        "_TableStat-Read": 51,
+        "_TableStat-Update": 51,
+        "_TableStat-Delete": 51,
+        "_TableStat-OSRead": 51
+      },
+      {
+        "table": "Table0052",
+        "_TableStat-Create": 52,
+        "_TableStat-Read": 52,
+        "_TableStat-Update": 52,
+        "_TableStat-Delete": 52,
+        "_TableStat-OSRead": 52
+      },
+      {
+        "table": "Table0053",
+        "_TableStat-Create": 53,
+        "_TableStat-Read": 53,
+        "_TableStat-Update": 53,
+        "_TableStat-Delete": 53,
+        "_TableStat-OSRead": 53
+      },
+      {
+        "table": "Table0054",
+        "_TableStat-Create": 54,
+        "_TableStat-Read": 54,
+        "_TableStat-Update": 54,
+        "_TableStat-Delete": 54,
+        "_TableStat-OSRead": 54
+      },
+      {
+        "table": "Table0055",
+        "_TableStat-Create": 55,
+        "_TableStat-Read": 55,
+        "_TableStat-Update": 55,
+        "_TableStat-Delete": 55,
+        "_TableStat-OSRead": 55
+      },
+      {
+        "table": "Table0056",
+        "_TableStat-Create": 56,
+        "_TableStat-Read": 56,
+        "_TableStat-Update": 56,
+        "_TableStat-Delete": 56,
+        "_TableStat-OSRead": 56
+      },
+      {
+        "table": "Table0057",
+        "_TableStat-Create": 57,
+        "_TableStat-Read": 57,
+        "_TableStat-Update": 57,
+        "_TableStat-Delete": 57,
+        "_TableStat-OSRead": 57
+      },
+      {
+        "table": "Table0058",
+        "_TableStat-Create": 58,
+        "_TableStat-Read": 58,
+        "_TableStat-Update": 58,
+        "_TableStat-Delete": 58,
+        "_TableStat-OSRead": 58
+      },
+      {
+        "table": "Table0059",
+        "_TableStat-Create": 59,
+        "_TableStat-Read": 59,
+        "_TableStat-Update": 59,
+        "_TableStat-Delete": 59,
+        "_TableStat-OSRead": 59
+      },
+      {
+        "table": "Table0060",
+        "_TableStat-Create": 60,
+        "_TableStat-Read": 60,
+        "_TableStat-Update": 60,
+        "_TableStat-Delete": 60,
+        "_TableStat-OSRead": 60
+      },
+      {
+        "table": "Table0061",
+        "_TableStat-Create": 61,
+        "_TableStat-Read": 61,
+        "_TableStat-Update": 61,
+        "_TableStat-Delete": 61,
+        "_TableStat-OSRead": 61
+      },
+      {
+        "table": "Table0062",
+        "_TableStat-Create": 62,
+        "_TableStat-Read": 62,
+        "_TableStat-Update": 62,
+        "_TableStat-Delete": 62,
+        "_TableStat-OSRead": 62
+      },
+      {
+        "table": "Table0063",
+        "_TableStat-Create": 63,
+        "_TableStat-Read": 63,
+        "_TableStat-Update": 63,
+        "_TableStat-Delete": 63,
+        "_TableStat-OSRead": 63
+      },
+      {
+        "table": "Table0064",
+        "_TableStat-Create": 64,
+        "_TableStat-Read": 64,
+        "_TableStat-Update": 64,
+        "_TableStat-Delete": 64,
+        "_TableStat-OSRead": 64
+      },
+      {
+        "table": "Table0065",
+        "_TableStat-Create": 65,
+        "_TableStat-Read": 65,
+        "_TableStat-Update": 65,
+        "_TableStat-Delete": 65,
+        "_TableStat-OSRead": 65
+      },
+      {
+        "table": "Table0066",
+        "_TableStat-Create": 66,
+        "_TableStat-Read": 66,
+        "_TableStat-Update": 66,
+        "_TableStat-Delete": 66,
+        "_TableStat-OSRead": 66
+      },
+      {
+        "table": "Table0067",
+        "_TableStat-Create": 67,
+        "_TableStat-Read": 67,
+        "_TableStat-Update": 67,
+        "_TableStat-Delete": 67,
+        "_TableStat-OSRead": 67
+      },
+      {
+        "table": "Table0068",
+        "_TableStat-Create": 68,
+        "_TableStat-Read": 68,
+        "_TableStat-Update": 68,
+        "_TableStat-Delete": 68,
+        "_TableStat-OSRead": 68
+      },
+      {
+        "table": "Table0069",
+        "_TableStat-Create": 69,
+        "_TableStat-Read": 100000,
+        "_TableStat-Update": 69,
+        "_TableStat-Delete": 69,
+        "_TableStat-OSRead": 69
+      }
+    ]
+  }
+}

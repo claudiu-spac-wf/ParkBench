@@ -1,0 +1,108 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-scheduled-payment",
+  "version": 1,
+  "procedure": "Workloads/Write/ScheduledPayment.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "ScheduledPayment",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "Payee",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "ScheduledPayment.ScheduledPaymentId:int64",
+    "ScheduledPayment.RandomInt10:integer",
+    "ScheduledPayment.RandomInt100:integer",
+    "ScheduledPayment.RandomInt1000:integer",
+    "ScheduledPayment.CreatedAt:datetime-tz",
+    "ScheduledPayment.AccountId:int64",
+    "ScheduledPayment.PayeeId:int64",
+    "ScheduledPayment.Amount:decimal",
+    "ScheduledPayment.Frequency:character",
+    "ScheduledPayment.NextRunDate:date",
+    "ScheduledPayment.EndDate:date",
+    "ScheduledPayment.Memo:character",
+    "ScheduledPayment.PaymentStatus:character",
+    "ScheduledPayment.RunCount:integer",
+    "ScheduledPayment.LastRunAt:datetime-tz",
+    "ScheduledPayment.UpdatedAt:datetime-tz",
+    "Account.AccountId:int64",
+    "Payee.PayeeId:int64"
+  ],
+  "requiredIndexes": [
+    "ScheduledPayment.PkScheduledPayment",
+    "ScheduledPayment.IxRandomInt10",
+    "ScheduledPayment.IxRandomInt100",
+    "ScheduledPayment.IxRandomInt1000",
+    "ScheduledPayment.IxAccount",
+    "ScheduledPayment.IxPayee",
+    "ScheduledPayment.IxStatusNextRun",
+    "Account.PkAccount",
+    "Payee.PkPayee"
+  ],
+  "requiredSequences": [
+    "SeqScheduledPaymentId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "ScheduledPayment"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "ScheduledPayment"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "ScheduledPayment"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

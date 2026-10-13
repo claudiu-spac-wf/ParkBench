@@ -1,0 +1,110 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-merchant",
+  "version": 1,
+  "procedure": "Workloads/Write/Merchant.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Merchant",
+      "minimumRows": 0
+    },
+    {
+      "name": "Country",
+      "minimumRows": 0
+    },
+    {
+      "name": "MerchantCategory",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Merchant.MerchantId:int64",
+    "Merchant.RandomInt10:integer",
+    "Merchant.RandomInt100:integer",
+    "Merchant.RandomInt1000:integer",
+    "Merchant.CreatedAt:datetime-tz",
+    "Merchant.MerchantNumber:character",
+    "Merchant.MerchantName:character",
+    "Merchant.MerchantCategoryId:int64",
+    "Merchant.City:character",
+    "Merchant.StateProvince:character",
+    "Merchant.PostalCode:character",
+    "Merchant.CountryCode:character",
+    "Merchant.Latitude:decimal",
+    "Merchant.Longitude:decimal",
+    "Merchant.IsOnline:logical",
+    "Merchant.RiskScore:integer",
+    "Merchant.UpdatedAt:datetime-tz",
+    "MerchantCategory.MerchantCategoryId:int64",
+    "Country.CountryCode:character"
+  ],
+  "requiredIndexes": [
+    "Merchant.PkMerchant",
+    "Merchant.IxRandomInt10",
+    "Merchant.IxRandomInt100",
+    "Merchant.IxRandomInt1000",
+    "Merchant.UxMerchantNumber",
+    "Merchant.IxCategory",
+    "Merchant.IxCountryCity",
+    "Merchant.WxMerchantName",
+    "MerchantCategory.PkMerchantCategory",
+    "Country.UxCountryCode"
+  ],
+  "requiredSequences": [
+    "SeqMerchantId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Merchant"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Merchant"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Merchant"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

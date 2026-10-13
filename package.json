@@ -1,0 +1,61 @@
+{
+  "name": "parkbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reproducible Progress OpenEdge benchmark platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/run-with-env.mjs tsc -p tsconfig.base.json && node scripts/run-with-env.mjs mkdir -p dist/packages/contracts/src/schemas dist/apps/control-plane/src/db/migrations && node scripts/run-with-env.mjs cp packages/contracts/src/schemas/*.json dist/packages/contracts/src/schemas/ && node scripts/run-with-env.mjs cp apps/control-plane/src/db/migrations/*.sql dist/apps/control-plane/src/db/migrations/",
+    "build:web": "node scripts/run-with-env.mjs npm run build --workspace @parkbench/web",
+    "typecheck": "node scripts/run-with-env.mjs tsc -p tsconfig.base.json --noEmit",
+    "test": "node scripts/run-with-env.mjs npm run build && node scripts/run-with-env.mjs node scripts/run-tests.mjs",
+    "test:watch": "node scripts/run-with-env.mjs node --test --watch dist/tests",
+    "test:contract": "node scripts/run-with-env.mjs npm run build && node scripts/run-with-env.mjs node scripts/run-tests.mjs contract",
+    "test:unit": "node scripts/run-with-env.mjs npm run build && node scripts/run-with-env.mjs node scripts/run-tests.mjs unit",
+    "test:integration": "node scripts/run-with-env.mjs npm run build && node scripts/run-with-env.mjs node scripts/run-tests.mjs integration",
+    "test:security": "node scripts/run-with-env.mjs npm run build && node scripts/run-with-env.mjs node scripts/run-tests.mjs security",
+    "test:ui": "node scripts/run-with-env.mjs npm run build && node scripts/run-with-env.mjs node scripts/run-tests.mjs ui",
+    "test:browser": "node scripts/run-with-env.mjs playwright test",
+    "test:browser:licensed": "node scripts/run-licensed-browser.mjs",
+    "smoke:fake": "node scripts/run-with-env.mjs tsx apps/control-plane/src/commands/smoke.ts --fake",
+    "preflight": "node scripts/run-with-env.mjs tsx apps/control-plane/src/commands/preflight.ts",
+    "smoke:openedge": "node scripts/run-with-env.mjs tsx apps/control-plane/src/commands/smoke.ts --openedge",
+    "openedge:preflight": "node scripts/run-with-env.mjs node scripts/openedge/preflight.mjs",
+    "openedge:build-generic": "node scripts/run-with-env.mjs node scripts/openedge/build-images.mjs --image-stage generic",
+    "openedge:build": "node scripts/run-with-env.mjs node scripts/openedge/build-images.mjs",
+    "openedge:migrate-sports2020": "node scripts/run-with-env.mjs node scripts/openedge/migrate-sports2020.mjs",
+    "openedge:create-runner-archive": "node scripts/run-with-env.mjs node scripts/openedge/create-runner-archive.mjs",
+    "format": "node scripts/run-with-env.mjs prettier --write .",
+    "format:check": "node scripts/run-with-env.mjs prettier --check .",
+    "dashboards:build": "tsx packages/dashboards/bin/build.ts",
+    "dashboards:check": "tsx packages/dashboards/bin/build.ts --check",
+    "lint": "node scripts/run-with-env.mjs eslint ."
+  },
+  "dependencies": {
+    "@fastify/cors": "10.1.0",
+    "ajv": "8.20.0",
+    "fastify": "5.12.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "24.13.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "eslint": "9.39.5",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vite": "7.3.6",
+    "vitest": "3.2.7"
+  }
+}

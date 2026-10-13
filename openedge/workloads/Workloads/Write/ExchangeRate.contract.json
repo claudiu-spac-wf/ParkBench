@@ -1,0 +1,94 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-exchange-rate",
+  "version": 1,
+  "procedure": "Workloads/Write/ExchangeRate.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "ExchangeRate",
+      "minimumRows": 0
+    },
+    {
+      "name": "Currency",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "ExchangeRate.ExchangeRateId:int64",
+    "ExchangeRate.RandomInt10:integer",
+    "ExchangeRate.RandomInt100:integer",
+    "ExchangeRate.RandomInt1000:integer",
+    "ExchangeRate.CreatedAt:datetime-tz",
+    "ExchangeRate.RateDate:date",
+    "ExchangeRate.FromCurrencyCode:character",
+    "ExchangeRate.ToCurrencyCode:character",
+    "ExchangeRate.Rate:decimal",
+    "ExchangeRate.RateSource:character",
+    "Currency.CurrencyCode:character"
+  ],
+  "requiredIndexes": [
+    "ExchangeRate.PkExchangeRate",
+    "ExchangeRate.IxRandomInt10",
+    "ExchangeRate.IxRandomInt100",
+    "ExchangeRate.IxRandomInt1000",
+    "ExchangeRate.UxCurrencyPairDate",
+    "Currency.UxCurrencyCode"
+  ],
+  "requiredSequences": [
+    "SeqExchangeRateId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "ExchangeRate"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "ExchangeRate"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "ExchangeRate"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

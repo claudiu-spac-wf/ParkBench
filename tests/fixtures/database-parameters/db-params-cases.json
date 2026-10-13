@@ -1,0 +1,17 @@
+{
+  "complete": {
+    "status": "complete",
+    "rows": [
+      { "name": "-B", "rawValue": "1000", "dtype": 4, "isDefault": false, "isModifiable": false },
+      { "name": "-text", "rawValue": "plain text", "dtype": 1, "isDefault": false, "isModifiable": true },
+      { "name": "-spin", "rawValue": "0", "dtype": 4, "isDefault": true, "isModifiable": true }
+    ]
+  },
+  "unknownValue": { "status": "complete", "rows": [{ "name": "-unknown", "rawValue": null, "dtype": null, "isDefault": false, "isModifiable": null }] },
+  "duplicate": { "status": "partial", "reason": "duplicate_parameter", "rows": [{ "name": "-B", "rawValue": "500", "dtype": 4, "isDefault": false }, { "name": "-B", "rawValue": "1000", "dtype": 4, "isDefault": false }] },
+  "allDefault": { "status": "complete", "rows": [{ "name": "-B", "rawValue": "500", "dtype": 4, "isDefault": true, "isModifiable": false }] },
+  "empty": { "status": "complete", "rows": [] },
+  "partial": { "status": "partial", "reason": "vst_read_incomplete", "rows": [{ "name": "-B", "rawValue": "1000", "dtype": 4, "isDefault": false }] },
+  "unavailable": { "status": "unavailable", "reason": "vst_unavailable", "rows": [] },
+  "oversizedValue": { "status": "partial", "reason": "value_label_limit", "rows": [{ "name": "-text", "rawValuePattern": { "character": "a", "count": 8193 }, "dtype": 1, "isDefault": false }] }
+}

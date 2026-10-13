@@ -1,0 +1,2571 @@
+{
+  "extractedAt": "2026-10-03",
+  "method": "GET official topic HTML; BeautifulSoup selector li.ulchildlink a; parameter spelling extracted from trailing parenthesized label. No per-topic applicability inference.",
+  "inventories": [
+    {
+      "version": "13.0",
+      "sourceUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Alphabetical-listing-of-database-startup-parameters.html",
+      "count": 160,
+      "entries": [
+        {
+          "name": "-adminport",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/AdminServer-Port-adminport.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aiarcdir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/After-image-File-Management-Archive-Directory-List-aiarcdir.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aiarcdircreate",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/After-image-File-Management-Archive-Directory-Create-aiarcdircreate.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aiarcinterval",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/After-image-File-Management-Archive-Interval-aiarcinterval.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aibufs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/After-image-Buffers-aibufs.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aistall",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/After-image-Stall-aistall.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-AreaCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Area-consistency-check-AreaCheck.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-B",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Blocks-in-Database-Buffers-B.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-B2",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Blocks-in-Alternate-Buffer-Pool-B2.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseindex",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Base-Index-baseindex.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baselob",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Base-LOB-baselob.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-basetable",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Base-Table-basetable.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseuserindex",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Base-user-index-baseuserindex.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseuserlob",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Base-user-LOB-baseuserlob.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseusertable",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Base-user-table-baseusertable.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-bibufs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Before-image-Buffers-bibufs.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-biscantime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Before-image-scan-time-biscantime.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-bistall",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Threshold-Stall-bistall.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-bithold",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Recovery-Log-Threshold-bithold.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Bpmax",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-Private-Buffers-per-Connection-Bpmax.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cache",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Schema-Cache-File-cache.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cdcsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/CDC-cache-size-cdcsize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-classpath",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Server-Java-Classpath-classpath.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-clstmtCacheAllocationFactor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Client-Database-Request-Statement-Cache-Allocation-Factor-clstmtCacheAllocationFactor.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-clstmtCacheDir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Client-Database-Request-Statement-Caching-Directory-clstmtCacheDir.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-clstmtCacheLevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Client-Database-Request-Statement-Caching-Level-clstmtCacheLevel.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-clstmtCacheSize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Client-Database-Request-Statement-Cache-Size-clstmtCacheSize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-clstmtCacheType",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Client-Database-Request-Statement-Caching-User-Type-clstmtCacheType.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-convmap",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Conversion-Map-convmap.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpcase",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Case-Table-cpcase.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpcoll",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Collation-Table-cpcoll.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpinternal",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Internal-Code-Page-cpinternal.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cplog",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Log-File-Code-Page-cplog.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpprint",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Print-Code-Page-cpprint.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cprcodein",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/R-code-in-Code-Page-cprcodein.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpstream",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Stream-Code-Page-cpstream.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpterm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Terminal-Code-Page-cpterm.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-crStatus",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Crash-Recovery-Status-crStatus.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-crTXDisplay",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Crash-Recovery-Transaction-Display-crTXDisplay.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cstackPrintopt",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/C-stack-print-option-cstackPrintopt.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-DbCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Database-consistency-check-DbCheck.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-dbnotifyops",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Database-Notification-Operations-dbnotifyops.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-dbnotifytime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Database-Notification-Time-dbnotifytime.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagDir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-directory-diagDir.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagEvent",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-events-value-diagEvent.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagEvtLevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-event-level-diagEvtLevel.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagFormat",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-data-format-diagFormat.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagFS",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-field-separator-diagFS.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagFrequency",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-frequency-diagFrequency.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-diagPause",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-pause-length-diagPause.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagPrefix",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-prefix-value-diagPrefix.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagProc",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Diagnostic-process-diagProc.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagTopN",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Top-diagnostic-event-triggers-diagTopN.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-directio",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Direct-IO-directio.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ecsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Encryption-cache-size-ecsize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-enforceMm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Enforce-Mm-enforceMm.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-evtlevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Event-Level-evtlevel.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-G",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Before-image-Truncate-Interval-G.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-groupdelay",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Group-Delay-groupdelay.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-H",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Host-Name-H.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-hostnameAliasing",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Host-Name-Aliasing-hostnameAliasing.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-hash",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Hash-Table-Entries-hash.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-i",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/No-Crash-Protection-i.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-IndexCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Index-consistency-check-IndexCheck.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-indexrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Index-Range-Size-indexrangesize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ipver",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Internet-Protocol-ipver.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-keyalias",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Key-Alias-keyalias.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-keyaliaspasswd",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Key-Alias-Password-keyaliaspasswd.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-L",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Lock-Table-Entries-L.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-LGovernor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Lock-Governor-LGovernor.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgArchiveEnable",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Log-file-archive-enable-lgArchiveEnable.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgArchiveDir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Log-file-archive-directory-lgArchiveDir.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgTruncateFrequency",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Log-file-truncate-frequency-lgTruncateFrequency.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgTruncateSize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Log-file-truncate-size-lgTruncateSize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgTruncateTime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Log-file-truncate-time-lgTruncateTime.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-limitLgPayload",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Limit-log-file-payload-limitLgPayload.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lkhash",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Lock-Table-Hash-Size-lkhash.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lkrela",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Lock-release-lkrela.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lobrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/LOB-range-lobrangesize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lruskips",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/LRU-force-skips-lruskips.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lru2skips",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/LRU-alternate-buffer-pool-force-skips-lru2skips.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-m1",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Auto-Server-m1.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-m3",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Secondary-Login-Broker-m3.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-maxAreas",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-area-number-maxAreas.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Ma",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-Clients-per-Server-Ma.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-maxport",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-Dynamic-Server-maxport.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-maxxids",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-JTA-Transactions-maxxids.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-MemCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Memory-consistency-check-MemCheck.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mf",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Delayed-BI-File-Write-Mf.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mi",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Minimum-Clients-per-Server-Mi.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-minport",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Minimum-Dynamic-Server-minport.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Message-Buffer-Size-Mm.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mn",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-Servers-Mn.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mp",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Servers-per-Protocol-Mp.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mpb",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Maximum-Servers-Per-Broker-Mpb.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-mtpmsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Multi-tenancy-Partition-Cache-Size-mtpmsize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-mux",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/User-MUX-Latches-mux.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mxs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Shared-memory-Overflow-Size-Mxs.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-N",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Network-Type-N.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-n",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Number-of-Users-n.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nap",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Nap-Time-nap.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-napmax",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Nap-Maximum-napmax.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-napstep",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Nap-Time-Steps-napstep.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nGovernor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Login-Governor-nGovernor.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Nmsgwait",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Message-Wait-Nmsgwait.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nohostverify",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/TLS-No-Host-Verify-nohostverify.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nosessioncache",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/No-Session-Cache-nosessioncache.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nosessionreuse",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/No-Session-Reuse-nosessionreuse.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-numCheckpointStats",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Number-of-checkpoint-statistics-numCheckpointStats.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-omitLgMsgs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Omit-Log-Messages-omitLgMsgs.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-omsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Storage-Object-Cache-Size-omsize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Passphrase",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Prompt-for-Passphrase-Passphrase.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-PendConnTime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Pending-Connection-Time-PendConnTime.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-pf",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Parameter-File-pf.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-pica",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Database-Service-Communication-Area-Size-pica.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-picanap",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Database-PICA-Queue-Nap-Time-picanap.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Pin",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Prompt-for-Pin-Pin.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_13_0_listing"
+        },
+        {
+          "name": "-pinshm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Pin-Shared-Memory-pinshm.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchDelay",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Prefetch-delay-prefetchDelay.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchFactor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Prefetch-factor-prefetchFactor.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchNumRecs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Prefetch-Num-Recs-prefetchNumRecs.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchPriority",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Prefetch-Priority-prefetchPriority.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-properties",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Configuration-Properties-File-properties.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-r",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Buffered-IO-r.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-recspacesearchdepth",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Record-free-chain-search-depth-factor-recspacesearchdepth.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-S",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Service-Name-S.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-schlockwq",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Schema-Lock-Wait-Queue-schlockwq.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-secsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Security-cache-size-secsize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-semsets",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Semaphore-Sets-semsets.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-servergroup",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Server-Group-servergroup.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ServerType",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Type-of-Server-to-Start-ServerType.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-sessiontimeout",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Session-Timeout-sessiontimeout.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-shmsegsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Shared-memory-segment-size-shmsegsize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-spin",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Spin-Lock-Retries-spin.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLAutoStats",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Autonomous-Update-Statistics-SQLAutoStats.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLCursors",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Open-Cursors-SQLCursors.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLLockWaitTimeout",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Lock-Wait-Timeout-SQLLockWaitTimeout.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLQuotedRowid",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-rowid-identifier-SQLQuotedRowid.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLStack",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Stack-Size-SQLStack.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLStmtCache",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Statement-Cache-Size-SQLStmtCache.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTempBuff",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Sorting-Memory-SQLTempBuff.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTempDisk",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Sorting-on-Disk-SQLTempDisk.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTempPageSize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/SQL-Temp-Table-Data-Page-SQLTempPageSize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTruncateTooLarge",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Authorized-Data-Truncation-SQLTruncateTooLarge.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLWidthUpdate",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Autonomous-Schema-Update-SQLWidthUpdate.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ssj",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Server-side-join-ssj.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ssl",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/TLS-Encryption-for-TCPIP-Connections-ssl.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-stslogginglevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/STS-logging-level-stslogginglevel.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-T",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Temporary-Directory-T.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-TableCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Table-consistency-check-TableCheck.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-tablerangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Table-Range-Size-tablerangesize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-threadedServer",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Threaded-Server-threadedServer.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-threadedServerStack",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Threaded-Server-Stack-threadedServerStack.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-TXERetryLimit",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Transaction-End-TXE-Lock-Retry-Limit-TXERetryLimit.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-TXESkipLimit",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Transaction-End-TXE-Lock-Skip-Limit-TXESkipLimit.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-userindexrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/User-index-range-userindexrangesize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-userlobrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/User-LOB-range-userlobrangesize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-usertablerangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/User-Table-Range-usertablerangesize.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-usernotifytime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Database-Client-Notification-usernotifytime.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-yy",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management/page/Century-Year-Offset-yy.html",
+          "documentationVersion": "13.0",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        }
+      ]
+    },
+    {
+      "version": "12.8",
+      "sourceUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Alphabetical-listing-of-database-startup-parameters.html",
+      "count": 154,
+      "entries": [
+        {
+          "name": "-adminport",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/AdminServer-Port-adminport.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aiarcdir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/After-image-File-Management-Archive-Directory-List-aiarcdir.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aiarcdircreate",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/After-image-File-Management-Archive-Directory-Create-aiarcdircreate.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aiarcinterval",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/After-image-File-Management-Archive-Interval-aiarcinterval.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aibufs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/After-image-Buffers-aibufs.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-aistall",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/After-image-Stall-aistall.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-AreaCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Area-consistency-check-AreaCheck.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-B",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Blocks-in-Database-Buffers-B.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-B2",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Blocks-in-Alternate-Buffer-Pool-B2.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseindex",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Base-Index-baseindex.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baselob",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Base-LOB-baselob.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-basetable",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Base-Table-basetable.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseuserindex",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Base-user-index-baseuserindex.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseuserlob",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Base-user-LOB-baseuserlob.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-baseusertable",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Base-user-table-baseusertable.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-bibufs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Before-image-Buffers-bibufs.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-biscantime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Before-image-scan-time-biscantime.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-bistall",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Threshold-Stall-bistall.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-bithold",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Recovery-Log-Threshold-bithold.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Bpmax",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-Private-Buffers-per-Connection-Bpmax.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cache",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Schema-Cache-File-cache.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cdcsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/CDC-cache-size-cdcsize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-classpath",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Server-Java-Classpath-classpath.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-clstmtcachedir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Client-Database-Request-Statement-Caching-Directory-clstmtcachedir.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_12_8_listing"
+        },
+        {
+          "name": "-convmap",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Conversion-Map-convmap.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpcase",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Case-Table-cpcase.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpcoll",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Collation-Table-cpcoll.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpinternal",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Internal-Code-Page-cpinternal.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cplog",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Log-File-Code-Page-cplog.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpprint",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Print-Code-Page-cpprint.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cprcodein",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/R-code-in-Code-Page-cprcodein.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpstream",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Stream-Code-Page-cpstream.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cpterm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Terminal-Code-Page-cpterm.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-crStatus",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Crash-Recovery-Status-crStatus.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-crTXDisplay",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Crash-Recovery-Transaction-Display-crTXDisplay.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-cstackPrintopt",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/C-stack-print-option-cstackPrintopt.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-DbCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Database-consistency-check-DbCheck.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-dbnotifyops",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Database-Notification-Operations-dbnotifyops.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-dbnotifytime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Database-Notification-Time-dbnotifytime.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagDir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-directory-diagDir.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagEvent",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-events-value-diagEvent.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagEvtLevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-event-level-diagEvtLevel.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagFormat",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-data-format-diagFormat.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagFS",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-field-separator-diagFS.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagPause",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-pause-length-diagPause.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagPrefix",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-prefix-value-diagPrefix.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-diagProc",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Diagnostic-process-diagProc.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-directio",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Direct-IO-directio.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ecsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Encryption-cache-size-ecsize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-enforceMm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Enforce-Mm-enforceMm.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-evtlevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Event-Level-evtlevel.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-G",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Before-image-Truncate-Interval-G.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-groupdelay",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Group-Delay-groupdelay.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-H",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Host-Name-H.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-hostnameAliasing",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Host-Name-Aliasing-hostnameAliasing.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-hash",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Hash-Table-Entries-hash.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-i",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/No-Crash-Protection-i.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-IndexCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Index-consistency-check-IndexCheck.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-indexrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Index-Range-Size-indexrangesize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ipver",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Internet-Protocol-ipver.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-keyalias",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Key-Alias-keyalias.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-keyaliaspasswd",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Key-Alias-Password-keyaliaspasswd.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-L",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Lock-Table-Entries-L.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-LGovernor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Lock-Governor-LGovernor.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgArchiveEnable",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Log-file-archive-enable-lgArchiveEnable.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgArchiveDir",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Log-file-archive-directory-lgArchiveDir.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgTruncateFrequency",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Log-file-truncate-frequency-lgTruncateFrequency.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgTruncateSize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Log-file-truncate-size-lgTruncateSize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lgTruncateTime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Log-file-truncate-time-lgTruncateTime.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-limitLgPayload",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Limit-log-file-payload-limitLgPayload.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lkhash",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Lock-Table-Hash-Size-lkhash.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lkrela",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Lock-release-lkrela.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lobrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/LOB-range-lobrangesize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lruskips",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/LRU-force-skips-lruskips.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-lru2skips",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/LRU-alternate-buffer-pool-force-skips-lru2skips.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-m1",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Auto-Server-m1.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-m3",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Secondary-Login-Broker-m3.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-maxAreas",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-area-number-maxAreas.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Ma",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-Clients-per-Server-Ma.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-maxport",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-Dynamic-Server-maxport.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-maxxids",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-JTA-Transactions-maxxids.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-MemCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Memory-consistency-check-MemCheck.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mf",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Delayed-BI-File-Write-Mf.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mi",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Minimum-Clients-per-Server-Mi.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-minport",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Minimum-Dynamic-Server-minport.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Message-Buffer-Size-Mm.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mn",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-Servers-Mn.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mp",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Servers-per-Protocol-Mp.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mpb",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Maximum-Servers-Per-Broker-Mpb.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-mtpmsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Multi-tenancy-Partition-Cache-Size-mtpmsize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-mux",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/User-MUX-Latches-mux.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Mxs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Shared-memory-Overflow-Size-Mxs.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-N",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Network-Type-N.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-n",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Number-of-Users-n.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nap",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Nap-Time-nap.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-napmax",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Nap-Maximum-napmax.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-napstep",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Nap-Time-Steps-napstep.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nGovernor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Login-Governor-nGovernor.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Nmsgwait",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Message-Wait-Nmsgwait.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nohostverify",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/TLS-No-Host-Verify-nohostverify.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nosessioncache",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/No-Session-Cache-nosessioncache.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-nosessionreuse",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/No-Session-Reuse-nosessionreuse.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-numCheckpointStats",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Number-of-checkpoint-statistics-numCheckpointStats.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-omitLgMsgs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Omit-Log-Messages-omitLgMsgs.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-omsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Storage-Object-Cache-Size-omsize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-Passphrase",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Prompt-for-Passphrase-Passphrase.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-PendConnTime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Pending-Connection-Time-PendConnTime.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-pf",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Parameter-File-pf.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-pica",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Database-Service-Communication-Area-Size-pica.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-picanap",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Database-PICA-Queue-Nap-Time-picanap.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "Pin",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Prompt-for-Pin-Pin.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "only_in_12_8_listing"
+        },
+        {
+          "name": "-pinshm",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Pin-Shared-Memory-pinshm.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchDelay",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Prefetch-delay-prefetchDelay.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchFactor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Prefetch-factor-prefetchFactor.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchNumRecs",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Prefetch-Num-Recs-prefetchNumRecs.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-prefetchPriority",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Prefetch-Priority-prefetchPriority.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-properties",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Configuration-Properties-File-properties.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-r",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Buffered-IO-r.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-recspacesearchdepth",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Record-free-chain-search-depth-factor-recspacesearchdepth.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-S",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Service-Name-S.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-schlockwq",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Schema-Lock-Wait-Queue-schlockwq.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-secsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Security-cache-size-secsize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-semsets",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Semaphore-Sets-semsets.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-servergroup",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Server-Group-servergroup.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ServerType",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Type-of-Server-to-Start-ServerType.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-sessiontimeout",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Session-Timeout-sessiontimeout.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-shmsegsize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Shared-memory-segment-size-shmsegsize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-spin",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Spin-Lock-Retries-spin.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLAutoStats",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Autonomous-Update-Statistics-SQLAutoStats.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLCursors",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Open-Cursors-SQLCursors.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLLockWaitTimeout",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Lock-Wait-Timeout-SQLLockWaitTimeout.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLQuotedRowid",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-rowid-identifier-SQLQuotedRowid.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLStack",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Stack-Size-SQLStack.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLStmtCache",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Statement-Cache-Size-SQLStmtCache.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTempBuff",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Sorting-Memory-SQLTempBuff.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTempDisk",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Sorting-on-Disk-SQLTempDisk.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTempPageSize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/SQL-Temp-Table-Data-Page-SQLTempPageSize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLTruncateTooLarge",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Authorized-Data-Truncation-SQLTruncateTooLarge.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-SQLWidthUpdate",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Autonomous-Schema-Update-SQLWidthUpdate.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ssj",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Server-side-join-ssj.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-ssl",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/TLS-Encryption-for-TCPIP-Connections-ssl.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-stslogginglevel",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/STS-logging-level-stslogginglevel.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-T",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Temporary-Directory-T.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-TableCheck",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Table-consistency-check-TableCheck.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-tablerangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Table-Range-Size-tablerangesize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-threadedServer",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Threaded-Server-threadedServer.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-threadedServerStack",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Threaded-Server-Stack-threadedServerStack.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-TXERetryLimit",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Transaction-End-TXE-Lock-Retry-Limit-TXERetryLimit.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-TXESkipLimit",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Transaction-End-TXE-Lock-Skip-Limit-TXESkipLimit.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-userindexrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/User-index-range-userindexrangesize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-userlobrangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/User-LOB-range-userlobrangesize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-usertablerangesize",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/User-Table-Range-usertablerangesize.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-usernotifytime",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Database-Client-Notification-usernotifytime.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        },
+        {
+          "name": "-yy",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-database-management-128/page/Century-Year-Offset-yy.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "not_yet_audited_per_topic",
+          "syntaxStatus": "listing_label_only_confirm_with_topic_syntax",
+          "reconciliationStatus": "exact_name_in_both_listings"
+        }
+      ]
+    },
+    {
+      "version": "12.8",
+      "sourceUrl": "https://docs.progress.com/bundle/openedge-startup-and-parameter-reference-128/page/Buffer-Hash-Latch-Factor-hashLatchFactor.html",
+      "kind": "individual_topic_supplement",
+      "count": 1,
+      "entries": [
+        {
+          "name": "-hashLatchFactor",
+          "topicUrl": "https://docs.progress.com/bundle/openedge-startup-and-parameter-reference-128/page/Buffer-Hash-Latch-Factor-hashLatchFactor.html",
+          "documentationVersion": "12.8",
+          "applicabilityStatus": "audited_primary_database_broker",
+          "syntaxStatus": "confirmed_one_numeric_argument",
+          "reconciliationStatus": "supplemental_topic_not_in_alphabetical_listing"
+        }
+      ]
+    }
+  ],
+  "reconciliation": {
+    "exactNamesShared": 152,
+    "rawNameUnion": 163,
+    "only13_0": [
+      "-Pin",
+      "-clstmtCacheAllocationFactor",
+      "-clstmtCacheDir",
+      "-clstmtCacheLevel",
+      "-clstmtCacheSize",
+      "-clstmtCacheType",
+      "-diagFrequency",
+      "-diagTopN"
+    ],
+    "only12_8": ["-clstmtcachedir", "Pin"],
+    "notes": [
+      "Pin versus -Pin and clstmtcachedir versus clstmtCacheDir are listing spelling differences, not yet established runtime aliases.",
+      "Listing presence does not prove applicability to primary multi-user Linux broker or installed license.",
+      "Version-specific syntax, types, numeric constraints, defaults, notes and runtime capability evidence must be audited per topic before activation.",
+      "The original alphabetical listings cover 162 raw names. The separately documented -hashLatchFactor adds one supplemental reference name; alphabetical listing counts remain unchanged."
+    ]
+  },
+  "contractVersion": "startup-parameter-reference-inventory.v1",
+  "purpose": "Listing coverage and documentation-version reconciliation; individual topic metadata and installed capability must be audited before enabling an entry."
+}

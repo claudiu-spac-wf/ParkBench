@@ -1,0 +1,10 @@
+/* Grafana 12.1 uses document.body width (lg=992px) to move legends below plots.
+ * Establish this width before charts mount so right/table legends remain beside
+ * their plots. Narrow Grafana views scroll horizontally instead of stacking. */
+body {
+  min-width: 992px;
+  overflow-x: auto;
+}
+html {
+  overflow-x: auto;
+}

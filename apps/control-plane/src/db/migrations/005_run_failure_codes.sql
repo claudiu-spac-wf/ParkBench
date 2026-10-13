@@ -1,0 +1,2 @@
+-- DatabaseClient.migrate() applies ADD COLUMN failure_code idempotently so this
+-- migration can be replayed on both new and existing SQLite databases.

@@ -1,0 +1,104 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-loan-payment",
+  "version": 1,
+  "procedure": "Workloads/Write/LoanPayment.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "LoanPayment",
+      "minimumRows": 0
+    },
+    {
+      "name": "DebitTransaction",
+      "minimumRows": 0
+    },
+    {
+      "name": "Loan",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "LoanPayment.LoanPaymentId:int64",
+    "LoanPayment.RandomInt10:integer",
+    "LoanPayment.RandomInt100:integer",
+    "LoanPayment.RandomInt1000:integer",
+    "LoanPayment.CreatedAt:datetime-tz",
+    "LoanPayment.LoanId:int64",
+    "LoanPayment.DueDate:date",
+    "LoanPayment.PaymentDate:date",
+    "LoanPayment.AmountPaid:decimal",
+    "LoanPayment.PrincipalPortion:decimal",
+    "LoanPayment.InterestPortion:decimal",
+    "LoanPayment.LateFee:decimal",
+    "LoanPayment.DebitTransactionId:int64",
+    "Loan.LoanId:int64",
+    "DebitTransaction.DebitTransactionId:int64"
+  ],
+  "requiredIndexes": [
+    "LoanPayment.PkLoanPayment",
+    "LoanPayment.IxRandomInt10",
+    "LoanPayment.IxRandomInt100",
+    "LoanPayment.IxRandomInt1000",
+    "LoanPayment.IxLoanPayment",
+    "LoanPayment.IxDueDate",
+    "Loan.PkLoan",
+    "DebitTransaction.PkDebitTransaction"
+  ],
+  "requiredSequences": [
+    "SeqLoanPaymentId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "LoanPayment"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "LoanPayment"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "LoanPayment"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

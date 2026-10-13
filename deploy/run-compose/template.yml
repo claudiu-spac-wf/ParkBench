@@ -1,0 +1,19 @@
+name: ${PARKBENCH_COMPOSE_PROJECT}
+services:
+  database:
+    image: ${PARKBENCH_OPENEDGE_DB_IMAGE}
+    labels:
+      parkbench.managed: "true"
+      parkbench.run_id: ${PARKBENCH_RUN_ID}
+      parkbench.experiment_id: ${PARKBENCH_EXPERIMENT_ID}
+      parkbench.component: database
+  pas:
+    image: ${PARKBENCH_OPENEDGE_PAS_IMAGE}
+    deploy:
+      replicas: ${PARKBENCH_PAS_REPLICAS}
+  loadgen:
+    image: ${PARKBENCH_LOADGEN_IMAGE:?PARKBENCH_LOADGEN_IMAGE must be an explicit non-latest tag}
+  observer:
+    image: ${PARKBENCH_OBSERVER_IMAGE:?PARKBENCH_OBSERVER_IMAGE must be an explicit non-latest tag}
+networks:
+  run-private: {}

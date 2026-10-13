@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/dashboard-context.v1",
+  "type": "object",
+  "required": ["runIds", "metricScope"],
+  "properties": {
+    "runIds": { "type": "array", "items": { "type": "string" } },
+    "metricScope": { "type": "array", "items": { "type": "string" } },
+    "grafanaUrl": { "type": "string", "format": "uri" }
+  },
+  "additionalProperties": true
+}

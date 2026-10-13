@@ -1,0 +1,111 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-transfer",
+  "version": 1,
+  "procedure": "Workloads/Write/Transfer.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Transfer",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "CreditTransaction",
+      "minimumRows": 0
+    },
+    {
+      "name": "DebitTransaction",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Transfer.TransferId:int64",
+    "Transfer.RandomInt10:integer",
+    "Transfer.RandomInt100:integer",
+    "Transfer.RandomInt1000:integer",
+    "Transfer.CreatedAt:datetime-tz",
+    "Transfer.FromAccountId:int64",
+    "Transfer.ToAccountId:int64",
+    "Transfer.Amount:decimal",
+    "Transfer.TransferDateTime:datetime-tz",
+    "Transfer.DebitTransactionId:int64",
+    "Transfer.CreditTransactionId:int64",
+    "Transfer.TransferStatus:character",
+    "Transfer.Channel:character",
+    "Account.AccountId:int64",
+    "DebitTransaction.DebitTransactionId:int64",
+    "CreditTransaction.CreditTransactionId:int64"
+  ],
+  "requiredIndexes": [
+    "Transfer.PkTransfer",
+    "Transfer.IxRandomInt10",
+    "Transfer.IxRandomInt100",
+    "Transfer.IxRandomInt1000",
+    "Transfer.IxFromAccount",
+    "Transfer.IxToAccount",
+    "Transfer.UxDebitTransaction",
+    "Account.PkAccount",
+    "DebitTransaction.PkDebitTransaction",
+    "CreditTransaction.PkCreditTransaction"
+  ],
+  "requiredSequences": [
+    "SeqTransferId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Transfer"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Transfer"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Transfer"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

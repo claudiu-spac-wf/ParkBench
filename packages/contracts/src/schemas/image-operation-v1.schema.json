@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/image-operation.v1",
+  "type": "object",
+  "required": ["kind", "inputAssetIds"],
+  "properties": {
+    "kind": { "enum": ["BUILD", "VERIFY"] },
+    "stage": { "enum": ["generic", "final", "all"] },
+    "outputProfile": { "enum": ["workload", "loadgen", "database", "pas", "observer"] },
+    "inputAssetIds": { "type": "array", "items": { "type": "string" } },
+    "logs": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

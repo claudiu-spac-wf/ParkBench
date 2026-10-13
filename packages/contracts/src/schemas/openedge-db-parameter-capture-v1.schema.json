@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://parkbench.local/contracts/openedge-db-parameter-capture-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "databaseName",
+    "attemptedAt",
+    "source",
+    "status",
+    "rows"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "openedge-db-parameter-capture.v1"
+    },
+    "databaseName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "attemptedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "capturedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "source": {
+      "const": "_DbParams"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "partial",
+        "unavailable"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "rows": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "rawValue",
+          "dtype",
+          "isDefault"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^-[A-Za-z][A-Za-z0-9-]*$",
+            "maxLength": 128
+          },
+          "rawValue": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 65536
+          },
+          "dtype": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "isDefault": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "isModifiable": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "complete"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "capturedAt"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "partial",
+              "unavailable"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unavailable"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "capturedAt"
+          ]
+        }
+      }
+    }
+  ]
+}

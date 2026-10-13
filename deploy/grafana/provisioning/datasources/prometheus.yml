@@ -1,0 +1,21 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+  # Run-aware, read-only Prometheus-compatible API served by the control plane
+  # (grafana-runs-datasource.v1). Used by DB Resources, Run Resources and Run Summary.
+  - name: ParkBench Runs
+    uid: parkbench-runs
+    type: prometheus
+    access: proxy
+    url: http://control-plane:3000/api/v1/grafana/prom
+    isDefault: false
+    jsonData:
+      httpMethod: POST
+      prometheusType: Prometheus
+      prometheusVersion: 3.5.0
+      timeInterval: 5s

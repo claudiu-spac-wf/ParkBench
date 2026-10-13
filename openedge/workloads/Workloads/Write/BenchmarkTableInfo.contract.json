@@ -1,0 +1,91 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-benchmark-table-info",
+  "version": 1,
+  "procedure": "Workloads/Write/BenchmarkTableInfo.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "BenchmarkTableInfo",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "BenchmarkTableInfo.BenchmarkTableInfoId:int64",
+    "BenchmarkTableInfo.RandomInt10:integer",
+    "BenchmarkTableInfo.RandomInt100:integer",
+    "BenchmarkTableInfo.RandomInt1000:integer",
+    "BenchmarkTableInfo.CreatedAt:datetime-tz",
+    "BenchmarkTableInfo.TableName:character",
+    "BenchmarkTableInfo.TableRowCount:int64",
+    "BenchmarkTableInfo.MaxId:int64",
+    "BenchmarkTableInfo.ScaleFactor:decimal",
+    "BenchmarkTableInfo.VolumeTier:character",
+    "BenchmarkTableInfo.RecordSizeTier:character",
+    "BenchmarkTableInfo.AsOfDate:date",
+    "BenchmarkTableInfo.LoadedAt:datetime-tz"
+  ],
+  "requiredIndexes": [
+    "BenchmarkTableInfo.PkBenchmarkTableInfo",
+    "BenchmarkTableInfo.IxRandomInt10",
+    "BenchmarkTableInfo.IxRandomInt100",
+    "BenchmarkTableInfo.IxRandomInt1000",
+    "BenchmarkTableInfo.UxTableName"
+  ],
+  "requiredSequences": [
+    "SeqBenchmarkTableInfoId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "BenchmarkTableInfo"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "BenchmarkTableInfo"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "BenchmarkTableInfo"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

@@ -1,0 +1,563 @@
+{
+  "sources": {
+    "_DbStatus": {
+      "present": true,
+      "fields": {
+        "_DbStatus-OEVersion": "CHARACTER",
+        "_DbStatus-starttime": "CHARACTER",
+        "_DbStatus-ZeroStatsDate-TZ": "CHARACTER",
+        "_DbStatus-ZeroStatsDate": "CHARACTER",
+        "_DbStatus-BiSize": "DECIMAL",
+        "_DbStatus-BiBlkSize": "DECIMAL",
+        "_DbStatus-BiClSize": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_DbStatus-OEVersion": "12.8.11.0.3219",
+          "_DbStatus-starttime": "Thu Oct 01 08:00:00 2026",
+          "_DbStatus-ZeroStatsDate-TZ": "2026-10-01T08:05:00+03:00",
+          "_DbStatus-ZeroStatsDate": "Thu Oct 01 08:05:00 2026",
+          "_DbStatus-BiSize": 1004,
+          "_DbStatus-BiBlkSize": 1005,
+          "_DbStatus-BiClSize": 1006
+        }
+      ]
+    },
+    "_ActBuffer": {
+      "present": true,
+      "fields": {
+        "_Buffer-LogicRds": "DECIMAL",
+        "_Buffer-LogicWrts": "DECIMAL",
+        "_Buffer-OSRds": "DECIMAL",
+        "_Buffer-OSWrts": "DECIMAL",
+        "_Buffer-Chkpts": "DECIMAL",
+        "_Buffer-Marked": "DECIMAL",
+        "_Buffer-Flushed": "DECIMAL",
+        "_Buffer-Deferred": "DECIMAL",
+        "_Buffer-LRUSkips": "DECIMAL",
+        "_Buffer-LRUwrts": "DECIMAL",
+        "_Buffer-APWEnq": "DECIMAL",
+        "_Buffer-Active": "DECIMAL",
+        "_Buffer-Free": "DECIMAL",
+        "_Buffer-Id": "INTEGER"
+      },
+      "rows": [
+        {
+          "_Buffer-LogicRds": 303,
+          "_Buffer-LogicWrts": 1101,
+          "_Buffer-OSRds": 1102,
+          "_Buffer-OSWrts": 1103,
+          "_Buffer-Chkpts": 1104,
+          "_Buffer-Marked": 1105,
+          "_Buffer-Flushed": 1106,
+          "_Buffer-Deferred": 1107,
+          "_Buffer-LRUSkips": 1108,
+          "_Buffer-LRUwrts": 1109,
+          "_Buffer-APWEnq": 1110,
+          "_Buffer-Active": 1111,
+          "_Buffer-Free": 1112,
+          "_Buffer-Id": 3
+        },
+        {
+          "_Buffer-LogicRds": 101,
+          "_Buffer-LogicWrts": 1101,
+          "_Buffer-OSRds": 1102,
+          "_Buffer-OSWrts": 1103,
+          "_Buffer-Chkpts": 1104,
+          "_Buffer-Marked": 1105,
+          "_Buffer-Flushed": 1106,
+          "_Buffer-Deferred": 1107,
+          "_Buffer-LRUSkips": 1108,
+          "_Buffer-LRUwrts": 1109,
+          "_Buffer-APWEnq": 1110,
+          "_Buffer-Active": 1111,
+          "_Buffer-Free": 1112,
+          "_Buffer-Id": 1
+        },
+        {
+          "_Buffer-LogicRds": 404,
+          "_Buffer-LogicWrts": 1101,
+          "_Buffer-OSRds": 1102,
+          "_Buffer-OSWrts": 1103,
+          "_Buffer-Chkpts": 1104,
+          "_Buffer-Marked": 1105,
+          "_Buffer-Flushed": 1106,
+          "_Buffer-Deferred": 1107,
+          "_Buffer-LRUSkips": 1108,
+          "_Buffer-LRUwrts": 1109,
+          "_Buffer-APWEnq": 1110,
+          "_Buffer-Active": 1111,
+          "_Buffer-Free": 1112,
+          "_Buffer-Id": 4
+        },
+        {
+          "_Buffer-LogicRds": 202,
+          "_Buffer-LogicWrts": 1101,
+          "_Buffer-OSRds": 1102,
+          "_Buffer-OSWrts": 1103,
+          "_Buffer-Chkpts": 1104,
+          "_Buffer-Marked": 1105,
+          "_Buffer-Flushed": 1106,
+          "_Buffer-Deferred": 1107,
+          "_Buffer-LRUSkips": 1108,
+          "_Buffer-LRUwrts": 1109,
+          "_Buffer-APWEnq": 1110,
+          "_Buffer-Active": 1111,
+          "_Buffer-Free": 1112,
+          "_Buffer-Id": 2
+        }
+      ]
+    },
+    "_ActSummary": {
+      "present": true,
+      "fields": {
+        "_Summary-Commits": "DECIMAL",
+        "_Summary-Undos": "DECIMAL",
+        "_Summary-RecReads": "DECIMAL",
+        "_Summary-RecUpd": "DECIMAL",
+        "_Summary-RecCreat": "DECIMAL",
+        "_Summary-RecDel": "DECIMAL",
+        "_Summary-RecLock": "DECIMAL",
+        "_Summary-RecWait": "DECIMAL",
+        "_Summary-DbReads": "DECIMAL",
+        "_Summary-DbWrites": "DECIMAL",
+        "_Summary-Chkpts": "DECIMAL",
+        "_Summary-Flushed": "DECIMAL",
+        "_Summary-DbAccesses": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_Summary-Commits": 1200,
+          "_Summary-Undos": 1201,
+          "_Summary-RecReads": 1202,
+          "_Summary-RecUpd": 1203,
+          "_Summary-RecCreat": 1204,
+          "_Summary-RecDel": 1205,
+          "_Summary-RecLock": 1206,
+          "_Summary-RecWait": 1207,
+          "_Summary-DbReads": 1208,
+          "_Summary-DbWrites": 1209,
+          "_Summary-Chkpts": 1210,
+          "_Summary-Flushed": 1211,
+          "_Summary-DbAccesses": 1212
+        }
+      ]
+    },
+    "_TableStat": {
+      "present": true,
+      "fields": {
+        "_TableStat-create": "DECIMAL",
+        "_TableStat-read": "DECIMAL",
+        "_TableStat-update": "DECIMAL",
+        "_TableStat-delete": "DECIMAL",
+        "_TableStat-OsRead": "DECIMAL",
+        "_TableStat-id": "INTEGER"
+      },
+      "rows": [
+        {
+          "_TableStat-create": 10,
+          "_TableStat-read": 1301,
+          "_TableStat-update": 1302,
+          "_TableStat-delete": 1303,
+          "_TableStat-OsRead": 1304,
+          "_TableStat-id": 1
+        },
+        {
+          "_TableStat-create": 690,
+          "_TableStat-read": 1301,
+          "_TableStat-update": 1302,
+          "_TableStat-delete": 1303,
+          "_TableStat-OsRead": 1304,
+          "_TableStat-id": 69
+        },
+        {
+          "_TableStat-create": 700,
+          "_TableStat-read": 1301,
+          "_TableStat-update": 1302,
+          "_TableStat-delete": 1303,
+          "_TableStat-OsRead": 1304,
+          "_TableStat-id": 70
+        },
+        {
+          "_TableStat-create": 99990,
+          "_TableStat-read": 1301,
+          "_TableStat-update": 1302,
+          "_TableStat-delete": 1303,
+          "_TableStat-OsRead": 1304,
+          "_TableStat-id": 9999
+        },
+        {
+          "_TableStat-create": 90000,
+          "_TableStat-read": 1301,
+          "_TableStat-update": 1302,
+          "_TableStat-delete": 1303,
+          "_TableStat-OsRead": 1304,
+          "_TableStat-id": 9000
+        }
+      ]
+    },
+    "_IndexStat": {
+      "present": true,
+      "fields": {
+        "_IndexStat-create": "DECIMAL",
+        "_IndexStat-read": "DECIMAL",
+        "_IndexStat-delete": "DECIMAL",
+        "_IndexStat-blockdelete": "DECIMAL",
+        "_IndexStat-split": "DECIMAL",
+        "_IndexStat-OsRead": "DECIMAL",
+        "_IndexStat-id": "INTEGER"
+      },
+      "rows": [
+        {
+          "_IndexStat-create": 1400,
+          "_IndexStat-read": 1401,
+          "_IndexStat-delete": 1402,
+          "_IndexStat-blockdelete": 1403,
+          "_IndexStat-split": 1404,
+          "_IndexStat-OsRead": 1405,
+          "_IndexStat-id": 1
+        },
+        {
+          "_IndexStat-create": 1400,
+          "_IndexStat-read": 1401,
+          "_IndexStat-delete": 1402,
+          "_IndexStat-blockdelete": 1403,
+          "_IndexStat-split": 1404,
+          "_IndexStat-OsRead": 1405,
+          "_IndexStat-id": 256
+        },
+        {
+          "_IndexStat-create": 1400,
+          "_IndexStat-read": 1401,
+          "_IndexStat-delete": 1402,
+          "_IndexStat-blockdelete": 1403,
+          "_IndexStat-split": 1404,
+          "_IndexStat-OsRead": 1405,
+          "_IndexStat-id": 257
+        },
+        {
+          "_IndexStat-create": 1400,
+          "_IndexStat-read": 1401,
+          "_IndexStat-delete": 1402,
+          "_IndexStat-blockdelete": 1403,
+          "_IndexStat-split": 1404,
+          "_IndexStat-OsRead": 1405,
+          "_IndexStat-id": 300
+        },
+        {
+          "_IndexStat-create": 1400,
+          "_IndexStat-read": 1401,
+          "_IndexStat-delete": 1402,
+          "_IndexStat-blockdelete": 1403,
+          "_IndexStat-split": 1404,
+          "_IndexStat-OsRead": 1405,
+          "_IndexStat-id": 9999
+        },
+        {
+          "_IndexStat-create": 1400,
+          "_IndexStat-read": 1401,
+          "_IndexStat-delete": 1402,
+          "_IndexStat-blockdelete": 1403,
+          "_IndexStat-split": 1404,
+          "_IndexStat-OsRead": 1405,
+          "_IndexStat-id": 9000
+        }
+      ]
+    },
+    "_Checkpoint": {
+      "present": true,
+      "fields": {
+        "_Checkpoint-Number": "DECIMAL",
+        "_Checkpoint-Duration": "DECIMAL",
+        "_Checkpoint-Bi-Write-Time": "DECIMAL",
+        "_Checkpoint-B-Write-Time": "DECIMAL",
+        "_Checkpoint-SyncTime": "DECIMAL",
+        "_Checkpoint-Buffers": "DECIMAL",
+        "_Checkpoint-Dirty": "DECIMAL",
+        "_Checkpoint-Flush": "DECIMAL",
+        "_Checkpoint-ApwQ": "DECIMAL",
+        "_Checkpoint-CptQ": "DECIMAL",
+        "_Checkpoint-Scan": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_Checkpoint-Number": 9,
+          "_Checkpoint-Duration": 1501,
+          "_Checkpoint-Bi-Write-Time": 1502,
+          "_Checkpoint-B-Write-Time": 1503,
+          "_Checkpoint-SyncTime": 1504,
+          "_Checkpoint-Buffers": 1505,
+          "_Checkpoint-Dirty": 99,
+          "_Checkpoint-Flush": 1507,
+          "_Checkpoint-ApwQ": 1508,
+          "_Checkpoint-CptQ": 1509,
+          "_Checkpoint-Scan": 1510
+        },
+        {
+          "_Checkpoint-Number": 1,
+          "_Checkpoint-Duration": 1501,
+          "_Checkpoint-Bi-Write-Time": 1502,
+          "_Checkpoint-B-Write-Time": 1503,
+          "_Checkpoint-SyncTime": 1504,
+          "_Checkpoint-Buffers": 1505,
+          "_Checkpoint-Dirty": 11,
+          "_Checkpoint-Flush": 1507,
+          "_Checkpoint-ApwQ": 1508,
+          "_Checkpoint-CptQ": 1509,
+          "_Checkpoint-Scan": 1510
+        },
+        {
+          "_Checkpoint-Number": 5,
+          "_Checkpoint-Duration": 1501,
+          "_Checkpoint-Bi-Write-Time": 1502,
+          "_Checkpoint-B-Write-Time": 1503,
+          "_Checkpoint-SyncTime": 1504,
+          "_Checkpoint-Buffers": 1505,
+          "_Checkpoint-Dirty": 55,
+          "_Checkpoint-Flush": 1507,
+          "_Checkpoint-ApwQ": 1508,
+          "_Checkpoint-CptQ": 1509,
+          "_Checkpoint-Scan": 1510
+        }
+      ]
+    },
+    "_ActPWs": {
+      "present": true,
+      "fields": {
+        "_PW-TotDBWrites": "DECIMAL",
+        "_PW-DBWrites": "DECIMAL",
+        "_PW-ScanWrites": "DECIMAL",
+        "_PW-ApwQWrites": "DECIMAL",
+        "_PW-CkpQWrites": "DECIMAL",
+        "_PW-ScanCycles": "DECIMAL",
+        "_PW-BuffsScaned": "DECIMAL",
+        "_PW-BufsCkp": "DECIMAL",
+        "_PW-Marked": "DECIMAL",
+        "_PW-Flushed": "DECIMAL",
+        "_PW-UpTime": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_PW-TotDBWrites": 1600,
+          "_PW-DBWrites": 1601,
+          "_PW-ScanWrites": 1602,
+          "_PW-ApwQWrites": 1603,
+          "_PW-CkpQWrites": 1604,
+          "_PW-ScanCycles": 1605,
+          "_PW-BuffsScaned": 1606,
+          "_PW-BufsCkp": 1607,
+          "_PW-Marked": 1608,
+          "_PW-Flushed": 1609,
+          "_PW-UpTime": 1610
+        }
+      ]
+    },
+    "_ActBILog": {
+      "present": true,
+      "fields": {
+        "_BiLog-TotalWrts": "DECIMAL",
+        "_BiLog-BytesWrtn": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_BiLog-TotalWrts": 1700,
+          "_BiLog-BytesWrtn": 1701
+        }
+      ]
+    },
+    "_Logging": {
+      "present": true,
+      "fields": {
+        "_Logging-BiIO": "CHARACTER",
+        "_Logging-BiBuffs": "DECIMAL",
+        "_Logging-BiFullBuffs": "DECIMAL",
+        "_Logging-BiBytesFree": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_Logging-BiIO": "BUFFERED",
+          "_Logging-BiBuffs": 1801,
+          "_Logging-BiFullBuffs": 1802,
+          "_Logging-BiBytesFree": 1803
+        }
+      ]
+    },
+    "_ActIOType": {
+      "present": true,
+      "fields": {
+        "_IOType-IdxRds": "DECIMAL",
+        "_IOType-IdxWrts": "DECIMAL",
+        "_IOType-DataReads": "DECIMAL",
+        "_IOType-DataWrts": "DECIMAL",
+        "_IOType-BiRds": "DECIMAL",
+        "_IOType-BiWrts": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_IOType-IdxRds": 1900,
+          "_IOType-IdxWrts": 1901,
+          "_IOType-DataReads": 1902,
+          "_IOType-DataWrts": 1903,
+          "_IOType-BiRds": 1904,
+          "_IOType-BiWrts": 1905
+        }
+      ]
+    },
+    "_ActLock": {
+      "present": true,
+      "fields": {
+        "_Lock-ExclLock": "DECIMAL",
+        "_Lock-RecGetReq": "DECIMAL",
+        "_Lock-ShrReq": "DECIMAL",
+        "_Lock-UpgReq": "DECIMAL",
+        "_Lock-ExclReq": "DECIMAL",
+        "_Lock-RecGetLock": "DECIMAL",
+        "_Lock-ShrLock": "DECIMAL",
+        "_Lock-UpgLock": "DECIMAL",
+        "_Lock-ExclWait": "DECIMAL",
+        "_Lock-RecGetWait": "DECIMAL",
+        "_Lock-ShrWait": "DECIMAL",
+        "_Lock-UpgWait": "DECIMAL",
+        "_Lock-ExclFind": "DECIMAL",
+        "_Lock-ShrFind": "DECIMAL",
+        "_Lock-CanclReq": "DECIMAL",
+        "_Lock-Downgrade": "DECIMAL",
+        "_Lock-RedReq": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_Lock-ExclLock": 2000,
+          "_Lock-RecGetReq": 2001,
+          "_Lock-ShrReq": 2002,
+          "_Lock-UpgReq": 2003,
+          "_Lock-ExclReq": 2004,
+          "_Lock-RecGetLock": 2005,
+          "_Lock-ShrLock": 2006,
+          "_Lock-UpgLock": 2007,
+          "_Lock-ExclWait": 2008,
+          "_Lock-RecGetWait": 2009,
+          "_Lock-ShrWait": 2010,
+          "_Lock-UpgWait": 2011,
+          "_Lock-ExclFind": 2012,
+          "_Lock-ShrFind": 2013,
+          "_Lock-CanclReq": 2014,
+          "_Lock-Downgrade": 2015,
+          "_Lock-RedReq": 2016
+        }
+      ]
+    },
+    "_Latch": {
+      "present": true,
+      "fields": {
+        "_Latch-Busy": "DECIMAL",
+        "_Latch-Lock": "DECIMAL",
+        "_Latch-Wait": "DECIMAL",
+        "_Latch-Spin": "DECIMAL",
+        "_Latch-LockT": "DECIMAL",
+        "_Latch-WaitT": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_Latch-Busy": 2100,
+          "_Latch-Lock": 2101,
+          "_Latch-Wait": 2102,
+          "_Latch-Spin": 2103,
+          "_Latch-LockT": 2104,
+          "_Latch-WaitT": 2105
+        }
+      ]
+    },
+    "_DbParams": {
+      "present": true,
+      "fields": {
+        "_DbParams-Name": "CHARACTER",
+        "_DbParams-Value": "CHARACTER",
+        "_DbParams-dtype": "INTEGER",
+        "_DbParams-Is-Default": "LOGICAL",
+        "_DbParams-Is-Modifiable": "LOGICAL"
+      },
+      "rows": [
+        {
+          "_DbParams-Name": "-B",
+          "_DbParams-Value": "1024",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-B2",
+          "_DbParams-Value": "1025",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-bithold",
+          "_DbParams-Value": "1026",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-basetable",
+          "_DbParams-Value": "1027",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-tablerangesize",
+          "_DbParams-Value": "1028",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-baseindex",
+          "_DbParams-Value": "1029",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-indexrangesize",
+          "_DbParams-Value": "1030",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-unlisted",
+          "_DbParams-Value": "1031",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        },
+        {
+          "_DbParams-Name": "-B",
+          "_DbParams-Value": "1032",
+          "_DbParams-dtype": 1,
+          "_DbParams-Is-Default": true,
+          "_DbParams-Is-Modifiable": false
+        }
+      ]
+    },
+    "_Trans": {
+      "present": true,
+      "fields": {
+        "_Trans-Duration": "DECIMAL"
+      },
+      "rows": [
+        {
+          "_Trans-Duration": 0
+        },
+        {
+          "_Trans-Duration": 17
+        },
+        {
+          "_Trans-Duration": 3
+        }
+      ]
+    }
+  }
+}

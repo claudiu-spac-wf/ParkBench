@@ -1,0 +1,22 @@
+node_modules/
+build/
+# Runtime images copy the locally compiled dist tree into the build context.
+.git/
+Dockerfile*
+.dockerignore
+*.log*
+.env*
+coverage/
+.parkbench/
+private/
+openedge-inputs/
+progress.cfg
+**/progress.cfg
+*.lic
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+private-runtime/
+generated-openedge/
+.playwright/

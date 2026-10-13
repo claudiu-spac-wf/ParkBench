@@ -1,0 +1,664 @@
+{
+  "uid": "parkbench-database-parameters",
+  "title": "Database Parameters",
+  "tags": [
+    "parkbench",
+    "parameters"
+  ],
+  "description": "One run: real clock time (UTC). Several runs: runs are aligned on elapsed time since measurement start, which reads 00:00:00 on the axis; times before it are warmup.",
+  "editable": false,
+  "graphTooltip": 1,
+  "timezone": "utc",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "run_id",
+        "label": "Runs",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "label_values(parkbench_run_window, run_id)",
+        "query": {
+          "query": "label_values(parkbench_run_window, run_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "multi": true,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 0,
+        "current": {},
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "notice_time_range",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_time_range"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "notice_excluded_runs",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_excluded_runs"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "constant",
+        "name": "parkbench_web_url",
+        "hide": 2,
+        "query": "http://127.0.0.1:13002",
+        "current": {
+          "text": "http://127.0.0.1:13002",
+          "value": "http://127.0.0.1:13002"
+        },
+        "options": [
+          {
+            "text": "http://127.0.0.1:13002",
+            "value": "http://127.0.0.1:13002",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "disk_exclude",
+        "hide": 2,
+        "query": "(loop|ram|zram|fd|sr|dm-|md).*",
+        "current": {
+          "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+          "value": "(loop|ram|zram|fd|sr|dm-|md).*"
+        },
+        "options": [
+          {
+            "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "value": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "interface_exclude",
+        "hide": 2,
+        "query": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+        "current": {
+          "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+          "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*"
+        },
+        "options": [
+          {
+            "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Run phases",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "expr": "parkbench_run_phase_boundary{run_id=~\"$run_id\"}",
+        "step": "",
+        "titleFormat": "{{run_id}}: {{phase}} {{edge}}",
+        "textFormat": "",
+        "tagKeys": "phase,edge",
+        "useValueForTime": false
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Host Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Host Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-host-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Platform Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Platform Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-platform-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Summary",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Summary with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-summary",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "DB Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open DB Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-db-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Activity",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Activity with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-activity",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database BI & APW data",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database BI & APW data with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-recovery-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database transactions, locks, and latches",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database transactions, locks, and latches with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "PAS Instances",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open PAS Instances with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-pas-instances",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Reset range to selected runs",
+      "type": "link",
+      "icon": "sync",
+      "tooltip": "Recalculate the time range and mode for the selected runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-parameters&reset=1",
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Notices",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "title": "Time range notice",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.mode_mismatch",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_time_range:text}"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Excluded runs",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.excluded_runs",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_excluded_runs:text}"
+      }
+    },
+    {
+      "id": 4,
+      "type": "row",
+      "title": "Startup snapshot",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "Database startup parameter snapshots",
+      "description": "One row per selected run, database, and nondefault parameter. Values are plaintext from the primary startup snapshot; they are not live settings.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-parameters.1",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-parameters",
+          "panelId": 1
+        }
+      },
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Captured at (UTC)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Captured at (UTC)",
+              "display_value": "Value",
+              "value_status": "Value status",
+              "parameter": "Parameter",
+              "run_id": "Run",
+              "database_name": "Database"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_parameter_snapshot_info{run_id=~\"$run_id\"}",
+          "legendFormat": "{{run_id}} {{parameter}} {{state}}",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Snapshot status and evidence gaps",
+      "description": "empty means a complete _DbParams read found no nondefault values. partial and unavailable are evidence gaps. No status series means a pre-feature run or no samples in the selected time window.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-parameters.2",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-parameters",
+          "panelId": 2
+        }
+      },
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Status",
+              "display_value": "Value",
+              "value_status": "Value status",
+              "parameter": "Parameter",
+              "run_id": "Run",
+              "database_name": "Database"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_parameter_snapshot_status{run_id=~\"$run_id\"}",
+          "legendFormat": "{{run_id}} {{parameter}} {{state}}",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Numeric startup parameter comparison",
+      "description": "Finite numeric values for selected startup snapshots; text values remain in the main table.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-parameters.3",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-parameters",
+          "panelId": 3
+        }
+      },
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Numeric value",
+              "display_value": "Value",
+              "value_status": "Value status",
+              "parameter": "Parameter",
+              "run_id": "Run",
+              "database_name": "Database"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_parameter_snapshot_numeric{run_id=~\"$run_id\"}",
+          "legendFormat": "{{run_id}} {{parameter}} {{state}}",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Missing data guidance",
+      "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-parameters.4",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-parameters",
+          "panelId": 4
+        }
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "Startup snapshots preserve plaintext values, unknown statuses and their actual UTC capture time. Empty is distinct from default settings. These tables use the retained primary snapshot independently of the visible measurement range or phase. Run context and parameter artifacts remain available from Run History."
+      }
+    }
+  ]
+}

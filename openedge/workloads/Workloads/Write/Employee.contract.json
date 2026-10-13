@@ -1,0 +1,103 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-employee",
+  "version": 1,
+  "procedure": "Workloads/Write/Employee.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Employee",
+      "minimumRows": 0
+    },
+    {
+      "name": "Branch",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Employee.EmployeeId:int64",
+    "Employee.RandomInt10:integer",
+    "Employee.RandomInt100:integer",
+    "Employee.RandomInt1000:integer",
+    "Employee.CreatedAt:datetime-tz",
+    "Employee.EmployeeNumber:character",
+    "Employee.BranchId:int64",
+    "Employee.FirstName:character",
+    "Employee.LastName:character",
+    "Employee.JobTitle:character",
+    "Employee.Email:character",
+    "Employee.HireDate:date",
+    "Employee.TerminationDate:date",
+    "Employee.IsBranchManager:logical",
+    "Employee.Salary:decimal",
+    "Employee.Photo:blob",
+    "Employee.UpdatedAt:datetime-tz",
+    "Branch.BranchId:int64"
+  ],
+  "requiredIndexes": [
+    "Employee.PkEmployee",
+    "Employee.IxRandomInt10",
+    "Employee.IxRandomInt100",
+    "Employee.IxRandomInt1000",
+    "Employee.UxEmployeeNumber",
+    "Employee.IxBranch",
+    "Employee.IxName",
+    "Branch.PkBranch"
+  ],
+  "requiredSequences": [
+    "SeqEmployeeId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Employee"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Employee"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Employee"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

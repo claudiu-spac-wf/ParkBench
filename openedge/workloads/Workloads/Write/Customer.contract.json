@@ -1,0 +1,119 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-customer",
+  "version": 1,
+  "procedure": "Workloads/Write/Customer.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    },
+    {
+      "name": "Branch",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Customer.CustomerId:int64",
+    "Customer.RandomInt10:integer",
+    "Customer.RandomInt100:integer",
+    "Customer.RandomInt1000:integer",
+    "Customer.CreatedAt:datetime-tz",
+    "Customer.CustomerNumber:character",
+    "Customer.CustomerKind:character",
+    "Customer.FirstName:character",
+    "Customer.MiddleName:character",
+    "Customer.LastName:character",
+    "Customer.BusinessName:character",
+    "Customer.DateOfBirth:date",
+    "Customer.TaxIdMasked:character",
+    "Customer.Email:character",
+    "Customer.PreferredLanguage:character",
+    "Customer.HomeBranchId:int64",
+    "Customer.Segment:character",
+    "Customer.CreditScore:integer",
+    "Customer.AnnualIncome:decimal",
+    "Customer.CustomerSince:date",
+    "Customer.CustomerStatus:character",
+    "Customer.IsPaperless:logical",
+    "Customer.MarketingOptIn:logical",
+    "Customer.KycVerifiedAt:datetime-tz",
+    "Customer.RiskRating:character",
+    "Customer.Occupation:character",
+    "Customer.EmployerName:character",
+    "Customer.SecurityQuestion:character",
+    "Customer.Preferences:character",
+    "Customer.LastContactDate:date",
+    "Customer.UpdatedAt:datetime-tz",
+    "Branch.BranchId:int64"
+  ],
+  "requiredIndexes": [
+    "Customer.PkCustomer",
+    "Customer.IxRandomInt10",
+    "Customer.IxRandomInt100",
+    "Customer.IxRandomInt1000",
+    "Customer.UxCustomerNumber",
+    "Customer.IxName",
+    "Customer.IxHomeBranch",
+    "Customer.IxStatusSegment",
+    "Customer.IxEmail",
+    "Branch.PkBranch"
+  ],
+  "requiredSequences": [
+    "SeqCustomerId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Customer"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Customer"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Customer"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

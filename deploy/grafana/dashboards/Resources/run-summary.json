@@ -1,0 +1,1991 @@
+{
+  "uid": "parkbench-run-summary",
+  "title": "Run Summary",
+  "tags": [
+    "parkbench",
+    "run-summary"
+  ],
+  "description": "One run: real clock time (UTC). Several runs: runs are aligned on elapsed time since measurement start, which reads 00:00:00 on the axis; times before it are warmup.",
+  "editable": false,
+  "graphTooltip": 1,
+  "timezone": "utc",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "run_id",
+        "label": "Runs",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "label_values(parkbench_run_window, run_id)",
+        "query": {
+          "query": "label_values(parkbench_run_window, run_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "multi": true,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 0,
+        "current": {},
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "phase",
+        "label": "Phase",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "query": {
+          "query": "label_values(parkbench_run_phase_boundary{run_id=~\"$run_id\"}, phase)",
+          "refId": "filter"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "refresh": 1
+      },
+      {
+        "type": "query",
+        "name": "notice_time_range",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_time_range"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "notice_excluded_runs",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_excluded_runs"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "constant",
+        "name": "parkbench_web_url",
+        "hide": 2,
+        "query": "http://127.0.0.1:13002",
+        "current": {
+          "text": "http://127.0.0.1:13002",
+          "value": "http://127.0.0.1:13002"
+        },
+        "options": [
+          {
+            "text": "http://127.0.0.1:13002",
+            "value": "http://127.0.0.1:13002",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "disk_exclude",
+        "hide": 2,
+        "query": "(loop|ram|zram|fd|sr|dm-|md).*",
+        "current": {
+          "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+          "value": "(loop|ram|zram|fd|sr|dm-|md).*"
+        },
+        "options": [
+          {
+            "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "value": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "interface_exclude",
+        "hide": 2,
+        "query": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+        "current": {
+          "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+          "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*"
+        },
+        "options": [
+          {
+            "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Run phases",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "expr": "parkbench_run_phase_boundary{run_id=~\"$run_id\"}",
+        "step": "",
+        "titleFormat": "{{run_id}}: {{phase}} {{edge}}",
+        "textFormat": "",
+        "tagKeys": "phase,edge",
+        "useValueForTime": false
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Host Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Host Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-host-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Platform Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Platform Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-platform-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "DB Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open DB Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-db-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Activity",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Activity with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-activity",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database BI & APW data",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database BI & APW data with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-recovery-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database transactions, locks, and latches",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database transactions, locks, and latches with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Parameters",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Parameters with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-parameters",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "PAS Instances",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open PAS Instances with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-pas-instances",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Reset range to selected runs",
+      "type": "link",
+      "icon": "sync",
+      "tooltip": "Recalculate the time range and mode for the selected runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-summary&reset=1",
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Notices",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "title": "Time range notice",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.mode_mismatch",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_time_range:text}"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Excluded runs",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.excluded_runs",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_excluded_runs:text}"
+      }
+    },
+    {
+      "id": 4,
+      "type": "row",
+      "title": "DB and PAS resources",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "DB CPU usage",
+      "description": "Database container CPU, as one-core percentage; values above 100% represent multiple cores.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.db_cpu",
+        "category": "cpu_pct",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "100 * sum by (run_id) ((max by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu=~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu=~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu=~\"total|\"}))))) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu!~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu!~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu!~\"total|\"}))))) unless on (run_id, id) max by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu=~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu=~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\",cpu=~\"total|\"}))))))))",
+          "legendFormat": "{{run_id}} · DB",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "DB memory usage",
+      "description": "Database container working set.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.db_memory",
+        "category": "memory",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id) (container_memory_working_set_bytes{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\"})",
+          "legendFormat": "{{run_id}} · DB",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "PAS CPU usage",
+      "description": "CPU per PAS instance, as one-core percentage; values above 100% represent multiple cores.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.pas_cpu",
+        "category": "cpu_pct",
+        "split": "none",
+        "breakdown": "replica"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "100 * sum by (run_id, service) ((max by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu=~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu=~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu=~\"total|\"}))))) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu!~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu!~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu!~\"total|\"}))))) unless on (run_id, id) max by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu=~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu=~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\",cpu=~\"total|\"}))))))))",
+          "legendFormat": "{{run_id}} · {{service}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "PAS memory usage",
+      "description": "Working set per PAS instance.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.pas_memory",
+        "category": "memory",
+        "split": "none",
+        "breakdown": "replica"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id, service) (container_memory_working_set_bytes{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=~\"pas-[0-9]+\"})",
+          "legendFormat": "{{run_id}} · {{service}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "row",
+      "title": "DB disk",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "title": "DB disk throughput",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.db_disk",
+        "category": "disk_throughput",
+        "split": "read_write",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id) (rate(container_fs_reads_bytes_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\"}[$__rate_interval]))",
+          "legendFormat": "{{run_id}} · DB · Read",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id) (rate(container_fs_writes_bytes_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\"}[$__rate_interval]))",
+          "legendFormat": "{{run_id}} · DB · Write",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "DB disk IOPS",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 24,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.db_disk_iops",
+        "category": "disk_iops",
+        "split": "read_write",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "iops",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id) (rate(container_fs_reads_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\"}[$__rate_interval]))",
+          "legendFormat": "{{run_id}} · DB · Read",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id) (rate(container_fs_writes_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",service=\"database\"}[$__rate_interval]))",
+          "legendFormat": "{{run_id}} · DB · Write",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "DB tables and indexes",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "title": "DB table reads (records/s)",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.table_reads_rate",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"read\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "DB table reads (total)",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. The additional Total sums every table and Other exactly once per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 38,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.table_reads_total",
+        "category": "table_total",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "bargauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "text",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"read\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"read\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
+          "legendFormat": "{{run_id}} Total",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "DB table writes (records/s)",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.table_writes_rate",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"write\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "DB table writes (total)",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. The additional Total sums every table and Other exactly once per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 46,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.table_writes_total",
+        "category": "table_total",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "bargauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "text",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"write\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"write\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
+          "legendFormat": "{{run_id}} Total",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "DB index reads (blocks/s)",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 54,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.index_reads_rate",
+        "category": "event_rate",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:blocks/s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_read_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+          "legendFormat": "{{run_id}} {{database}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "DB index reads (total)",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. The additional Total sums all database series per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 54,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.index_reads_total",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "bargauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:blocks",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "text",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_read_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{database}}",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_read_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
+          "legendFormat": "{{run_id}} Total",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "DB index writes (blocks/s)",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 62,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.index_writes_rate",
+        "category": "event_rate",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:blocks/s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_written_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+          "legendFormat": "{{run_id}} {{database}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "DB index writes (total)",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. The additional Total sums all database series per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 62,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.index_writes_total",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "bargauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:blocks",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "text",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_written_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{database}}",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_written_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
+          "legendFormat": "{{run_id}} Total",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "row",
+      "title": "PAS",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 70,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 22,
+      "title": "PAS requests per second",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 71,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.pas_requests",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "replica"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id, replica) (rate(parkbench_openedge_pas_requests_total{run_id=~\"$run_id\"}[$__rate_interval]))",
+          "legendFormat": "{{run_id}} · {{replica}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "PAS failed requests per second",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 71,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.pas_failures",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "replica"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id, replica) (rate(parkbench_openedge_pas_failed_requests_total{run_id=~\"$run_id\"}[$__rate_interval]))",
+          "legendFormat": "{{run_id}} · {{replica}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "PAS ABL processing time",
+      "description": "Average ABL processing time across all PAS instances, weighted by each instance's request rate; one line per run.\n\np95 unavailable: the PAS metric has no distribution",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 79,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "rs.abl_time",
+        "category": "duration",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "sum by (run_id) (parkbench_openedge_pas_avg_abl_processing_seconds{run_id=~\"$run_id\"} * on (run_id, replica) group_left () sum by (run_id, replica) (rate(parkbench_openedge_pas_requests_total{run_id=~\"$run_id\"}[$__rate_interval]))) / sum by (run_id) (sum by (run_id, replica) (rate(parkbench_openedge_pas_requests_total{run_id=~\"$run_id\"}[$__rate_interval])))",
+          "legendFormat": "{{run_id}} · Average",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "type": "row",
+      "title": "Workload and diagnostics",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 87,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 26,
+          "title": "Workload p95 latency",
+          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 88,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.benchmark-overview.1",
+            "category": "duration",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-benchmark-overview",
+              "panelId": 1
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "histogram_quantile(0.95, sum by (run_id, le, operation) (rate(parkbench_workload_request_duration_seconds_bucket{run_id=~\"$run_id\",phase=~\"$phase\"}[1m])))",
+              "legendFormat": "{{run_id}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "title": "Workload requests per second",
+          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 88,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.benchmark-overview.2",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-benchmark-overview",
+              "panelId": 2
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "req/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "sum by (run_id, operation) (rate(parkbench_workload_requests_total{run_id=~\"$run_id\",phase=~\"$phase\"}[1m]))",
+              "legendFormat": "{{run_id}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "title": "Host and database disk reads",
+          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 96,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.benchmark-overview.3",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-benchmark-overview",
+              "panelId": 3
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "rate(node_disk_read_bytes_total{job=\"parkbench-runs\",service=\"node-exporter\",run_id=~\"$run_id\",phase=~\"$phase\",device!~\"$disk_exclude\"}[$__rate_interval])",
+              "legendFormat": "{{run_id}} host {{device}} Read",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "sum by (run_id) (rate(container_fs_reads_bytes_total{job=\"parkbench-run-owned-cadvisor\",run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[$__rate_interval]))",
+              "legendFormat": "{{run_id}} database Read",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "title": "Table operations per second",
+          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 96,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.benchmark-overview.4",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-benchmark-overview",
+              "panelId": 4
+            }
+          },
+          "type": "table",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0
+            },
+            "overrides": []
+          },
+          "options": {},
+          "transformations": [],
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",table=~\".+\"}",
+              "legendFormat": "{{run_id}} {{table}} {{operation}}",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "title": "Observer incomplete samples",
+          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 104,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.benchmark-overview.6",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-benchmark-overview",
+              "panelId": 6
+            }
+          },
+          "type": "stat",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "No data",
+              "min": 0
+            },
+            "overrides": []
+          },
+          "options": {},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_observer_incomplete{run_id=~\"$run_id\",phase=~\"$phase\"}",
+              "legendFormat": "{{run_id}} ",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

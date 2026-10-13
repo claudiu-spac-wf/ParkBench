@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://parkbench.local/contracts/bootstrap-readiness-v1.schema.json",
+  "title": "ParkBench Bootstrap Readiness v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "startedAt",
+    "status",
+    "stage",
+    "component",
+    "valid",
+    "checks",
+    "services",
+    "diagnosticLog"
+  ],
+  "properties": {
+    "contractVersion": { "const": "bootstrap-readiness.v1" },
+    "startedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+    },
+    "finishedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+    },
+    "status": { "enum": ["running", "ready", "failed"] },
+    "stage": {
+      "enum": [
+        "started",
+        "host_preflight",
+        "input_preflight",
+        "dependency_install",
+        "application_build",
+        "openedge_generic",
+        "seed_create",
+        "openedge_final",
+        "catalog_inputs",
+        "support_images",
+        "platform_start",
+        "service_readiness",
+        "ready",
+        "failed"
+      ]
+    },
+    "component": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,127}$" },
+    "valid": { "type": "boolean" },
+    "error": { "type": "string", "maxLength": 240 },
+    "checks": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$" }
+    },
+    "services": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["control-plane", "web-ui", "prometheus", "grafana", "cadvisor", "node-exporter"],
+      "properties": {
+        "control-plane": { "enum": ["ready", "not_ready"] },
+        "web-ui": { "enum": ["ready", "not_ready"] },
+        "prometheus": { "enum": ["ready", "not_ready"] },
+        "grafana": { "enum": ["ready", "not_ready"] },
+        "cadvisor": { "enum": ["ready", "not_ready"] },
+        "node-exporter": { "enum": ["ready", "not_ready"] }
+      }
+    },
+    "diagnosticLog": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "recoveryAction": { "type": "string", "minLength": 1, "maxLength": 240 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "ready" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "stage": { "const": "ready" },
+          "valid": { "const": true },
+          "services": {
+            "properties": {
+              "control-plane": { "const": "ready" },
+              "web-ui": { "const": "ready" },
+              "prometheus": { "const": "ready" },
+              "grafana": { "const": "ready" },
+              "cadvisor": { "const": "ready" },
+              "node-exporter": { "const": "ready" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "failed" } }, "required": ["status"] },
+      "then": {
+        "required": ["finishedAt", "error", "recoveryAction"],
+        "properties": { "valid": { "const": false } }
+      }
+    }
+  ]
+}

@@ -1,0 +1,2562 @@
+{
+  "domainVersion": "table-write-domains.v1",
+  "source": {
+    "repository": "ParkBenchDB",
+    "path": "pbgen/generate/refdata.py",
+    "sha256": "91a9b55db63de837d7350d36df057133257274f17970dcd7ab8788826755caf2",
+    "notes": "ISO codes and attribute tuples copied from the authoring catalog; currency labels use their documented code fallback. MCC domains enumerate the documented valid group ranges, not one seed random sample."
+  },
+  "exhaustion": "fail atomically; never fabricate catalog values",
+  "tables": {
+    "Currency": [
+      {
+        "CurrencyCode": "USD",
+        "NumericCode": 840,
+        "MinorUnits": 2,
+        "CurrencyName": "USD",
+        "CurrencySymbol": "USD"
+      },
+      {
+        "CurrencyCode": "EUR",
+        "NumericCode": 978,
+        "MinorUnits": 2,
+        "CurrencyName": "EUR",
+        "CurrencySymbol": "EUR"
+      },
+      {
+        "CurrencyCode": "JPY",
+        "NumericCode": 392,
+        "MinorUnits": 0,
+        "CurrencyName": "JPY",
+        "CurrencySymbol": "JPY"
+      },
+      {
+        "CurrencyCode": "GBP",
+        "NumericCode": 826,
+        "MinorUnits": 2,
+        "CurrencyName": "GBP",
+        "CurrencySymbol": "GBP"
+      },
+      {
+        "CurrencyCode": "CNY",
+        "NumericCode": 156,
+        "MinorUnits": 2,
+        "CurrencyName": "CNY",
+        "CurrencySymbol": "CNY"
+      },
+      {
+        "CurrencyCode": "AUD",
+        "NumericCode": 36,
+        "MinorUnits": 2,
+        "CurrencyName": "AUD",
+        "CurrencySymbol": "AUD"
+      },
+      {
+        "CurrencyCode": "CAD",
+        "NumericCode": 124,
+        "MinorUnits": 2,
+        "CurrencyName": "CAD",
+        "CurrencySymbol": "CAD"
+      },
+      {
+        "CurrencyCode": "CHF",
+        "NumericCode": 756,
+        "MinorUnits": 2,
+        "CurrencyName": "CHF",
+        "CurrencySymbol": "CHF"
+      },
+      {
+        "CurrencyCode": "HKD",
+        "NumericCode": 344,
+        "MinorUnits": 2,
+        "CurrencyName": "HKD",
+        "CurrencySymbol": "HKD"
+      },
+      {
+        "CurrencyCode": "SGD",
+        "NumericCode": 702,
+        "MinorUnits": 2,
+        "CurrencyName": "SGD",
+        "CurrencySymbol": "SGD"
+      },
+      {
+        "CurrencyCode": "SEK",
+        "NumericCode": 752,
+        "MinorUnits": 2,
+        "CurrencyName": "SEK",
+        "CurrencySymbol": "SEK"
+      },
+      {
+        "CurrencyCode": "KRW",
+        "NumericCode": 410,
+        "MinorUnits": 0,
+        "CurrencyName": "KRW",
+        "CurrencySymbol": "KRW"
+      },
+      {
+        "CurrencyCode": "NOK",
+        "NumericCode": 578,
+        "MinorUnits": 2,
+        "CurrencyName": "NOK",
+        "CurrencySymbol": "NOK"
+      },
+      {
+        "CurrencyCode": "NZD",
+        "NumericCode": 554,
+        "MinorUnits": 2,
+        "CurrencyName": "NZD",
+        "CurrencySymbol": "NZD"
+      },
+      {
+        "CurrencyCode": "INR",
+        "NumericCode": 356,
+        "MinorUnits": 2,
+        "CurrencyName": "INR",
+        "CurrencySymbol": "INR"
+      },
+      {
+        "CurrencyCode": "MXN",
+        "NumericCode": 484,
+        "MinorUnits": 2,
+        "CurrencyName": "MXN",
+        "CurrencySymbol": "MXN"
+      },
+      {
+        "CurrencyCode": "TWD",
+        "NumericCode": 901,
+        "MinorUnits": 2,
+        "CurrencyName": "TWD",
+        "CurrencySymbol": "TWD"
+      },
+      {
+        "CurrencyCode": "ZAR",
+        "NumericCode": 710,
+        "MinorUnits": 2,
+        "CurrencyName": "ZAR",
+        "CurrencySymbol": "ZAR"
+      },
+      {
+        "CurrencyCode": "BRL",
+        "NumericCode": 986,
+        "MinorUnits": 2,
+        "CurrencyName": "BRL",
+        "CurrencySymbol": "BRL"
+      },
+      {
+        "CurrencyCode": "DKK",
+        "NumericCode": 208,
+        "MinorUnits": 2,
+        "CurrencyName": "DKK",
+        "CurrencySymbol": "DKK"
+      },
+      {
+        "CurrencyCode": "PLN",
+        "NumericCode": 985,
+        "MinorUnits": 2,
+        "CurrencyName": "PLN",
+        "CurrencySymbol": "PLN"
+      },
+      {
+        "CurrencyCode": "THB",
+        "NumericCode": 764,
+        "MinorUnits": 2,
+        "CurrencyName": "THB",
+        "CurrencySymbol": "THB"
+      },
+      {
+        "CurrencyCode": "ILS",
+        "NumericCode": 376,
+        "MinorUnits": 2,
+        "CurrencyName": "ILS",
+        "CurrencySymbol": "ILS"
+      },
+      {
+        "CurrencyCode": "IDR",
+        "NumericCode": 360,
+        "MinorUnits": 2,
+        "CurrencyName": "IDR",
+        "CurrencySymbol": "IDR"
+      },
+      {
+        "CurrencyCode": "CZK",
+        "NumericCode": 203,
+        "MinorUnits": 2,
+        "CurrencyName": "CZK",
+        "CurrencySymbol": "CZK"
+      },
+      {
+        "CurrencyCode": "AED",
+        "NumericCode": 784,
+        "MinorUnits": 2,
+        "CurrencyName": "AED",
+        "CurrencySymbol": "AED"
+      },
+      {
+        "CurrencyCode": "TRY",
+        "NumericCode": 949,
+        "MinorUnits": 2,
+        "CurrencyName": "TRY",
+        "CurrencySymbol": "TRY"
+      },
+      {
+        "CurrencyCode": "HUF",
+        "NumericCode": 348,
+        "MinorUnits": 2,
+        "CurrencyName": "HUF",
+        "CurrencySymbol": "HUF"
+      },
+      {
+        "CurrencyCode": "CLP",
+        "NumericCode": 152,
+        "MinorUnits": 0,
+        "CurrencyName": "CLP",
+        "CurrencySymbol": "CLP"
+      },
+      {
+        "CurrencyCode": "SAR",
+        "NumericCode": 682,
+        "MinorUnits": 2,
+        "CurrencyName": "SAR",
+        "CurrencySymbol": "SAR"
+      },
+      {
+        "CurrencyCode": "PHP",
+        "NumericCode": 608,
+        "MinorUnits": 2,
+        "CurrencyName": "PHP",
+        "CurrencySymbol": "PHP"
+      },
+      {
+        "CurrencyCode": "MYR",
+        "NumericCode": 458,
+        "MinorUnits": 2,
+        "CurrencyName": "MYR",
+        "CurrencySymbol": "MYR"
+      },
+      {
+        "CurrencyCode": "COP",
+        "NumericCode": 170,
+        "MinorUnits": 2,
+        "CurrencyName": "COP",
+        "CurrencySymbol": "COP"
+      },
+      {
+        "CurrencyCode": "RUB",
+        "NumericCode": 643,
+        "MinorUnits": 2,
+        "CurrencyName": "RUB",
+        "CurrencySymbol": "RUB"
+      },
+      {
+        "CurrencyCode": "RON",
+        "NumericCode": 946,
+        "MinorUnits": 2,
+        "CurrencyName": "RON",
+        "CurrencySymbol": "RON"
+      },
+      {
+        "CurrencyCode": "PEN",
+        "NumericCode": 604,
+        "MinorUnits": 2,
+        "CurrencyName": "PEN",
+        "CurrencySymbol": "PEN"
+      },
+      {
+        "CurrencyCode": "BHD",
+        "NumericCode": 48,
+        "MinorUnits": 3,
+        "CurrencyName": "BHD",
+        "CurrencySymbol": "BHD"
+      },
+      {
+        "CurrencyCode": "BGN",
+        "NumericCode": 975,
+        "MinorUnits": 2,
+        "CurrencyName": "BGN",
+        "CurrencySymbol": "BGN"
+      },
+      {
+        "CurrencyCode": "ARS",
+        "NumericCode": 32,
+        "MinorUnits": 2,
+        "CurrencyName": "ARS",
+        "CurrencySymbol": "ARS"
+      },
+      {
+        "CurrencyCode": "EGP",
+        "NumericCode": 818,
+        "MinorUnits": 2,
+        "CurrencyName": "EGP",
+        "CurrencySymbol": "EGP"
+      }
+    ],
+    "Country": [
+      {
+        "CountryCode": "AD",
+        "CountryName": "Andorra",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AE",
+        "CountryName": "United Arab Emirates",
+        "DefaultCurrencyCode": "AED",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AF",
+        "CountryName": "Afghanistan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AG",
+        "CountryName": "Antigua and Barbuda",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AI",
+        "CountryName": "Anguilla",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AL",
+        "CountryName": "Albania",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AM",
+        "CountryName": "Armenia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AO",
+        "CountryName": "Angola",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AQ",
+        "CountryName": "Antarctica",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AR",
+        "CountryName": "Argentina",
+        "DefaultCurrencyCode": "ARS",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AS",
+        "CountryName": "American Samoa",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AT",
+        "CountryName": "Austria",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AU",
+        "CountryName": "Australia",
+        "DefaultCurrencyCode": "AUD",
+        "PhonePrefix": "+61"
+      },
+      {
+        "CountryCode": "AW",
+        "CountryName": "Aruba",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AX",
+        "CountryName": "Aland Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "AZ",
+        "CountryName": "Azerbaijan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BA",
+        "CountryName": "Bosnia and Herzegovina",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BB",
+        "CountryName": "Barbados",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BD",
+        "CountryName": "Bangladesh",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BE",
+        "CountryName": "Belgium",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BF",
+        "CountryName": "Burkina Faso",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BG",
+        "CountryName": "Bulgaria",
+        "DefaultCurrencyCode": "BGN",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BH",
+        "CountryName": "Bahrain",
+        "DefaultCurrencyCode": "BHD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BI",
+        "CountryName": "Burundi",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BJ",
+        "CountryName": "Benin",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BL",
+        "CountryName": "Saint Barthelemy",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BM",
+        "CountryName": "Bermuda",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BN",
+        "CountryName": "Brunei Darussalam",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BO",
+        "CountryName": "Bolivia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BQ",
+        "CountryName": "Bonaire, Sint Eustatius and Saba",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BR",
+        "CountryName": "Brazil",
+        "DefaultCurrencyCode": "BRL",
+        "PhonePrefix": "+55"
+      },
+      {
+        "CountryCode": "BS",
+        "CountryName": "Bahamas",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BT",
+        "CountryName": "Bhutan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BV",
+        "CountryName": "Bouvet Island",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BW",
+        "CountryName": "Botswana",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BY",
+        "CountryName": "Belarus",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "BZ",
+        "CountryName": "Belize",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CA",
+        "CountryName": "Canada",
+        "DefaultCurrencyCode": "CAD",
+        "PhonePrefix": "+1"
+      },
+      {
+        "CountryCode": "CC",
+        "CountryName": "Cocos (Keeling) Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CD",
+        "CountryName": "Congo, Democratic Republic of the",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CF",
+        "CountryName": "Central African Republic",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CG",
+        "CountryName": "Congo",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CH",
+        "CountryName": "Switzerland",
+        "DefaultCurrencyCode": "CHF",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CI",
+        "CountryName": "Cote d'Ivoire",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CK",
+        "CountryName": "Cook Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CL",
+        "CountryName": "Chile",
+        "DefaultCurrencyCode": "CLP",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CM",
+        "CountryName": "Cameroon",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CN",
+        "CountryName": "China",
+        "DefaultCurrencyCode": "CNY",
+        "PhonePrefix": "+86"
+      },
+      {
+        "CountryCode": "CO",
+        "CountryName": "Colombia",
+        "DefaultCurrencyCode": "COP",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CR",
+        "CountryName": "Costa Rica",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CU",
+        "CountryName": "Cuba",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CV",
+        "CountryName": "Cabo Verde",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CW",
+        "CountryName": "Curacao",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CX",
+        "CountryName": "Christmas Island",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CY",
+        "CountryName": "Cyprus",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "CZ",
+        "CountryName": "Czechia",
+        "DefaultCurrencyCode": "CZK",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "DE",
+        "CountryName": "Germany",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+49"
+      },
+      {
+        "CountryCode": "DJ",
+        "CountryName": "Djibouti",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "DK",
+        "CountryName": "Denmark",
+        "DefaultCurrencyCode": "DKK",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "DM",
+        "CountryName": "Dominica",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "DO",
+        "CountryName": "Dominican Republic",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "DZ",
+        "CountryName": "Algeria",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "EC",
+        "CountryName": "Ecuador",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "EE",
+        "CountryName": "Estonia",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "EG",
+        "CountryName": "Egypt",
+        "DefaultCurrencyCode": "EGP",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "EH",
+        "CountryName": "Western Sahara",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ER",
+        "CountryName": "Eritrea",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ES",
+        "CountryName": "Spain",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+34"
+      },
+      {
+        "CountryCode": "ET",
+        "CountryName": "Ethiopia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "FI",
+        "CountryName": "Finland",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "FJ",
+        "CountryName": "Fiji",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "FK",
+        "CountryName": "Falkland Islands (Malvinas)",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "FM",
+        "CountryName": "Micronesia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "FO",
+        "CountryName": "Faroe Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "FR",
+        "CountryName": "France",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+33"
+      },
+      {
+        "CountryCode": "GA",
+        "CountryName": "Gabon",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GB",
+        "CountryName": "United Kingdom",
+        "DefaultCurrencyCode": "GBP",
+        "PhonePrefix": "+44"
+      },
+      {
+        "CountryCode": "GD",
+        "CountryName": "Grenada",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GE",
+        "CountryName": "Georgia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GF",
+        "CountryName": "French Guiana",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GG",
+        "CountryName": "Guernsey",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GH",
+        "CountryName": "Ghana",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GI",
+        "CountryName": "Gibraltar",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GL",
+        "CountryName": "Greenland",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GM",
+        "CountryName": "Gambia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GN",
+        "CountryName": "Guinea",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GP",
+        "CountryName": "Guadeloupe",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GQ",
+        "CountryName": "Equatorial Guinea",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GR",
+        "CountryName": "Greece",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GS",
+        "CountryName": "South Georgia and the South Sandwich Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GT",
+        "CountryName": "Guatemala",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GU",
+        "CountryName": "Guam",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GW",
+        "CountryName": "Guinea-Bissau",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "GY",
+        "CountryName": "Guyana",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "HK",
+        "CountryName": "Hong Kong",
+        "DefaultCurrencyCode": "HKD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "HM",
+        "CountryName": "Heard Island and McDonald Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "HN",
+        "CountryName": "Honduras",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "HR",
+        "CountryName": "Croatia",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "HT",
+        "CountryName": "Haiti",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "HU",
+        "CountryName": "Hungary",
+        "DefaultCurrencyCode": "HUF",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ID",
+        "CountryName": "Indonesia",
+        "DefaultCurrencyCode": "IDR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IE",
+        "CountryName": "Ireland",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IL",
+        "CountryName": "Israel",
+        "DefaultCurrencyCode": "ILS",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IM",
+        "CountryName": "Isle of Man",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IN",
+        "CountryName": "India",
+        "DefaultCurrencyCode": "INR",
+        "PhonePrefix": "+91"
+      },
+      {
+        "CountryCode": "IO",
+        "CountryName": "British Indian Ocean Territory",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IQ",
+        "CountryName": "Iraq",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IR",
+        "CountryName": "Iran",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IS",
+        "CountryName": "Iceland",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "IT",
+        "CountryName": "Italy",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+39"
+      },
+      {
+        "CountryCode": "JE",
+        "CountryName": "Jersey",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "JM",
+        "CountryName": "Jamaica",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "JO",
+        "CountryName": "Jordan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "JP",
+        "CountryName": "Japan",
+        "DefaultCurrencyCode": "JPY",
+        "PhonePrefix": "+81"
+      },
+      {
+        "CountryCode": "KE",
+        "CountryName": "Kenya",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KG",
+        "CountryName": "Kyrgyzstan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KH",
+        "CountryName": "Cambodia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KI",
+        "CountryName": "Kiribati",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KM",
+        "CountryName": "Comoros",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KN",
+        "CountryName": "Saint Kitts and Nevis",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KP",
+        "CountryName": "North Korea",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KR",
+        "CountryName": "South Korea",
+        "DefaultCurrencyCode": "KRW",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KW",
+        "CountryName": "Kuwait",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KY",
+        "CountryName": "Cayman Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "KZ",
+        "CountryName": "Kazakhstan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LA",
+        "CountryName": "Lao People's Democratic Republic",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LB",
+        "CountryName": "Lebanon",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LC",
+        "CountryName": "Saint Lucia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LI",
+        "CountryName": "Liechtenstein",
+        "DefaultCurrencyCode": "CHF",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LK",
+        "CountryName": "Sri Lanka",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LR",
+        "CountryName": "Liberia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LS",
+        "CountryName": "Lesotho",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LT",
+        "CountryName": "Lithuania",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LU",
+        "CountryName": "Luxembourg",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LV",
+        "CountryName": "Latvia",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "LY",
+        "CountryName": "Libya",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MA",
+        "CountryName": "Morocco",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MC",
+        "CountryName": "Monaco",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MD",
+        "CountryName": "Moldova",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ME",
+        "CountryName": "Montenegro",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MF",
+        "CountryName": "Saint Martin (French part)",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MG",
+        "CountryName": "Madagascar",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MH",
+        "CountryName": "Marshall Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MK",
+        "CountryName": "North Macedonia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ML",
+        "CountryName": "Mali",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MM",
+        "CountryName": "Myanmar",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MN",
+        "CountryName": "Mongolia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MO",
+        "CountryName": "Macao",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MP",
+        "CountryName": "Northern Mariana Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MQ",
+        "CountryName": "Martinique",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MR",
+        "CountryName": "Mauritania",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MS",
+        "CountryName": "Montserrat",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MT",
+        "CountryName": "Malta",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MU",
+        "CountryName": "Mauritius",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MV",
+        "CountryName": "Maldives",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MW",
+        "CountryName": "Malawi",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MX",
+        "CountryName": "Mexico",
+        "DefaultCurrencyCode": "MXN",
+        "PhonePrefix": "+52"
+      },
+      {
+        "CountryCode": "MY",
+        "CountryName": "Malaysia",
+        "DefaultCurrencyCode": "MYR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "MZ",
+        "CountryName": "Mozambique",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NA",
+        "CountryName": "Namibia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NC",
+        "CountryName": "New Caledonia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NE",
+        "CountryName": "Niger",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NF",
+        "CountryName": "Norfolk Island",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NG",
+        "CountryName": "Nigeria",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NI",
+        "CountryName": "Nicaragua",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NL",
+        "CountryName": "Netherlands",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NO",
+        "CountryName": "Norway",
+        "DefaultCurrencyCode": "NOK",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NP",
+        "CountryName": "Nepal",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NR",
+        "CountryName": "Nauru",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NU",
+        "CountryName": "Niue",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "NZ",
+        "CountryName": "New Zealand",
+        "DefaultCurrencyCode": "NZD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "OM",
+        "CountryName": "Oman",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PA",
+        "CountryName": "Panama",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PE",
+        "CountryName": "Peru",
+        "DefaultCurrencyCode": "PEN",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PF",
+        "CountryName": "French Polynesia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PG",
+        "CountryName": "Papua New Guinea",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PH",
+        "CountryName": "Philippines",
+        "DefaultCurrencyCode": "PHP",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PK",
+        "CountryName": "Pakistan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PL",
+        "CountryName": "Poland",
+        "DefaultCurrencyCode": "PLN",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PM",
+        "CountryName": "Saint Pierre and Miquelon",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PN",
+        "CountryName": "Pitcairn",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PR",
+        "CountryName": "Puerto Rico",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+1"
+      },
+      {
+        "CountryCode": "PS",
+        "CountryName": "Palestine",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PT",
+        "CountryName": "Portugal",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PW",
+        "CountryName": "Palau",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "PY",
+        "CountryName": "Paraguay",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "QA",
+        "CountryName": "Qatar",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "RE",
+        "CountryName": "Reunion",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "RO",
+        "CountryName": "Romania",
+        "DefaultCurrencyCode": "RON",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "RS",
+        "CountryName": "Serbia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "RU",
+        "CountryName": "Russian Federation",
+        "DefaultCurrencyCode": "RUB",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "RW",
+        "CountryName": "Rwanda",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SA",
+        "CountryName": "Saudi Arabia",
+        "DefaultCurrencyCode": "SAR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SB",
+        "CountryName": "Solomon Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SC",
+        "CountryName": "Seychelles",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SD",
+        "CountryName": "Sudan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SE",
+        "CountryName": "Sweden",
+        "DefaultCurrencyCode": "SEK",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SG",
+        "CountryName": "Singapore",
+        "DefaultCurrencyCode": "SGD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SH",
+        "CountryName": "Saint Helena, Ascension and Tristan da Cunha",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SI",
+        "CountryName": "Slovenia",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SJ",
+        "CountryName": "Svalbard and Jan Mayen",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SK",
+        "CountryName": "Slovakia",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SL",
+        "CountryName": "Sierra Leone",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SM",
+        "CountryName": "San Marino",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SN",
+        "CountryName": "Senegal",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SO",
+        "CountryName": "Somalia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SR",
+        "CountryName": "Suriname",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SS",
+        "CountryName": "South Sudan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ST",
+        "CountryName": "Sao Tome and Principe",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SV",
+        "CountryName": "El Salvador",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SX",
+        "CountryName": "Sint Maarten (Dutch part)",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SY",
+        "CountryName": "Syrian Arab Republic",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "SZ",
+        "CountryName": "Eswatini",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TC",
+        "CountryName": "Turks and Caicos Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TD",
+        "CountryName": "Chad",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TF",
+        "CountryName": "French Southern Territories",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TG",
+        "CountryName": "Togo",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TH",
+        "CountryName": "Thailand",
+        "DefaultCurrencyCode": "THB",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TJ",
+        "CountryName": "Tajikistan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TK",
+        "CountryName": "Tokelau",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TL",
+        "CountryName": "Timor-Leste",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TM",
+        "CountryName": "Turkmenistan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TN",
+        "CountryName": "Tunisia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TO",
+        "CountryName": "Tonga",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TR",
+        "CountryName": "Turkiye",
+        "DefaultCurrencyCode": "TRY",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TT",
+        "CountryName": "Trinidad and Tobago",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TV",
+        "CountryName": "Tuvalu",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TW",
+        "CountryName": "Taiwan",
+        "DefaultCurrencyCode": "TWD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "TZ",
+        "CountryName": "Tanzania",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "UA",
+        "CountryName": "Ukraine",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "UG",
+        "CountryName": "Uganda",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "UM",
+        "CountryName": "United States Minor Outlying Islands",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "US",
+        "CountryName": "United States",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+1"
+      },
+      {
+        "CountryCode": "UY",
+        "CountryName": "Uruguay",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "UZ",
+        "CountryName": "Uzbekistan",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VA",
+        "CountryName": "Holy See",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VC",
+        "CountryName": "Saint Vincent and the Grenadines",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VE",
+        "CountryName": "Venezuela",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VG",
+        "CountryName": "Virgin Islands (British)",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VI",
+        "CountryName": "Virgin Islands (U.S.)",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VN",
+        "CountryName": "Viet Nam",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "VU",
+        "CountryName": "Vanuatu",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "WF",
+        "CountryName": "Wallis and Futuna",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "WS",
+        "CountryName": "Samoa",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "XK",
+        "CountryName": "Kosovo",
+        "DefaultCurrencyCode": "EUR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "YE",
+        "CountryName": "Yemen",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "YT",
+        "CountryName": "Mayotte",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ZA",
+        "CountryName": "South Africa",
+        "DefaultCurrencyCode": "ZAR",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ZM",
+        "CountryName": "Zambia",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      },
+      {
+        "CountryCode": "ZW",
+        "CountryName": "Zimbabwe",
+        "DefaultCurrencyCode": "USD",
+        "PhonePrefix": "+20"
+      }
+    ],
+    "AccountType": [
+      {
+        "AccountTypeCode": "CHKBASIC",
+        "AccountTypeName": "Basic Checking",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.01,
+        "MinimumBalance": 0,
+        "MonthlyFee": 5,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "CHKFREE",
+        "AccountTypeName": "Free Checking",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.0,
+        "MinimumBalance": 0,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "CHKPLUS",
+        "AccountTypeName": "Checking Plus",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.05,
+        "MinimumBalance": 1500,
+        "MonthlyFee": 12,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "CHKPREM",
+        "AccountTypeName": "Premier Checking",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.1,
+        "MinimumBalance": 10000,
+        "MonthlyFee": 25,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "CHKSTUD",
+        "AccountTypeName": "Student Checking",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.0,
+        "MinimumBalance": 0,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CHKSENR",
+        "AccountTypeName": "Senior Checking",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.05,
+        "MinimumBalance": 0,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "CHKBUS",
+        "AccountTypeName": "Business Checking",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.02,
+        "MinimumBalance": 2500,
+        "MonthlyFee": 15,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "CHKBUSPL",
+        "AccountTypeName": "Business Checking Plus",
+        "Category": "CHECKING",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.08,
+        "MinimumBalance": 25000,
+        "MonthlyFee": 30,
+        "OverdraftAllowed": true
+      },
+      {
+        "AccountTypeCode": "SAVBASIC",
+        "AccountTypeName": "Basic Savings",
+        "Category": "SAVINGS",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.25,
+        "MinimumBalance": 300,
+        "MonthlyFee": 3,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "SAVHIYLD",
+        "AccountTypeName": "High-Yield Savings",
+        "Category": "SAVINGS",
+        "TermMonths": 0,
+        "CurrentInterestRate": 3.8,
+        "MinimumBalance": 1000,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "SAVKIDS",
+        "AccountTypeName": "Kids Savings",
+        "Category": "SAVINGS",
+        "TermMonths": 0,
+        "CurrentInterestRate": 1.0,
+        "MinimumBalance": 0,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "SAVGOAL",
+        "AccountTypeName": "Goal Savings",
+        "Category": "SAVINGS",
+        "TermMonths": 0,
+        "CurrentInterestRate": 2.5,
+        "MinimumBalance": 100,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "SAVBUS",
+        "AccountTypeName": "Business Savings",
+        "Category": "SAVINGS",
+        "TermMonths": 0,
+        "CurrentInterestRate": 1.5,
+        "MinimumBalance": 5000,
+        "MonthlyFee": 5,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "SAVHOL",
+        "AccountTypeName": "Holiday Club",
+        "Category": "SAVINGS",
+        "TermMonths": 0,
+        "CurrentInterestRate": 0.5,
+        "MinimumBalance": 0,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "MMSTD",
+        "AccountTypeName": "Money Market",
+        "Category": "MONEYMARKET",
+        "TermMonths": 0,
+        "CurrentInterestRate": 3.1,
+        "MinimumBalance": 2500,
+        "MonthlyFee": 10,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "MMPREM",
+        "AccountTypeName": "Premier Money Market",
+        "Category": "MONEYMARKET",
+        "TermMonths": 0,
+        "CurrentInterestRate": 4.05,
+        "MinimumBalance": 25000,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "MMBUS",
+        "AccountTypeName": "Business Money Market",
+        "Category": "MONEYMARKET",
+        "TermMonths": 0,
+        "CurrentInterestRate": 3.6,
+        "MinimumBalance": 10000,
+        "MonthlyFee": 15,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD3M",
+        "AccountTypeName": "3-Month CD",
+        "Category": "CD",
+        "TermMonths": 3,
+        "CurrentInterestRate": 3.5,
+        "MinimumBalance": 500,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD6M",
+        "AccountTypeName": "6-Month CD",
+        "Category": "CD",
+        "TermMonths": 6,
+        "CurrentInterestRate": 4.1,
+        "MinimumBalance": 500,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD12M",
+        "AccountTypeName": "12-Month CD",
+        "Category": "CD",
+        "TermMonths": 12,
+        "CurrentInterestRate": 4.4,
+        "MinimumBalance": 500,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD18M",
+        "AccountTypeName": "18-Month CD",
+        "Category": "CD",
+        "TermMonths": 18,
+        "CurrentInterestRate": 4.25,
+        "MinimumBalance": 1000,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD24M",
+        "AccountTypeName": "24-Month CD",
+        "Category": "CD",
+        "TermMonths": 24,
+        "CurrentInterestRate": 4.0,
+        "MinimumBalance": 1000,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD36M",
+        "AccountTypeName": "36-Month CD",
+        "Category": "CD",
+        "TermMonths": 36,
+        "CurrentInterestRate": 3.85,
+        "MinimumBalance": 1000,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      },
+      {
+        "AccountTypeCode": "CD60M",
+        "AccountTypeName": "60-Month CD",
+        "Category": "CD",
+        "TermMonths": 60,
+        "CurrentInterestRate": 3.7,
+        "MinimumBalance": 1000,
+        "MonthlyFee": 0,
+        "OverdraftAllowed": false
+      }
+    ],
+    "TransactionType": [
+      {
+        "TransactionTypeCode": "POS",
+        "Description": "Point-of-sale purchase",
+        "Direction": "D",
+        "Channel": "POS",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "POSCB",
+        "Description": "Point-of-sale purchase with cash back",
+        "Direction": "D",
+        "Channel": "POS",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ECOM",
+        "Description": "Online card purchase",
+        "Direction": "D",
+        "Channel": "POS",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "CONTLS",
+        "Description": "Contactless card purchase",
+        "Direction": "D",
+        "Channel": "POS",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "RECUR",
+        "Description": "Recurring card payment",
+        "Direction": "D",
+        "Channel": "POS",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ATMWD",
+        "Description": "ATM withdrawal",
+        "Direction": "D",
+        "Channel": "ATM",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ATMWDF",
+        "Description": "ATM withdrawal, foreign",
+        "Direction": "D",
+        "Channel": "ATM",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ATMXFR",
+        "Description": "ATM transfer out",
+        "Direction": "D",
+        "Channel": "ATM",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHDB",
+        "Description": "ACH debit",
+        "Direction": "D",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHBILL",
+        "Description": "ACH bill payment",
+        "Direction": "D",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHLOAN",
+        "Description": "ACH loan payment",
+        "Direction": "D",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHTAX",
+        "Description": "ACH tax payment",
+        "Direction": "D",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHINS",
+        "Description": "ACH insurance premium",
+        "Direction": "D",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHUTIL",
+        "Description": "ACH utility payment",
+        "Direction": "D",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "WIREOUT",
+        "Description": "Outgoing wire",
+        "Direction": "D",
+        "Channel": "WIRE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "WIREINT",
+        "Description": "Outgoing international wire",
+        "Direction": "D",
+        "Channel": "WIRE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "XFER",
+        "Description": "Transfer to another account",
+        "Direction": "D",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "LOANPMT",
+        "Description": "Loan payment",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "CHKPAID",
+        "Description": "Check paid",
+        "Direction": "D",
+        "Channel": "BRANCH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "CASHWD",
+        "Description": "Teller cash withdrawal",
+        "Direction": "D",
+        "Channel": "BRANCH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "BILLPAY",
+        "Description": "Online bill payment",
+        "Direction": "D",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "P2POUT",
+        "Description": "Person-to-person payment sent",
+        "Direction": "D",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "FEEMNT",
+        "Description": "Monthly maintenance fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEEOD",
+        "Description": "Overdraft fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEENSF",
+        "Description": "Insufficient funds fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEEATM",
+        "Description": "ATM fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEEWIRE",
+        "Description": "Wire transfer fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEEFX",
+        "Description": "Foreign transaction fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEESTMT",
+        "Description": "Paper statement fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEESTOP",
+        "Description": "Stop payment fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "FEECARD",
+        "Description": "Card replacement fee",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": true
+      },
+      {
+        "TransactionTypeCode": "DBADJ",
+        "Description": "Debit adjustment",
+        "Direction": "D",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "PAYROLL",
+        "Description": "Payroll direct deposit",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHCR",
+        "Description": "ACH credit",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHGOV",
+        "Description": "Government benefit",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHTAXR",
+        "Description": "Tax refund",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHPENS",
+        "Description": "Pension payment",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "WIREIN",
+        "Description": "Incoming wire",
+        "Direction": "C",
+        "Channel": "WIRE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "WIREINTI",
+        "Description": "Incoming international wire",
+        "Direction": "C",
+        "Channel": "WIRE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "XFERIN",
+        "Description": "Transfer from another account",
+        "Direction": "C",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "DEPCASH",
+        "Description": "Cash deposit",
+        "Direction": "C",
+        "Channel": "BRANCH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "DEPCHK",
+        "Description": "Check deposit",
+        "Direction": "C",
+        "Channel": "BRANCH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "DEPMOB",
+        "Description": "Mobile check deposit",
+        "Direction": "C",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "DEPATM",
+        "Description": "ATM deposit",
+        "Direction": "C",
+        "Channel": "ATM",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "INTPAID",
+        "Description": "Interest paid",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "REFUND",
+        "Description": "Merchant refund",
+        "Direction": "C",
+        "Channel": "POS",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "P2PIN",
+        "Description": "Person-to-person payment received",
+        "Direction": "C",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "REVFEE",
+        "Description": "Fee reversal",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "CRADJ",
+        "Description": "Credit adjustment",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "DIVID",
+        "Description": "Dividend credit",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "RWDS",
+        "Description": "Rewards redemption",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "CBACK",
+        "Description": "Chargeback credit",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "LOANDSB",
+        "Description": "Loan disbursement",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "CDMAT",
+        "Description": "CD maturity credit",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ZELLEIN",
+        "Description": "Instant payment received",
+        "Direction": "C",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "VENMOIN",
+        "Description": "Wallet transfer in",
+        "Direction": "C",
+        "Channel": "ONLINE",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "ACHSAL",
+        "Description": "Salary advance",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "INSCLM",
+        "Description": "Insurance claim payment",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "GRANT",
+        "Description": "Grant payment",
+        "Direction": "C",
+        "Channel": "ACH",
+        "IsFee": false
+      },
+      {
+        "TransactionTypeCode": "MISCCR",
+        "Description": "Miscellaneous credit",
+        "Direction": "C",
+        "Channel": "INTERNAL",
+        "IsFee": false
+      }
+    ],
+    "MerchantCategory": [
+      {
+        "CategoryGroup": "Airlines",
+        "minimumCode": 3000,
+        "maximumCode": 3299
+      },
+      {
+        "CategoryGroup": "Car Rental",
+        "minimumCode": 3351,
+        "maximumCode": 3441
+      },
+      {
+        "CategoryGroup": "Lodging",
+        "minimumCode": 3501,
+        "maximumCode": 3999
+      },
+      {
+        "CategoryGroup": "Transportation",
+        "minimumCode": 4000,
+        "maximumCode": 4799
+      },
+      {
+        "CategoryGroup": "Utilities",
+        "minimumCode": 4800,
+        "maximumCode": 4999
+      },
+      {
+        "CategoryGroup": "Wholesale",
+        "minimumCode": 5000,
+        "maximumCode": 5199
+      },
+      {
+        "CategoryGroup": "Grocery",
+        "minimumCode": 5200,
+        "maximumCode": 5499
+      },
+      {
+        "CategoryGroup": "Automotive",
+        "minimumCode": 5500,
+        "maximumCode": 5599
+      },
+      {
+        "CategoryGroup": "Apparel",
+        "minimumCode": 5600,
+        "maximumCode": 5699
+      },
+      {
+        "CategoryGroup": "Home Furnishing",
+        "minimumCode": 5700,
+        "maximumCode": 5799
+      },
+      {
+        "CategoryGroup": "Restaurants",
+        "minimumCode": 5800,
+        "maximumCode": 5899
+      },
+      {
+        "CategoryGroup": "Retail",
+        "minimumCode": 5900,
+        "maximumCode": 5999
+      },
+      {
+        "CategoryGroup": "Financial",
+        "minimumCode": 6000,
+        "maximumCode": 6399
+      },
+      {
+        "CategoryGroup": "Personal Services",
+        "minimumCode": 7000,
+        "maximumCode": 7299
+      },
+      {
+        "CategoryGroup": "Business Services",
+        "minimumCode": 7300,
+        "maximumCode": 7399
+      },
+      {
+        "CategoryGroup": "Repair Services",
+        "minimumCode": 7500,
+        "maximumCode": 7699
+      },
+      {
+        "CategoryGroup": "Entertainment",
+        "minimumCode": 7800,
+        "maximumCode": 7999
+      },
+      {
+        "CategoryGroup": "Medical",
+        "minimumCode": 8000,
+        "maximumCode": 8099
+      },
+      {
+        "CategoryGroup": "Professional Services",
+        "minimumCode": 8100,
+        "maximumCode": 8999
+      },
+      {
+        "CategoryGroup": "Government",
+        "minimumCode": 9000,
+        "maximumCode": 9999
+      }
+    ]
+  }
+}

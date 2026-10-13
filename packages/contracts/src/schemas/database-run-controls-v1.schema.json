@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "db-run-controls.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "apwCount",
+    "biwEnabled",
+    "biCluster",
+    "requested",
+    "sources",
+    "capabilityReference"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "db-run-controls.v1"
+    },
+    "apwCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9
+    },
+    "biwEnabled": {
+      "type": "boolean"
+    },
+    "biCluster": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "mode": {
+              "const": "inherit"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "requestedMiB", "nativeKiB"],
+          "properties": {
+            "mode": {
+              "const": "override"
+            },
+            "requestedMiB": {
+              "type": "number",
+              "minimum": 0.015625,
+              "maximum": 255.984375,
+              "multipleOf": 0.015625
+            },
+            "nativeKiB": {
+              "type": "integer",
+              "minimum": 16,
+              "maximum": 262128,
+              "multipleOf": 16
+            }
+          }
+        }
+      ]
+    },
+    "requested": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apwCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "biwEnabled": {
+          "type": "boolean"
+        },
+        "biClusterSizeMiB": {
+          "type": "number",
+          "minimum": 0.015625,
+          "maximum": 255.984375,
+          "multipleOf": 0.015625
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apwCount", "biwEnabled", "biClusterSizeMiB"],
+      "properties": {
+        "apwCount": {
+          "enum": ["queued", "scenario", "default", "seed"]
+        },
+        "biwEnabled": {
+          "enum": ["queued", "scenario", "default", "seed"]
+        },
+        "biClusterSizeMiB": {
+          "enum": ["queued", "scenario", "default", "seed"]
+        }
+      }
+    },
+    "capabilityReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "features", "registryVersion", "verification"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "features": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "registryVersion": {
+          "const": "run-controls-12.8.v1"
+        },
+        "verification": {
+          "const": "pending_native"
+        },
+        "preflightEvidenceReference": {
+          "const": "run-context.v1.json#/requested/databaseRunControls"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namedLatchRequired", "observerProtocolVersion"],
+      "properties": {
+        "namedLatchRequired": {
+          "type": "boolean"
+        },
+        "observerProtocolVersion": {
+          "const": 4
+        }
+      }
+    }
+  }
+}

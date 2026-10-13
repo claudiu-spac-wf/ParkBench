@@ -1,0 +1,115 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-customer-document",
+  "version": 1,
+  "procedure": "Workloads/Write/CustomerDocument.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "CustomerDocument",
+      "minimumRows": 0
+    },
+    {
+      "name": "Country",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    },
+    {
+      "name": "Employee",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "CustomerDocument.CustomerDocumentId:int64",
+    "CustomerDocument.RandomInt10:integer",
+    "CustomerDocument.RandomInt100:integer",
+    "CustomerDocument.RandomInt1000:integer",
+    "CustomerDocument.CreatedAt:datetime-tz",
+    "CustomerDocument.CustomerId:int64",
+    "CustomerDocument.DocumentKind:character",
+    "CustomerDocument.DocumentNumberMasked:character",
+    "CustomerDocument.IssuingCountryCode:character",
+    "CustomerDocument.IssueDate:date",
+    "CustomerDocument.ExpiryDate:date",
+    "CustomerDocument.VerificationStatus:character",
+    "CustomerDocument.VerifiedByEmployeeId:int64",
+    "CustomerDocument.MimeType:character",
+    "CustomerDocument.FileName:character",
+    "CustomerDocument.FileSizeBytes:int64",
+    "CustomerDocument.Content:blob",
+    "CustomerDocument.UpdatedAt:datetime-tz",
+    "Customer.CustomerId:int64",
+    "Country.CountryCode:character",
+    "Employee.EmployeeId:int64"
+  ],
+  "requiredIndexes": [
+    "CustomerDocument.PkCustomerDocument",
+    "CustomerDocument.IxRandomInt10",
+    "CustomerDocument.IxRandomInt100",
+    "CustomerDocument.IxRandomInt1000",
+    "CustomerDocument.IxCustomer",
+    "CustomerDocument.IxExpiry",
+    "Customer.PkCustomer",
+    "Country.UxCountryCode",
+    "Employee.PkEmployee"
+  ],
+  "requiredSequences": [
+    "SeqCustomerDocumentId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "CustomerDocument"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "CustomerDocument"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "CustomerDocument"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

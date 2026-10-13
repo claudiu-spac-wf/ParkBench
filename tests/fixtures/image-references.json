@@ -1,0 +1,34 @@
+{
+  "accepted": [
+    {
+      "reference": "parkbench/loadgen:local-test",
+      "identityStrength": "tag"
+    },
+    {
+      "reference": "parkbench/loadgen:local-test@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "identityStrength": "tag"
+    },
+    {
+      "reference": "registry.example:5443/team/image:2026.09",
+      "identityStrength": "tag"
+    },
+    {
+      "reference": "parkbench/loadgen:local-test@sha256:not-a-digest",
+      "identityStrength": "tag"
+    },
+    {
+      "reference": "parkbench/loadgen:local-test@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "identityStrength": "tag"
+    }
+  ],
+  "rejected": [
+    {
+      "reference": "parkbench/loadgen:latest",
+      "code": "image_reference_latest_forbidden"
+    },
+    {
+      "reference": "parkbench/loadgen",
+      "code": "image_reference_tag_required"
+    }
+  ]
+}

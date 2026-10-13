@@ -1,0 +1,9 @@
+**/node_modules/
+**/dist/
+**/build/
+coverage/
+package-lock.json
+deploy/grafana/dashboards/**/*.json
+deploy/prometheus/targets/
+test-results/
+.playwright/

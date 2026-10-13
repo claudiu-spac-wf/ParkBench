@@ -1,0 +1,2582 @@
+[
+  {
+    "uid": "parkbench-benchmark-overview",
+    "panelId": 1,
+    "title": "Workload p95 latency",
+    "description": null,
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {},
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(parkbench_workload_request_duration_seconds_bucket{experiment_id=~\"$experiment_id\",run_id=~\"$run_id\",phase=~\"$phase\"}[1m])))",
+        "legendFormat": "{{operation}}"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-benchmark-overview",
+    "panelId": 2,
+    "title": "Workload requests per second",
+    "description": null,
+    "type": "timeseries",
+    "unit": "req/s",
+    "overrides": [],
+    "options": {},
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by (operation) (rate(parkbench_workload_requests_total{experiment_id=~\"$experiment_id\",run_id=~\"$run_id\",phase=~\"$phase\"}[1m]))",
+        "legendFormat": "{{operation}}"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-benchmark-overview",
+    "panelId": 3,
+    "title": "Host and database disk reads",
+    "description": null,
+    "type": "timeseries",
+    "unit": "Bps",
+    "overrides": [],
+    "options": {},
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(node_disk_read_bytes_total{run_id=~\"$run_id\",phase=~\"$phase\"}[1m])",
+        "legendFormat": "host {{device}}"
+      },
+      {
+        "expr": "sum(rate(container_fs_reads_bytes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "database"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-benchmark-overview",
+    "panelId": 4,
+    "title": "Table operations per second",
+    "description": null,
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {},
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by (table, operation) (rate(parkbench_openedge_db_table_operations_total{run_id=~\"$run_id\",phase=~\"$phase\",table!=\"\"}[1m]))",
+        "legendFormat": "{{table}} {{operation}}"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-benchmark-overview",
+    "panelId": 5,
+    "title": "OpenEdge metric availability",
+    "description": null,
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {},
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_metric_available{run_id=~\"$run_id\",phase=~\"$phase\"}",
+        "legendFormat": "{{family}} {{measurement}} {{reason}}"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-benchmark-overview",
+    "panelId": 6,
+    "title": "Observer incomplete samples",
+    "description": null,
+    "type": "stat",
+    "unit": "short",
+    "overrides": [],
+    "options": {},
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_observer_incomplete{run_id=~\"$run_id\",phase=~\"$phase\"}"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 1,
+    "title": "Configured buffer capacity by pool",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_buffer_pool_configured_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 2,
+    "title": "Active buffers by pool",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_buffer_pool_active_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "active {{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 3,
+    "title": "Logical reads per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(pool) (rate(parkbench_openedge_db_buffer_pool_logical_reads_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{pool}} logical",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 4,
+    "title": "OS reads per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(pool) (rate(parkbench_openedge_db_buffer_pool_os_reads_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 5,
+    "title": "Cumulative cache hit ratio",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "percentunit",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_buffer_pool_cumulative_cache_hit_ratio{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 6,
+    "title": "Database measurement availability",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_metric_available{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\",family=\"buffer_pool\"}",
+        "legendFormat": "{{measurement}} {{pool}} {{reason}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 7,
+    "title": "Table CRUD operations per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(table,operation) (rate(parkbench_openedge_db_table_operations_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\",table!=\"\"}[1m]))",
+        "legendFormat": "{{table}} {{operation}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 8,
+    "title": "Index operations per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(index,operation) (rate(parkbench_openedge_db_index_operations_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\",index=~\".+\"}[1m]))",
+        "legendFormat": "{{index}} {{operation}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 9,
+    "title": "Table and index measurement availability",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_metric_available{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\",family=~\"table_activity|index_activity\"}",
+        "legendFormat": "{{family}} {{measurement}} {{table}}{{index}} {{operation}} {{reason}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 10,
+    "title": "Database CRUD operations per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(operation) (rate(parkbench_openedge_db_database_table_operations_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{operation}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 11,
+    "title": "Record locks and record lock waits per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_database_record_locks_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]) + rate(parkbench_openedge_db_database_record_lock_waits_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "database",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 12,
+    "title": "Buffer lock waits per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_database_buffer_lock_waits_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "database",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 13,
+    "title": "Database blocks read and written per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_database_blocks_read_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]) + rate(parkbench_openedge_db_database_blocks_written_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "database",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 14,
+    "title": "Index and data blocks read per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_index_blocks_read_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]) + rate(parkbench_openedge_db_data_blocks_read_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "database",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 15,
+    "title": "Index and data blocks written per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_index_blocks_written_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]) + rate(parkbench_openedge_db_data_blocks_written_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "database",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 16,
+    "title": "Checkpoint buffers flushed per second",
+    "description": "Filtered to the selected run and phase; an unavailable measurement is visible in the availability panel.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_database_checkpoint_flushed_buffers_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "database",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 17,
+    "title": "Free buffers by pool",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_buffer_pool_free_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 18,
+    "title": "Logical writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(pool) (rate(parkbench_openedge_db_buffer_pool_logical_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 19,
+    "title": "OS writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(pool) (rate(parkbench_openedge_db_buffer_pool_os_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 20,
+    "title": "Deferred writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(pool) (rate(parkbench_openedge_db_buffer_pool_deferred_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-activity",
+    "panelId": 21,
+    "title": "LRU skips per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(pool) (rate(parkbench_openedge_db_buffer_pool_lru_skips_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{pool}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-parameters",
+    "panelId": 1,
+    "title": "Database startup parameter snapshots",
+    "description": "One row per selected run, database, and nondefault parameter. Values are plaintext from the primary startup snapshot; they are not live settings.",
+    "type": "table",
+    "unit": "none",
+    "overrides": [
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Snapshot time"
+        },
+        "properties": [
+          {
+            "id": "unit",
+            "value": "dateTimeAsIso"
+          }
+        ]
+      }
+    ],
+    "options": {
+      "showHeader": true,
+      "cellHeight": "sm",
+      "footer": {
+        "show": false
+      }
+    },
+    "transformations": [
+      {
+        "id": "organize",
+        "options": {
+          "excludeByName": {
+            "Time": true,
+            "__name__": true
+          },
+          "renameByName": {
+            "experiment_id": "Experiment",
+            "run_id": "Run",
+            "database_name": "Database",
+            "parameter": "Parameter",
+            "display_value": "Startup value",
+            "value_status": "Value status",
+            "Value": "Snapshot time"
+          }
+        }
+      }
+    ],
+    "targets": [
+      {
+        "expr": "max by (experiment_id,run_id,database_name,parameter,display_value,value_status) (last_over_time(parkbench_openedge_db_parameter_snapshot_info{experiment_id=~\"$experiment_id\",run_id=~\"$run_id\",phase=~\"$phase\"}[$__range])) * on (experiment_id,run_id,database_name) group_left() max by (experiment_id,run_id,database_name) (last_over_time(parkbench_openedge_db_parameter_snapshot_timestamp_seconds{experiment_id=~\"$experiment_id\",run_id=~\"$run_id\",phase=~\"$phase\"}[$__range])) * 1000",
+        "instant": true,
+        "format": "table"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-parameters",
+    "panelId": 2,
+    "title": "Snapshot status and evidence gaps",
+    "description": "empty means a complete _DbParams read found no nondefault values. partial and unavailable are evidence gaps. No status series means a pre-feature run or no samples in the selected time window.",
+    "type": "table",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "showHeader": true,
+      "cellHeight": "sm",
+      "footer": {
+        "show": false
+      }
+    },
+    "transformations": [
+      {
+        "id": "organize",
+        "options": {
+          "excludeByName": {
+            "Time": true,
+            "Value": true
+          },
+          "renameByName": {
+            "experiment_id": "Experiment",
+            "run_id": "Run",
+            "database_name": "Database",
+            "state": "Snapshot status"
+          }
+        }
+      }
+    ],
+    "targets": [
+      {
+        "expr": "max by (experiment_id,run_id,database_name,state) (last_over_time(parkbench_openedge_db_parameter_snapshot_status{experiment_id=~\"$experiment_id\",run_id=~\"$run_id\",phase=~\"$phase\"}[$__range]))",
+        "instant": true,
+        "format": "table"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-parameters",
+    "panelId": 3,
+    "title": "Numeric startup parameter comparison",
+    "description": "Finite numeric values for selected startup snapshots; text values remain in the main table.",
+    "type": "table",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "showHeader": true,
+      "cellHeight": "sm",
+      "footer": {
+        "show": false
+      }
+    },
+    "transformations": [
+      {
+        "id": "organize",
+        "options": {
+          "excludeByName": {
+            "Time": true
+          },
+          "renameByName": {
+            "experiment_id": "Experiment",
+            "run_id": "Run",
+            "database_name": "Database",
+            "parameter": "Parameter",
+            "Value": "Numeric value"
+          }
+        }
+      }
+    ],
+    "targets": [
+      {
+        "expr": "max by (experiment_id,run_id,database_name,parameter) (last_over_time(parkbench_openedge_db_parameter_snapshot_numeric{experiment_id=~\"$experiment_id\",run_id=~\"$run_id\",phase=~\"$phase\"}[$__range]))",
+        "instant": true,
+        "format": "table"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-parameters",
+    "panelId": 4,
+    "title": "Missing data guidance",
+    "description": null,
+    "type": "text",
+    "unit": "none",
+    "overrides": [],
+    "options": {
+      "mode": "markdown",
+      "content": "**No nondefault startup parameters** applies only when the status table says `empty`. `partial` and `unavailable` indicate an evidence gap. If no status row appears, the run predates this capture or the selected time range has no sample; inspect saved run evidence. Unknown values are labeled `unknown` in the main table."
+    },
+    "transformations": [],
+    "targets": []
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 1,
+    "title": "Checkpoint count per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_checkpoint_events_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 2,
+    "title": "Latest checkpoint duration",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_duration_seconds{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 3,
+    "title": "Latest BI write duration",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_bi_write_duration_seconds{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 4,
+    "title": "Latest database write duration",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_database_write_duration_seconds{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 5,
+    "title": "Latest checkpoint sync duration",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_sync_duration_seconds{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 6,
+    "title": "Latest checkpoint buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 7,
+    "title": "Latest checkpoint dirty buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_dirty_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 8,
+    "title": "Latest checkpoint flushed buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_flushed_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 9,
+    "title": "Latest checkpoint APW queue buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_apw_queue_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 10,
+    "title": "Latest checkpoint checkpoint-queue buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_checkpoint_queue_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 11,
+    "title": "Latest checkpoint APW scan buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_checkpoint_last_apw_scan_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 12,
+    "title": "BI blocks written per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_bi_blocks_written_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 13,
+    "title": "BI bytes written per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "Bps",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_bi_bytes_written_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 14,
+    "title": "BI I/O operations per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_bi_io_operations_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 15,
+    "title": "Logical BI file size",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "bytes",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_file_size_bytes{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 16,
+    "title": "Logical BI file blocks",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_file_size_blocks{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 17,
+    "title": "BI block size",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "bytes",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_block_size_bytes{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 18,
+    "title": "BI cluster size",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "bytes",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_cluster_size_bytes{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 19,
+    "title": "BI cluster count",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_cluster_count{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 20,
+    "title": "Configured BI buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 21,
+    "title": "Full BI buffers",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_full_buffers{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 22,
+    "title": "Current BI cluster free bytes",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "bytes",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_current_cluster_free_bytes{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 23,
+    "title": "Buffered BI I/O enabled",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_bi_buffered_io_enabled{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 24,
+    "title": "Configured -bithold recovery threshold",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "bytes",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_recovery_log_threshold_bytes{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 25,
+    "title": "APW queue writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_queue_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 26,
+    "title": "APW buffers scanned per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_buffers_scanned_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 27,
+    "title": "APW buffers checkpointed per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_buffers_checkpointed_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 28,
+    "title": "APW checkpoint-queue writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_checkpoint_queue_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 29,
+    "title": "APW database writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_database_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 30,
+    "title": "APW checkpoint flushes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_checkpoint_flushes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 31,
+    "title": "APW buffers marked per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_buffers_marked_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 32,
+    "title": "APW scan cycles per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_scan_cycles_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 33,
+    "title": "APW scan writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_scan_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 34,
+    "title": "All-process database writes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_apw_all_process_database_writes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 35,
+    "title": "APW uptime",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_apw_uptime_seconds{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 36,
+    "title": "Transaction commits per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_transaction_commits_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 37,
+    "title": "Transaction rollbacks per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_transaction_rollbacks_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 38,
+    "title": "Active transactions",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_transaction_active_count{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 39,
+    "title": "Oldest active transaction age",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_transaction_oldest_active_age_seconds{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 40,
+    "title": "Latch busy events per second (aggregate)",
+    "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_latch_busy_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 41,
+    "title": "Latch locks per second (aggregate)",
+    "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_latch_locks_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 42,
+    "title": "Latch waits per second (aggregate)",
+    "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_latch_waits_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 43,
+    "title": "Latch spins per second (aggregate)",
+    "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_latch_spins_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 44,
+    "title": "Latch lock time per second (aggregate)",
+    "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_latch_lock_duration_seconds_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 45,
+    "title": "Latch wait-or-spin time per second (aggregate)",
+    "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_latch_wait_or_spin_duration_seconds_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 46,
+    "title": "Lock requests per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(operation) (rate(parkbench_openedge_db_lock_requests_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{operation}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 47,
+    "title": "Lock grants per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(operation) (rate(parkbench_openedge_db_lock_grants_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{operation}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 48,
+    "title": "Lock waits per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(operation) (rate(parkbench_openedge_db_lock_waits_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m]))",
+        "legendFormat": "{{operation}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 49,
+    "title": "Exclusive find grants per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_lock_find_exclusive_grants_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 50,
+    "title": "Share find grants per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_lock_find_share_grants_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 51,
+    "title": "Lock cancellations per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_lock_cancellations_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 52,
+    "title": "Lock downgrades per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_lock_downgrades_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 53,
+    "title": "Redundant lock grants per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "ops/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "rate(parkbench_openedge_db_lock_redundant_grants_total{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}[1m])",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-database-recovery-concurrency",
+    "panelId": 54,
+    "title": "OpenEdge measurement availability and reason",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "short",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_db_metric_available{run_id=~\"$run_id\",phase=~\"$phase\",service=\"database\"}",
+        "legendFormat": "{{family}} {{measurement}} {{reason}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 1,
+    "title": "PAS requests per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "req/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(replica) (rate(parkbench_openedge_pas_requests_total{run_id=~\"$run_id\",phase=~\"$phase\",replica=~\"$replica\"}[1m]))",
+        "legendFormat": "replica {{replica}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 2,
+    "title": "PAS failed requests per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "req/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(replica) (rate(parkbench_openedge_pas_failed_requests_total{run_id=~\"$run_id\",phase=~\"$phase\",replica=~\"$replica\"}[1m]))",
+        "legendFormat": "replica {{replica}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 3,
+    "title": "PAS POST errors per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "req/s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(replica) (rate(parkbench_openedge_pas_post_errors_total{run_id=~\"$run_id\",phase=~\"$phase\",replica=~\"$replica\"}[1m]))",
+        "legendFormat": "replica {{replica}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 4,
+    "title": "Average ABL processing time",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "parkbench_openedge_pas_avg_abl_processing_seconds{run_id=~\"$run_id\",phase=~\"$phase\",replica=~\"$replica\"}",
+        "legendFormat": "replica {{replica}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 5,
+    "title": "CPU seconds per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "s",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(service) (rate(container_cpu_usage_seconds_total{run_id=~\"$run_id\",phase=~\"$phase\",service=~\"$replica\"}[1m]))",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 6,
+    "title": "Memory working set",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "bytes",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(service) (container_memory_working_set_bytes{run_id=~\"$run_id\",phase=~\"$phase\",service=~\"$replica\"})",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 7,
+    "title": "Disk read and write bytes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "Bps",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(service) (rate(container_fs_reads_bytes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=~\"$replica\"}[1m]) + rate(container_fs_writes_bytes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=~\"$replica\"}[1m]))",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  },
+  {
+    "uid": "parkbench-pas-instances",
+    "panelId": 8,
+    "title": "Network receive and transmit bytes per second",
+    "description": "Filtered to the selected run and phase.",
+    "type": "timeseries",
+    "unit": "Bps",
+    "overrides": [],
+    "options": {
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi",
+        "sort": "desc"
+      }
+    },
+    "transformations": [],
+    "targets": [
+      {
+        "expr": "sum by(service) (rate(container_network_receive_bytes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=~\"$replica\"}[1m]) + rate(container_network_transmit_bytes_total{run_id=~\"$run_id\",phase=~\"$phase\",service=~\"$replica\"}[1m]))",
+        "legendFormat": "{{service}}",
+        "instant": false,
+        "format": "time_series"
+      }
+    ]
+  }
+]

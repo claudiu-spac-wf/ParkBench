@@ -1,0 +1,99 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-interest-rate-history",
+  "version": 1,
+  "procedure": "Workloads/Write/InterestRateHistory.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "InterestRateHistory",
+      "minimumRows": 0
+    },
+    {
+      "name": "AccountType",
+      "minimumRows": 0
+    },
+    {
+      "name": "Employee",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "InterestRateHistory.InterestRateHistoryId:int64",
+    "InterestRateHistory.RandomInt10:integer",
+    "InterestRateHistory.RandomInt100:integer",
+    "InterestRateHistory.RandomInt1000:integer",
+    "InterestRateHistory.CreatedAt:datetime-tz",
+    "InterestRateHistory.AccountTypeId:int64",
+    "InterestRateHistory.EffectiveDate:date",
+    "InterestRateHistory.InterestRate:decimal",
+    "InterestRateHistory.ChangedByEmployeeId:int64",
+    "AccountType.AccountTypeId:int64",
+    "Employee.EmployeeId:int64"
+  ],
+  "requiredIndexes": [
+    "InterestRateHistory.PkInterestRateHistory",
+    "InterestRateHistory.IxRandomInt10",
+    "InterestRateHistory.IxRandomInt100",
+    "InterestRateHistory.IxRandomInt1000",
+    "InterestRateHistory.UxTypeEffective",
+    "AccountType.PkAccountType",
+    "Employee.PkEmployee"
+  ],
+  "requiredSequences": [
+    "SeqInterestRateHistoryId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "InterestRateHistory"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "InterestRateHistory"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "InterestRateHistory"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

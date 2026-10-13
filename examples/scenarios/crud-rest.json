@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "scenario.v2",
+  "id": "crud-rest",
+  "version": "1.0.0",
+  "name": "CRUD REST baseline",
+  "description": "Small deterministic CRUD workload for local demonstrations.",
+  "target": {
+    "restPath": "/api/crud",
+    "healthPath": "/health",
+    "databaseService": "database",
+    "pasService": "pas",
+    "pasReplicas": 1,
+    "timeoutMs": 3000
+  },
+  "workload": {
+    "operations": [
+      {
+        "id": "read",
+        "method": "GET",
+        "path": "/api/crud",
+        "weight": 6,
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "create",
+        "method": "POST",
+        "path": "/api/crud",
+        "weight": 2,
+        "bodyTemplate": {
+          "name": "generated"
+        },
+        "expectedStatus": [
+          201
+        ]
+      },
+      {
+        "id": "update",
+        "method": "PUT",
+        "path": "/api/crud/1",
+        "weight": 1,
+        "bodyTemplate": {
+          "name": "updated"
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "delete",
+        "method": "DELETE",
+        "path": "/api/crud/1",
+        "weight": 1,
+        "expectedStatus": [
+          204,
+          200
+        ]
+      }
+    ],
+    "load": {
+      "mode": "constant-concurrency",
+      "concurrency": 2,
+      "maxInFlightPerWorker": 1,
+      "seed": 42
+    }
+  },
+  "phases": {
+    "warmupSeconds": 30,
+    "measurementSeconds": 120,
+    "cooldownSeconds": 10
+  },
+  "observers": [
+    {
+      "id": "core",
+      "kind": "core",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://loadgen:9100"
+      }
+    },
+    {
+      "id": "openedge-db",
+      "kind": "openedge_db_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://db-observer:9100"
+      }
+    },
+    {
+      "id": "openedge-pas",
+      "kind": "openedge_pas_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://pas-observer:9100"
+      }
+    },
+    {
+      "id": "files",
+      "kind": "file_sampler_v1",
+      "required": false,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://file-sampler:9100",
+        "path": "/var/lib/openedge"
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+import assert from 'node:assert/strict';import {it} from 'node:test';import fs from 'node:fs';
+import {encodeDatabaseArgv} from '../../packages/compose-runner/src/database-argv';
+it('POSIX entrypoint loads owned argv in its current shell without eval or STARTUP_WORDS splitting',()=>{const shell=fs.readFileSync('docker/openedge-db/entrypoint.sh','utf8');assert.match(shell,/while IFS= read -r/);assert.match(shell,/set -- "\$@" "\$/);assert.doesNotMatch(shell,/for assignment in \$\{PARKBENCH_OPENEDGE_DB_STARTUP_WORDS/);assert.doesNotMatch(shell,/\beval\b/);assert.equal(encodeDatabaseArgv(['-ssj','0']),'-ssj\n0\n');});

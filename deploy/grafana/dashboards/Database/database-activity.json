@@ -1,0 +1,2129 @@
+{
+  "uid": "parkbench-database-activity",
+  "title": "Database Activity",
+  "tags": [
+    "parkbench",
+    "activity"
+  ],
+  "description": "One run: real clock time (UTC). Several runs: runs are aligned on elapsed time since measurement start, which reads 00:00:00 on the axis; times before it are warmup.",
+  "editable": false,
+  "graphTooltip": 1,
+  "timezone": "utc",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "run_id",
+        "label": "Runs",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "label_values(parkbench_run_window, run_id)",
+        "query": {
+          "query": "label_values(parkbench_run_window, run_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "multi": true,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 0,
+        "current": {},
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "phase",
+        "label": "Phase",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "query": {
+          "query": "label_values(parkbench_run_phase_boundary{run_id=~\"$run_id\"}, phase)",
+          "refId": "filter"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "refresh": 1
+      },
+      {
+        "type": "query",
+        "name": "table",
+        "label": "Table",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "query": {
+          "query": "label_values(parkbench_openedge_db_table_operations_total{run_id=~\"$run_id\"}, table)",
+          "refId": "filter"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "refresh": 1
+      },
+      {
+        "type": "query",
+        "name": "index",
+        "label": "Index",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "query": {
+          "query": "label_values(parkbench_openedge_db_index_operations_total{run_id=~\"$run_id\"}, index)",
+          "refId": "filter"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "refresh": 1
+      },
+      {
+        "type": "query",
+        "name": "notice_time_range",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_time_range"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "notice_excluded_runs",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_excluded_runs"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "constant",
+        "name": "parkbench_web_url",
+        "hide": 2,
+        "query": "http://127.0.0.1:13002",
+        "current": {
+          "text": "http://127.0.0.1:13002",
+          "value": "http://127.0.0.1:13002"
+        },
+        "options": [
+          {
+            "text": "http://127.0.0.1:13002",
+            "value": "http://127.0.0.1:13002",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "disk_exclude",
+        "hide": 2,
+        "query": "(loop|ram|zram|fd|sr|dm-|md).*",
+        "current": {
+          "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+          "value": "(loop|ram|zram|fd|sr|dm-|md).*"
+        },
+        "options": [
+          {
+            "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "value": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "interface_exclude",
+        "hide": 2,
+        "query": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+        "current": {
+          "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+          "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*"
+        },
+        "options": [
+          {
+            "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Run phases",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "expr": "parkbench_run_phase_boundary{run_id=~\"$run_id\"}",
+        "step": "",
+        "titleFormat": "{{run_id}}: {{phase}} {{edge}}",
+        "textFormat": "",
+        "tagKeys": "phase,edge",
+        "useValueForTime": false
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Host Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Host Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-host-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Platform Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Platform Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-platform-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Summary",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Summary with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-summary",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "DB Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open DB Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-db-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database BI & APW data",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database BI & APW data with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-recovery-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database transactions, locks, and latches",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database transactions, locks, and latches with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Parameters",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Parameters with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-parameters",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "PAS Instances",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open PAS Instances with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-pas-instances",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Reset range to selected runs",
+      "type": "link",
+      "icon": "sync",
+      "tooltip": "Recalculate the time range and mode for the selected runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-activity&reset=1",
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Notices",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "title": "Time range notice",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.mode_mismatch",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_time_range:text}"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Excluded runs",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.excluded_runs",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_excluded_runs:text}"
+      }
+    },
+    {
+      "id": 4,
+      "type": "row",
+      "title": "Table overview",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "Table os_read activity",
+      "description": "Diagnostic activity over the displayed range. Ten fixed names and complementary display Other; the full detail table contains every name.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "activity.table_os_read",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"os_read\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Table delete activity",
+      "description": "Diagnostic activity over the displayed range. Ten fixed names and complementary display Other; the full detail table contains every name.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "activity.table_delete",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"delete\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Table update activity",
+      "description": "Diagnostic activity over the displayed range. Ten fixed names and complementary display Other; the full detail table contains every name.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "activity.table_update",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"update\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Table create activity",
+      "description": "Diagnostic activity over the displayed range. Ten fixed names and complementary display Other; the full detail table contains every name.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "activity.table_create",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"create\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Table write activity",
+      "description": "Diagnostic activity over the displayed range. Ten fixed names and complementary display Other; the full detail table contains every name.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "activity.table_write",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"write\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Table read activity",
+      "description": "Diagnostic activity over the displayed range. Ten fixed names and complementary display Other; the full detail table contains every name.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "activity.table_read",
+        "category": "table_rate",
+        "split": "none",
+        "breakdown": "table",
+        "topN": {
+          "n": 10,
+          "partitionBy": "run_id",
+          "key": "table",
+          "otherLabel": "Other",
+          "tieBreak": "value_then_name",
+          "excludeZero": true
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": "records/s"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"read\",view=\"rate\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{table}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "row",
+      "title": "Buffer pools",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 12,
+          "title": "Configured buffer capacity by pool",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 29,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.1",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 1
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_configured_buffers\",view=\"gauge\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "title": "Active buffers by pool",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 29,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.2",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 2
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_active_buffers\",view=\"gauge\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+              "legendFormat": "{{run_id}} active {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "title": "Logical reads per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 37,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.3",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 3
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_logical_reads_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{pool}} logical",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "title": "OS reads per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 37,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.4",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 4
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_os_reads_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "title": "Cumulative cache hit ratio",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 45,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.5",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 5
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"cumulative_hit_ratio\",view=\"cumulative\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "title": "Free buffers by pool",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 45,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.17",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 17
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"free_capacity\",view=\"gauge\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "title": "Logical writes per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 53,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.18",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 18
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_logical_writes_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "title": "OS writes per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 53,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.19",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 19
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_os_writes_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "title": "Deferred writes per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 61,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.20",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 20
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_deferred_writes_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "title": "LRU skips per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 61,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.21",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 21
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"buffer_pool_lru_skips_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{pool}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "row",
+      "title": "Objects",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 23,
+          "title": "Full table CRUD operation detail",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 70,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.7",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 7
+            }
+          },
+          "type": "table",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "transformations": [],
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",table=~\"$table\",operation=~\"read|create|update|delete\"}",
+              "legendFormat": "{{run_id}} {{table}} {{operation}}",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",table=~\"$table\",operation=~\"os_read\"}",
+              "legendFormat": "{{run_id}} {{table}} {{operation}}",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "title": "Index operations per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 70,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.8",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 8
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",index=~\".+\"}",
+              "legendFormat": "{{run_id}} {{index}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "title": "Database CRUD operations per second",
+          "description": "Filtered to the selected run and phase; collection status remains available in the saved run summary.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 78,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.10",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 10
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"database_table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "type": "row",
+      "title": "Block I/O",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 86,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 27,
+          "title": "Database blocks read and written per second",
+          "description": "Filtered to the selected run and phase; collection status remains available in the saved run summary.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 87,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.13",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 13
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"database_blocks_read_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} database_blocks_read_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"database_blocks_written_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} database_blocks_written_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "title": "Index and data blocks read per second",
+          "description": "Filtered to the selected run and phase; collection status remains available in the saved run summary.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 87,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.14",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 14
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_read_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} index_blocks_read_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"data_blocks_read_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} data_blocks_read_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "title": "Index and data blocks written per second",
+          "description": "Filtered to the selected run and phase; collection status remains available in the saved run summary.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 95,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.15",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 15
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_written_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} index_blocks_written_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"data_blocks_written_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} data_blocks_written_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

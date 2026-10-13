@@ -1,0 +1,34 @@
+{
+  "description": "Sanitized default presentation and off-page baseline fixture; no preset is active.",
+  "comparisonId": "fixture-comparison",
+  "selectionRevision": 1,
+  "baselineRunId": "fixture-baseline",
+  "pageRunIds": ["fixture-variant"],
+  "baselineQuality": {
+    "state": "SUCCEEDED",
+    "measurementValidity": "VALID",
+    "summaryStatus": "READY",
+    "complete": true,
+    "attemptToken": "fixture-attempt"
+  },
+  "defaults": {
+    "platform": ["cpu.usage", "memory.used"],
+    "databaseResource": [
+      "cpu.usage",
+      "memory.used",
+      "disk.read.operations",
+      "disk.write.operations"
+    ],
+    "pas": ["cpu.usage"],
+    "databaseActivity": [
+      "db.records.read",
+      "db.records.write",
+      "db.buffer.logical.read",
+      "db.buffer.logical.write",
+      "db.blocks.read",
+      "db.blocks.write"
+    ]
+  },
+  "values": { "baseline": 100, "variant": 120, "percentageDifference": 20 },
+  "csvInvariant": "Metric selection and preset changes do not modify existing comparison downloads."
+}

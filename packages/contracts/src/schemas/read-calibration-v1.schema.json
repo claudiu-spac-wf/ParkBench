@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:parkbench:read-calibration:v1",
+  "title": "Completed ParkBench read calibration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "measuredAt", "measurementVersion", "seed", "schemaHash", "readProfileHash", "targetBytes", "bucketCount", "cutoffN", "status", "totalEligibleBytes", "selectedEligibleBytes", "buckets", "tables", "verification"],
+  "properties": {
+    "contractVersion": {"const": "parkbench-read-calibration.v1"},
+    "measuredAt": {"type": "string", "format": "date-time"},
+    "measurementVersion": {"type": "string", "minLength": 1},
+    "seed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["description", "fingerprint"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "fingerprint": {"$ref": "#/definitions/hash"}
+      }
+    },
+    "schemaHash": {"$ref": "#/definitions/hash"},
+    "readProfileHash": {"$ref": "#/definitions/hash"},
+    "accessCoverage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mode", "verified"],
+      "properties": {
+        "mode": {"enum": ["whole-bucket", "primary-key-partitioned"]},
+        "verified": {"const": true},
+        "partitionMapHash": {"$ref": "#/definitions/hash"}
+      },
+      "allOf": [
+        {
+          "if": {"required": ["mode"], "properties": {"mode": {"const": "primary-key-partitioned"}}},
+          "then": {"required": ["partitionMapHash"]},
+          "else": {"not": {"required": ["partitionMapHash"]}}
+        }
+      ]
+    },
+    "targetBytes": {"const": 9000000000},
+    "bucketCount": {"const": 1000},
+    "cutoffN": {"type": "integer", "minimum": 1, "maximum": 1000},
+    "status": {"enum": ["calibrated", "undersized"]},
+    "totalEligibleBytes": {"$ref": "#/definitions/size"},
+    "selectedEligibleBytes": {"$ref": "#/definitions/size"},
+    "buckets": {"$ref": "#/definitions/histogram"},
+    "tables": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "requestedLobFields", "lobEncoding", "buckets"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "requestedLobFields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "lobEncoding": {"type": "string", "minLength": 1},
+          "buckets": {"$ref": "#/definitions/histogram"}
+        }
+      }
+    },
+    "verification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["selectedBytes", "previousCutoffBytes", "sourceUnchanged", "byteAccountingVerified", "probeVersion"],
+      "properties": {
+        "selectedBytes": {"$ref": "#/definitions/size"},
+        "previousCutoffBytes": {"$ref": "#/definitions/size"},
+        "sourceUnchanged": {"const": true},
+        "byteAccountingVerified": {"const": true},
+        "probeVersion": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "undersized"}}},
+      "then": {"properties": {"cutoffN": {"const": 1000}, "totalEligibleBytes": {"maximum": 8999999999}}},
+      "else": {"properties": {"selectedEligibleBytes": {"minimum": 9000000000}, "verification": {"properties": {"previousCutoffBytes": {"maximum": 8999999999}}}}}
+    }
+  ],
+  "definitions": {
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "size": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "histogram": {"type": "array", "minItems": 1000, "maxItems": 1000, "items": {"$ref": "#/definitions/bucket"}},
+    "bucket": {
+      "type": "object", "additionalProperties": false,
+      "required": ["bucket", "rowCount", "recordBytes", "lobBytes", "totalBytes"],
+      "properties": {
+        "bucket": {"type": "integer", "minimum": 1, "maximum": 1000},
+        "rowCount": {"$ref": "#/definitions/size"},
+        "recordBytes": {"$ref": "#/definitions/size"},
+        "lobBytes": {"$ref": "#/definitions/size"},
+        "totalBytes": {"$ref": "#/definitions/size"}
+      }
+    }
+  }
+}

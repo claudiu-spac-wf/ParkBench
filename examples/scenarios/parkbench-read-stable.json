@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "scenario.v2",
+  "version": "1.0.0",
+  "target": {
+    "restPath": "/work",
+    "pasProtocol": "http",
+    "pasPort": 8810,
+    "healthPath": "/health",
+    "databaseService": "database",
+    "pasService": "pas",
+    "pasReplicas": 1,
+    "timeoutMs": 60000
+  },
+  "phases": {
+    "warmupSeconds": 120,
+    "measurementSeconds": 300,
+    "cooldownSeconds": 30
+  },
+  "observers": [
+    {
+      "id": "core",
+      "kind": "core",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://loadgen:9100"
+      }
+    },
+    {
+      "id": "openedge-db",
+      "kind": "openedge_db_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://db-observer:9100"
+      }
+    },
+    {
+      "id": "openedge-pas",
+      "kind": "openedge_pas_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://pas-observer:9100"
+      }
+    },
+    {
+      "id": "files",
+      "kind": "file_sampler_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://file-sampler:9100",
+        "path": "/psc/wrk/parkbench"
+      }
+    }
+  ],
+  "id": "parkbench-read-stable",
+  "name": "ParkBench stable reads",
+  "description": "Seeded single-pass 100-row primary-index ranges on the non-LOB DebitTransaction table. Use a dense ParkBenchDB seed with at least 100 rows for consistent work per request.",
+  "workload": {
+    "operations": [
+      {
+        "id": "debit-range-read",
+        "method": "POST",
+        "path": "/work",
+        "weight": 1,
+        "bodyTemplate": {
+          "procName": "Workloads/ParkBench/bank_mix.p",
+          "input": {
+            "mode": "run",
+            "op": "range",
+            "key": "generated"
+          }
+        },
+        "expectedStatus": [200]
+      }
+    ],
+    "load": {
+      "mode": "constant-concurrency",
+      "concurrency": 25,
+      "maxInFlightPerWorker": 1,
+      "seed": 2026
+    }
+  }
+}

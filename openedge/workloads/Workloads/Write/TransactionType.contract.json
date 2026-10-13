@@ -1,0 +1,89 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-transaction-type",
+  "version": 1,
+  "procedure": "Workloads/Write/TransactionType.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "TransactionType",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "TransactionType.TransactionTypeId:int64",
+    "TransactionType.RandomInt10:integer",
+    "TransactionType.RandomInt100:integer",
+    "TransactionType.RandomInt1000:integer",
+    "TransactionType.CreatedAt:datetime-tz",
+    "TransactionType.TransactionTypeCode:character",
+    "TransactionType.Description:character",
+    "TransactionType.Direction:character",
+    "TransactionType.Channel:character",
+    "TransactionType.IsFee:logical"
+  ],
+  "requiredIndexes": [
+    "TransactionType.PkTransactionType",
+    "TransactionType.IxRandomInt10",
+    "TransactionType.IxRandomInt100",
+    "TransactionType.IxRandomInt1000",
+    "TransactionType.UxTransactionTypeCode",
+    "TransactionType.IxDirectionChannel"
+  ],
+  "requiredSequences": [
+    "SeqTransactionTypeId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "TransactionType"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "TransactionType"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "TransactionType"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

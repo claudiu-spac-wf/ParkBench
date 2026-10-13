@@ -1,0 +1,89 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-currency",
+  "version": 1,
+  "procedure": "Workloads/Write/Currency.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Currency",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Currency.CurrencyId:int64",
+    "Currency.RandomInt10:integer",
+    "Currency.RandomInt100:integer",
+    "Currency.RandomInt1000:integer",
+    "Currency.CreatedAt:datetime-tz",
+    "Currency.CurrencyCode:character",
+    "Currency.CurrencyName:character",
+    "Currency.NumericCode:integer",
+    "Currency.MinorUnits:integer",
+    "Currency.CurrencySymbol:character",
+    "Currency.IsActive:logical"
+  ],
+  "requiredIndexes": [
+    "Currency.PkCurrency",
+    "Currency.IxRandomInt10",
+    "Currency.IxRandomInt100",
+    "Currency.IxRandomInt1000",
+    "Currency.UxCurrencyCode"
+  ],
+  "requiredSequences": [
+    "SeqCurrencyId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Currency"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Currency"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Currency"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

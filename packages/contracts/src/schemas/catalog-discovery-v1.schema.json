@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/catalog-discovery.v1",
+  "type": "object",
+  "required": ["contractVersion", "refreshState", "categories", "sources"],
+  "properties": {
+    "contractVersion": { "const": "catalog-discovery.v1" },
+    "refreshState": { "enum": ["IDLE", "RUNNING", "SUCCEEDED", "PARTIAL", "FAILED"] },
+    "refreshedAt": { "type": "string", "format": "date-time" },
+    "categories": { "type": "array", "items": { "type": "object" } },
+    "sources": { "type": "array", "items": { "type": "object" } }
+  },
+  "additionalProperties": false
+}

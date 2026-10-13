@@ -1,0 +1,25 @@
+{
+  "instances": [
+    {
+      "latch_id": "native-1",
+      "_Latch-Name": "buffer\"pool\\lock",
+      "_Latch-Type": "shared",
+      "_Latch-Wait": 10,
+      "_Latch-WaitT": 2000000
+    },
+    {
+      "latch_id": "native-2",
+      "_Latch-Name": "transaction",
+      "_Latch-Type": "exclusive",
+      "_Latch-Wait": 30,
+      "_Latch-WaitT": 5000000
+    },
+    {
+      "latch_id": "native-3",
+      "_Latch-Name": "idle",
+      "_Latch-Type": "shared",
+      "_Latch-Wait": 0,
+      "_Latch-WaitT": 0
+    }
+  ]
+}

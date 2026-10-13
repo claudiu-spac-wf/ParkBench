@@ -1,0 +1,924 @@
+{
+  "contractVersion": "source-inventory.v1",
+  "sourceHead": "3e178b6",
+  "metrics": [
+    {
+      "name": "parkbench_openedge_db_buffer_pool_configured_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": ["pool"],
+      "source": ["_DbParams", "effective_run_configuration"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_active_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": ["pool"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_free_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": ["pool"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_logical_reads_total",
+      "type": "counter",
+      "unit": "read requests",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_logical_writes_total",
+      "type": "counter",
+      "unit": "write requests",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_os_reads_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_os_writes_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_deferred_writes_total",
+      "type": "counter",
+      "unit": "deferred block changes",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_flushed_buffers_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_marked_buffers_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_lru_skips_total",
+      "type": "counter",
+      "unit": "skips",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_lru_writes_total",
+      "type": "counter",
+      "unit": "block writes",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_apw_enqueues_total",
+      "type": "counter",
+      "unit": "buffer enqueues",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_checkpoints_total",
+      "type": "counter",
+      "unit": "checkpoints",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_buffer_pool_cumulative_cache_hit_ratio",
+      "type": "gauge",
+      "unit": "ratio 0\u20131",
+      "labels": ["pool", "database_epoch"],
+      "source": ["_ActBuffer"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_table_operations_total",
+      "type": "counter",
+      "unit": "records",
+      "labels": ["operation", "database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_transaction_commits_total",
+      "type": "counter",
+      "unit": "transactions",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_transaction_rollbacks_total",
+      "type": "counter",
+      "unit": "transactions",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_record_locks_total",
+      "type": "counter",
+      "unit": "lock uses",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_record_lock_waits_total",
+      "type": "counter",
+      "unit": "waits",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_buffer_lock_waits_total",
+      "type": "counter",
+      "unit": "waits",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_blocks_read_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_blocks_written_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_database_checkpoint_flushed_buffers_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_table_operations_total",
+      "type": "counter",
+      "unit": "table operations",
+      "labels": ["table", "operation", "database_epoch"],
+      "source": ["_TableStat"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_index_operations_total",
+      "type": "counter",
+      "unit": "index operations",
+      "labels": ["index", "operation", "database_epoch"],
+      "source": ["_IndexStat"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_index_blocks_read_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActIOType"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_index_blocks_written_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActIOType"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_data_blocks_read_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActIOType"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_data_blocks_written_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActIOType"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_events_total",
+      "type": "counter",
+      "unit": "checkpoints",
+      "labels": ["database_epoch"],
+      "source": ["_ActSummary"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_duration_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_bi_write_duration_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_database_write_duration_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_sync_duration_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_dirty_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_flushed_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_apw_queue_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_checkpoint_queue_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_checkpoint_last_apw_scan_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Checkpoint"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_queue_writes_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_buffers_scanned_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_buffers_checkpointed_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_checkpoint_queue_writes_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_database_writes_total",
+      "type": "counter",
+      "unit": "write operations",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_checkpoint_flushes_total",
+      "type": "counter",
+      "unit": "blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_buffers_marked_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_scan_cycles_total",
+      "type": "counter",
+      "unit": "cycles",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_scan_writes_total",
+      "type": "counter",
+      "unit": "buffers",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_all_process_database_writes_total",
+      "type": "counter",
+      "unit": "write operations",
+      "labels": ["database_epoch"],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_apw_uptime_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": [],
+      "source": ["_ActPWs"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_blocks_written_total",
+      "type": "counter",
+      "unit": "BI blocks",
+      "labels": ["database_epoch"],
+      "source": ["_ActBILog"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_bytes_written_total",
+      "type": "counter",
+      "unit": "bytes",
+      "labels": ["database_epoch"],
+      "source": ["_ActBILog"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_io_operations_total",
+      "type": "counter",
+      "unit": "I/O operations",
+      "labels": ["operation", "database_epoch"],
+      "source": ["_ActIOType"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_file_size_blocks",
+      "type": "gauge",
+      "unit": "BI blocks",
+      "labels": [],
+      "source": ["_DbStatus"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_file_size_bytes",
+      "type": "gauge",
+      "unit": "bytes",
+      "labels": [],
+      "source": ["_DbStatus"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_block_size_bytes",
+      "type": "gauge",
+      "unit": "bytes",
+      "labels": [],
+      "source": ["_DbStatus"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_cluster_size_bytes",
+      "type": "gauge",
+      "unit": "bytes",
+      "labels": [],
+      "source": ["_DbStatus"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_cluster_count",
+      "type": "gauge",
+      "unit": "clusters",
+      "labels": [],
+      "source": ["_DbStatus"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Logging"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_full_buffers",
+      "type": "gauge",
+      "unit": "buffers",
+      "labels": [],
+      "source": ["_Logging"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_current_cluster_free_bytes",
+      "type": "gauge",
+      "unit": "bytes",
+      "labels": [],
+      "source": ["_Logging"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_bi_buffered_io_enabled",
+      "type": "gauge",
+      "unit": "boolean 0/1",
+      "labels": [],
+      "source": ["_Logging"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_recovery_log_threshold_bytes",
+      "type": "gauge",
+      "unit": "bytes",
+      "labels": [],
+      "source": ["_DbParams"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_transaction_active_count",
+      "type": "gauge",
+      "unit": "transactions",
+      "labels": [],
+      "source": ["_ActSummary", "_Trans"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_transaction_oldest_active_age_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": [],
+      "source": ["_Trans"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_latch_busy_total",
+      "type": "counter",
+      "unit": "busy events",
+      "labels": ["database_epoch"],
+      "source": ["_Latch"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_latch_locks_total",
+      "type": "counter",
+      "unit": "lock events",
+      "labels": ["database_epoch"],
+      "source": ["_Latch"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_latch_waits_total",
+      "type": "counter",
+      "unit": "waits",
+      "labels": ["database_epoch"],
+      "source": ["_Latch"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_latch_spins_total",
+      "type": "counter",
+      "unit": "spins",
+      "labels": ["database_epoch"],
+      "source": ["_Latch"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_latch_lock_duration_seconds_total",
+      "type": "counter",
+      "unit": "seconds",
+      "labels": ["database_epoch"],
+      "source": ["_Latch"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_latch_wait_or_spin_duration_seconds_total",
+      "type": "counter",
+      "unit": "seconds",
+      "labels": ["database_epoch"],
+      "source": ["_Latch"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["operation", "database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_grants_total",
+      "type": "counter",
+      "unit": "grants",
+      "labels": ["operation", "database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_waits_total",
+      "type": "counter",
+      "unit": "waits",
+      "labels": ["operation", "database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_find_exclusive_grants_total",
+      "type": "counter",
+      "unit": "grants",
+      "labels": ["database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_find_share_grants_total",
+      "type": "counter",
+      "unit": "grants",
+      "labels": ["database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_cancellations_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_downgrades_total",
+      "type": "counter",
+      "unit": "locks",
+      "labels": ["database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_db_lock_redundant_grants_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["database_epoch"],
+      "source": ["_ActLock"],
+      "publisher": "native_db_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_post_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_get_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_put_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_delete_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_failed_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_post_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_get_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_put_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_delete_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_patch_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_options_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_head_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_trace_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_abl_connect_errors_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_successful_requests_total",
+      "type": "counter",
+      "unit": "requests",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_avg_abl_processing_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_min_abl_processing_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_max_abl_processing_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_avg_abl_connect_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_min_abl_connect_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "parkbench_openedge_pas_max_abl_connect_seconds",
+      "type": "gauge",
+      "unit": "seconds",
+      "labels": ["replica"],
+      "publisher": "native_pas_endpoint"
+    },
+    {
+      "name": "container_cpu_usage_seconds_total",
+      "type": "counter",
+      "unit": "seconds",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_memory_working_set_bytes",
+      "type": "gauge",
+      "unit": "bytes",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_fs_reads_bytes_total",
+      "type": "counter",
+      "unit": "bytes",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_fs_writes_bytes_total",
+      "type": "counter",
+      "unit": "bytes",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_fs_reads_total",
+      "type": "counter",
+      "unit": "operations",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_fs_writes_total",
+      "type": "counter",
+      "unit": "operations",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_network_receive_bytes_total",
+      "type": "counter",
+      "unit": "bytes",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    },
+    {
+      "name": "container_network_transmit_bytes_total",
+      "type": "counter",
+      "unit": "bytes",
+      "labels": ["id", "cpu", "device", "interface"],
+      "publisher": {
+        "platform": "cadvisor",
+        "database": "parkbench-run-owned-cadvisor",
+        "pas": "parkbench-run-owned-cadvisor"
+      }
+    }
+  ],
+  "controllerRetained": ["parameter snapshots", "health", "lifecycle", "adapter-only extensions"],
+  "nativeProtocol": {
+    "current": 2,
+    "planned": 3,
+    "historicalCompatibility": 2
+  },
+  "legacyCaps": {
+    "namedTables": 64,
+    "namedIndexes": 256,
+    "rawMetrics": 8192,
+    "familyMeasurements": 8192
+  },
+  "defects": [
+    "PAS numeric alias and gauge typing",
+    "replica slicing renumbers identity",
+    "controller republishes native endpoint",
+    "CPU host normalization and axis ceiling",
+    "overlapping raw run selectors",
+    "lookback freshness",
+    "counter increment averages",
+    "export missing value field",
+    "context rejection",
+    "readable run fallback",
+    "native table cap and folding",
+    "root-only dashboard discovery",
+    "CRUD includes os_read",
+    "memory cause requires live diagnosis"
+  ]
+}

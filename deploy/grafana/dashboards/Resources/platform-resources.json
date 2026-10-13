@@ -1,0 +1,1360 @@
+{
+  "uid": "parkbench-platform-resources",
+  "title": "Platform Resources",
+  "tags": [
+    "parkbench",
+    "resources",
+    "platform"
+  ],
+  "description": "Data for the selected time range. Pick a run in the Runs table to jump to its time range and phase markers; the data is not filtered by run.",
+  "editable": false,
+  "graphTooltip": 1,
+  "timezone": "utc",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "templating": {
+    "list": [
+      {
+        "type": "textbox",
+        "name": "picker_run",
+        "label": "Run shown on the time range",
+        "hide": 2,
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "options": []
+      },
+      {
+        "type": "constant",
+        "name": "parkbench_web_url",
+        "hide": 2,
+        "query": "http://127.0.0.1:13002",
+        "current": {
+          "text": "http://127.0.0.1:13002",
+          "value": "http://127.0.0.1:13002"
+        },
+        "options": [
+          {
+            "text": "http://127.0.0.1:13002",
+            "value": "http://127.0.0.1:13002",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "disk_exclude",
+        "hide": 2,
+        "query": "(loop|ram|zram|fd|sr|dm-|md).*",
+        "current": {
+          "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+          "value": "(loop|ram|zram|fd|sr|dm-|md).*"
+        },
+        "options": [
+          {
+            "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "value": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "interface_exclude",
+        "hide": 2,
+        "query": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+        "current": {
+          "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+          "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*"
+        },
+        "options": [
+          {
+            "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Run phases",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "expr": "parkbench_run_phase_boundary{run_id=\"$picker_run\"}",
+        "step": "",
+        "titleFormat": "{{run_id}}: {{phase}} {{edge}}",
+        "textFormat": "",
+        "tagKeys": "phase,edge",
+        "useValueForTime": false
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Host Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Host Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-host-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Summary",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Summary with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-summary",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "DB Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open DB Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-db-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Activity",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Activity with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-activity",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database BI & APW data",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database BI & APW data with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-recovery-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database transactions, locks, and latches",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database transactions, locks, and latches with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Parameters",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Parameters with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-parameters",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "PAS Instances",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open PAS Instances with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-pas-instances",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Runs",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "title": "Runs",
+      "description": "Runs that overlap the selected time range. Click a run to set the time range to its span and show its phase markers. The data is not filtered by run.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 24,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "picker.runs",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No runs in range"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Show this run's time range",
+                    "url": "/d/${__dashboard.uid}?var-picker_run=${__data.fields.run_id}&from=${__data.fields.start_ms}&to=${__data.fields.end_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(start_ms|end_ms)$"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_run_window{window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}}",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Value",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "start_ms",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "end_ms",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Started"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Started",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "row",
+      "title": "Summary",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 4,
+      "title": "CPU usage",
+      "description": "CPU used by the scope's containers, as one-core percentage; 100% means one fully used core.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "summary.cpu",
+        "category": "cpu_pct",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "100 * sum by (run_id) ((max by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}))))) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}))))) unless on (run_id, id) max by (run_id, id, service, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__rate_interval]) and (timestamp(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}) == on (run_id, id, service, container_label_com_docker_compose_service, cpu) group_left max by (run_id, id, service, container_label_com_docker_compose_service, cpu) (timestamp(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}))))))))",
+          "legendFormat": "Platform",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Memory usage",
+      "description": "Working set (memory in active use that can't be reclaimed) of the scope's containers.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 10,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "summary.memory",
+        "category": "memory",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (run_id) (max by (run_id, id, service, container_label_com_docker_compose_service) (container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"} and (timestamp(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service) group_left max by (run_id, id, service, container_label_com_docker_compose_service) (timestamp(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))",
+          "legendFormat": "Platform",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Disk usage by disk",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "summary.disk",
+        "category": "disk_throughput",
+        "split": "read_write",
+        "breakdown": "disk"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (run_id, device) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))",
+          "legendFormat": "{{device}} · Read",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (run_id, device) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))",
+          "legendFormat": "{{device}} · Write",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Network usage",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "summary.network",
+        "category": "net_throughput",
+        "split": "in_out",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (run_id) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))",
+          "legendFormat": "Platform · In",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (run_id) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))",
+          "legendFormat": "Platform · Out",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "row",
+      "title": "CPU",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 9,
+          "title": "CPU seconds by container",
+          "description": "Total CPU time each container used over the selected range (top 10, the rest as Other).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 27,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "cpu.seconds_by_container",
+            "category": "cpu_seconds",
+            "split": "none",
+            "breakdown": "container",
+            "topN": {
+              "n": 10,
+              "partitionBy": "run_id",
+              "key": "container_label_com_docker_compose_service",
+              "otherLabel": "Other",
+              "tieBreak": "value_then_name",
+              "excludeZero": true
+            }
+          },
+          "type": "bargauge",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "noValue": "No data",
+              "min": 0
+            },
+            "overrides": []
+          },
+          "options": {
+            "orientation": "horizontal",
+            "displayMode": "basic",
+            "showUnfilled": true,
+            "valueMode": "text",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sort_desc(((sum by (run_id, container_label_com_docker_compose_service) ((sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__range] @ end())) unless on (run_id, id) sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) ((sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__range] @ end())) unless on (run_id, id) sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())))))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) ((sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__range] @ end())) unless on (run_id, id) sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) ((sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__range] @ end())) unless on (run_id, id) sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())))))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) ((sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__range] @ end())) unless on (run_id, id) sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) ((sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())) or on (run_id, id) (sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu!~\"total|\"}[$__range] @ end())) unless on (run_id, id) sum by (run_id, id, service, container_label_com_docker_compose_service) (increase(container_cpu_usage_seconds_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",cpu=~\"total|\"}[$__range] @ end())))))) > 0))) > 0)))",
+              "legendFormat": "{{container_label_com_docker_compose_service}}",
+              "range": false,
+              "instant": true,
+              "format": "time_series"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Memory",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 35,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 11,
+          "title": "Memory by container",
+          "description": "Working set per container (top 10, the rest as Other), with page cache and swap for the named containers. A dashed limit line appears only for containers with a memory limit.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 36,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "memory.by_container",
+            "category": "memory",
+            "split": "none",
+            "breakdown": "container",
+            "topN": {
+              "n": 10,
+              "partitionBy": "run_id",
+              "key": "container_label_com_docker_compose_service",
+              "otherLabel": "Other",
+              "tieBreak": "value_then_name",
+              "excludeZero": true
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*· Limit$"
+                },
+                "properties": [
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "fill": "dash",
+                      "dash": [
+                        10,
+                        10
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service) (container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"} and (timestamp(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service) group_left max by (run_id, id, service, container_label_com_docker_compose_service) (timestamp(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service) (container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"} and (timestamp(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service) group_left max by (run_id, id, service, container_label_com_docker_compose_service) (timestamp(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Working set",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service) (container_memory_cache{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"} and (timestamp(container_memory_cache{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service) group_left max by (run_id, id, service, container_label_com_docker_compose_service) (timestamp(container_memory_cache{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0)))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Cache",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "C",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service) (container_memory_swap{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"} and (timestamp(container_memory_swap{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service) group_left max by (run_id, id, service, container_label_com_docker_compose_service) (timestamp(container_memory_swap{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0)))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Swap",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "D",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((max by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service) (container_spec_memory_limit_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"} > 0 and (timestamp(container_spec_memory_limit_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service) group_left max by (run_id, id, service, container_label_com_docker_compose_service) (timestamp(container_spec_memory_limit_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (max by (run_id, container_label_com_docker_compose_service) (max_over_time(container_memory_working_set_bytes{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0)))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Limit",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "Disk",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 13,
+          "title": "Disk throughput by disk",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 45,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "disk.throughput_by_disk",
+            "category": "disk_throughput",
+            "split": "read_write",
+            "breakdown": "disk"
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (run_id, device) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))",
+              "legendFormat": "{{device}} · Read",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (run_id, device) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))",
+              "legendFormat": "{{device}} · Write",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "title": "Disk IOPS by disk",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 45,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "disk.iops_by_disk",
+            "category": "disk_iops",
+            "split": "read_write",
+            "breakdown": "disk"
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "iops",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (run_id, device) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_reads_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_reads_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_reads_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))",
+              "legendFormat": "{{device}} · Read",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (run_id, device) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_writes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_writes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_writes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))",
+              "legendFormat": "{{device}} · Write",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "title": "Disk throughput by container",
+          "description": "Read and write throughput per container (top 10 by total bytes, the rest as Other).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 53,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "disk.throughput_by_container",
+            "category": "disk_throughput",
+            "split": "read_write",
+            "breakdown": "container",
+            "topN": {
+              "n": 10,
+              "partitionBy": "run_id",
+              "key": "container_label_com_docker_compose_service",
+              "otherLabel": "Other",
+              "tieBreak": "value_then_name",
+              "excludeZero": true
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Read",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, device) (rate(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__rate_interval]) and (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}) == on (run_id, id, service, container_label_com_docker_compose_service, device) group_left max by (run_id, id, service, container_label_com_docker_compose_service, device) (timestamp(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_reads_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_fs_writes_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\",device!~\"(/dev/)?$disk_exclude\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Write",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "type": "row",
+      "title": "Network",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 61,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 17,
+          "title": "Network throughput by container",
+          "description": "In and out traffic per container (top 10 by total bytes, the rest as Other).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 62,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "network.throughput",
+            "category": "net_throughput",
+            "split": "in_out",
+            "breakdown": "container",
+            "topN": {
+              "n": 10,
+              "partitionBy": "run_id",
+              "key": "container_label_com_docker_compose_service",
+              "otherLabel": "Other",
+              "tieBreak": "value_then_name",
+              "excludeZero": true
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · In",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_bytes_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Out",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "title": "Network packets by container",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 62,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "network.packets",
+            "category": "net_packets",
+            "split": "in_out",
+            "breakdown": "container",
+            "topN": {
+              "n": 10,
+              "partitionBy": "run_id",
+              "key": "container_label_com_docker_compose_service",
+              "otherLabel": "Other",
+              "tieBreak": "value_then_name",
+              "excludeZero": true
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "pps",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · In",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) and on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) or (label_replace(sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (max by (run_id, id, service, container_label_com_docker_compose_service, interface) (rate(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__rate_interval]) and (timestamp(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}) == on (run_id, id, service, container_label_com_docker_compose_service, interface) group_left max by (run_id, id, service, container_label_com_docker_compose_service, interface) (timestamp(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"})))))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))), \"container_label_com_docker_compose_service\", \"Other\", \"\", \"\") and on (run_id) (sum by (run_id) ((sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) unless on (run_id, container_label_com_docker_compose_service) (topk by (run_id) (10, (sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_receive_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end())) + on (run_id, container_label_com_docker_compose_service) sum by (run_id, container_label_com_docker_compose_service) (increase(container_network_transmit_packets_total{job=\"cadvisor\",container_label_com_docker_compose_project=\"parkbench-platform\",container_label_com_docker_compose_service!=\"\"}[$__range] @ end()))) > 0))) > 0))",
+              "legendFormat": "{{container_label_com_docker_compose_service}} · Out",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

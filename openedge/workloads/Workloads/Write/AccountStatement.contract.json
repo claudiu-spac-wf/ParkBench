@@ -1,0 +1,104 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-account-statement",
+  "version": 1,
+  "procedure": "Workloads/Write/AccountStatement.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "AccountStatement",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "AccountStatement.AccountStatementId:int64",
+    "AccountStatement.RandomInt10:integer",
+    "AccountStatement.RandomInt100:integer",
+    "AccountStatement.RandomInt1000:integer",
+    "AccountStatement.CreatedAt:datetime-tz",
+    "AccountStatement.AccountId:int64",
+    "AccountStatement.PeriodStart:date",
+    "AccountStatement.PeriodEnd:date",
+    "AccountStatement.OpeningBalance:decimal",
+    "AccountStatement.ClosingBalance:decimal",
+    "AccountStatement.TotalDebits:decimal",
+    "AccountStatement.TotalCredits:decimal",
+    "AccountStatement.DebitCount:integer",
+    "AccountStatement.CreditCount:integer",
+    "AccountStatement.InterestEarned:decimal",
+    "AccountStatement.FeesCharged:decimal",
+    "AccountStatement.DeliveryMethod:character",
+    "AccountStatement.GeneratedAt:datetime-tz",
+    "AccountStatement.NoticeText:clob",
+    "Account.AccountId:int64"
+  ],
+  "requiredIndexes": [
+    "AccountStatement.PkAccountStatement",
+    "AccountStatement.IxRandomInt10",
+    "AccountStatement.IxRandomInt100",
+    "AccountStatement.IxRandomInt1000",
+    "AccountStatement.UxAccountPeriod",
+    "AccountStatement.IxPeriodEnd",
+    "Account.PkAccount"
+  ],
+  "requiredSequences": [
+    "SeqAccountStatementId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "AccountStatement"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "AccountStatement"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "AccountStatement"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

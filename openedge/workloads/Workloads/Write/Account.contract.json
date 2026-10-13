@@ -1,0 +1,119 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-account",
+  "version": 1,
+  "procedure": "Workloads/Write/Account.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "AccountType",
+      "minimumRows": 0
+    },
+    {
+      "name": "Branch",
+      "minimumRows": 0
+    },
+    {
+      "name": "Currency",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Account.AccountId:int64",
+    "Account.RandomInt10:integer",
+    "Account.RandomInt100:integer",
+    "Account.RandomInt1000:integer",
+    "Account.CreatedAt:datetime-tz",
+    "Account.AccountNumber:character",
+    "Account.AccountTypeId:int64",
+    "Account.BranchId:int64",
+    "Account.CurrencyCode:character",
+    "Account.AccountStatus:character",
+    "Account.OpenDate:date",
+    "Account.CloseDate:date",
+    "Account.CurrentBalance:decimal",
+    "Account.AvailableBalance:decimal",
+    "Account.OverdraftLimit:decimal",
+    "Account.InterestRate:decimal",
+    "Account.Nickname:character",
+    "Account.LastStatementDate:date",
+    "Account.LastActivityAt:datetime-tz",
+    "Account.UpdatedAt:datetime-tz",
+    "AccountType.AccountTypeId:int64",
+    "Branch.BranchId:int64",
+    "Currency.CurrencyCode:character"
+  ],
+  "requiredIndexes": [
+    "Account.PkAccount",
+    "Account.IxRandomInt10",
+    "Account.IxRandomInt100",
+    "Account.IxRandomInt1000",
+    "Account.UxAccountNumber",
+    "Account.IxAccountType",
+    "Account.IxBranchStatus",
+    "Account.IxCurrency",
+    "AccountType.PkAccountType",
+    "Branch.PkBranch",
+    "Currency.UxCurrencyCode"
+  ],
+  "requiredSequences": [
+    "SeqAccountId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Account"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Account"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Account"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

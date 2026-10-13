@@ -1,0 +1,100 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-audit-log",
+  "version": 1,
+  "procedure": "Workloads/Write/AuditLog.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "AuditLog",
+      "minimumRows": 0
+    },
+    {
+      "name": "Employee",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "AuditLog.AuditLogId:int64",
+    "AuditLog.RandomInt10:integer",
+    "AuditLog.RandomInt100:integer",
+    "AuditLog.RandomInt1000:integer",
+    "AuditLog.CreatedAt:datetime-tz",
+    "AuditLog.EventDateTime:datetime-tz",
+    "AuditLog.TableName:character",
+    "AuditLog.RecordId:int64",
+    "AuditLog.AuditAction:character",
+    "AuditLog.EmployeeId:int64",
+    "AuditLog.ChangeSummary:character",
+    "Employee.EmployeeId:int64",
+    "Account.AccountId:int64"
+  ],
+  "requiredIndexes": [
+    "AuditLog.PkAuditLog",
+    "AuditLog.IxRandomInt10",
+    "AuditLog.IxRandomInt100",
+    "AuditLog.IxRandomInt1000",
+    "Employee.PkEmployee",
+    "Account.PkAccount"
+  ],
+  "requiredSequences": [
+    "SeqAuditLogId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "AuditLog"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "AuditLog"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "AuditLog"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

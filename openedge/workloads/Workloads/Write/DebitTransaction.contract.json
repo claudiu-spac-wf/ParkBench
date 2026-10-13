@@ -1,0 +1,122 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-debit-transaction",
+  "version": 1,
+  "procedure": "Workloads/Write/DebitTransaction.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "DebitTransaction",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "AccountStatement",
+      "minimumRows": 0
+    },
+    {
+      "name": "Merchant",
+      "minimumRows": 0
+    },
+    {
+      "name": "TransactionType",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "DebitTransaction.DebitTransactionId:int64",
+    "DebitTransaction.RandomInt10:integer",
+    "DebitTransaction.RandomInt100:integer",
+    "DebitTransaction.RandomInt1000:integer",
+    "DebitTransaction.CreatedAt:datetime-tz",
+    "DebitTransaction.AccountId:int64",
+    "DebitTransaction.TransactionTypeId:int64",
+    "DebitTransaction.AccountStatementId:int64",
+    "DebitTransaction.MerchantId:int64",
+    "DebitTransaction.PostedDate:date",
+    "DebitTransaction.PostedAt:datetime-tz",
+    "DebitTransaction.Amount:decimal",
+    "DebitTransaction.RunningBalance:decimal",
+    "DebitTransaction.Description:character",
+    "DebitTransaction.ReferenceNumber:character",
+    "DebitTransaction.CheckNumber:integer",
+    "Account.AccountId:int64",
+    "TransactionType.TransactionTypeId:int64",
+    "AccountStatement.AccountStatementId:int64",
+    "Merchant.MerchantId:int64",
+    "TransactionType.Direction:character"
+  ],
+  "requiredIndexes": [
+    "DebitTransaction.PkDebitTransaction",
+    "DebitTransaction.IxRandomInt10",
+    "DebitTransaction.IxRandomInt100",
+    "DebitTransaction.IxRandomInt1000",
+    "DebitTransaction.IxAccountPosted",
+    "DebitTransaction.IxAccountStatement",
+    "DebitTransaction.IxPostedDate",
+    "DebitTransaction.IxMerchantDate",
+    "Account.PkAccount",
+    "TransactionType.PkTransactionType",
+    "AccountStatement.PkAccountStatement",
+    "Merchant.PkMerchant"
+  ],
+  "requiredSequences": [
+    "SeqDebitTransactionId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "DebitTransaction"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "DebitTransaction"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "DebitTransaction"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

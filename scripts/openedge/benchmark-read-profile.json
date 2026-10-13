@@ -1,0 +1,566 @@
+{
+  "version": "parkbench-read-profile.v1",
+  "eligibilityPolicy": "fixed-cutoff-complete-bucket",
+  "recordBasis": "full-record-including-lob-locators",
+  "targetBytes": 9000000000,
+  "operations": [
+    {
+      "id": "reference-currencies",
+      "method": "POST",
+      "path": "/work",
+      "weight": 8,
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "Currency",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ],
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      }
+    },
+    {
+      "id": "reference-transaction-types",
+      "method": "POST",
+      "path": "/work",
+      "weight": 6,
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "TransactionType",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ],
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      }
+    },
+    {
+      "id": "product-catalog",
+      "method": "POST",
+      "path": "/work",
+      "weight": 4,
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "AccountType",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ],
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      }
+    },
+    {
+      "id": "customer-profiles",
+      "method": "POST",
+      "path": "/work",
+      "weight": 10,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "Customer",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "account-overview",
+      "method": "POST",
+      "path": "/work",
+      "weight": 12,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "Account",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "contact-lookup",
+      "method": "POST",
+      "path": "/work",
+      "weight": 6,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "CustomerContact",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "debit-history-amounts",
+      "method": "POST",
+      "path": "/work",
+      "weight": 5,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "DebitTransaction",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "FieldsList": [
+            "AccountId",
+            "Amount"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "card-auth-amounts",
+      "method": "POST",
+      "path": "/work",
+      "weight": 4,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "CardAuthorization",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "FieldsList": [
+            "CardId",
+            "Amount"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "credit-history",
+      "method": "POST",
+      "path": "/work",
+      "weight": 4,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "CreditTransaction",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "login-history",
+      "method": "POST",
+      "path": "/work",
+      "weight": 3,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "LoginEvent",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "audit-review",
+      "method": "POST",
+      "path": "/work",
+      "weight": 2,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "AuditLog",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "statement-download",
+      "method": "POST",
+      "path": "/work",
+      "weight": 2,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "StatementDocument",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "LobFields": [
+            "PdfContent",
+            "StatementXml"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "kyc-document-review",
+      "method": "POST",
+      "path": "/work",
+      "weight": 2,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "CustomerDocument",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "LobFields": [
+            "Content"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "customer-notes",
+      "method": "POST",
+      "path": "/work",
+      "weight": 3,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "CustomerNote",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "LobFields": [
+            "NoteText"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "staff-directory",
+      "method": "POST",
+      "path": "/work",
+      "weight": 1,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "Employee",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "LobFields": [
+            "Photo"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    },
+    {
+      "id": "statement-notices",
+      "method": "POST",
+      "path": "/work",
+      "weight": 2,
+      "templateValues": {
+        "band": {
+          "kind": "uniformInt",
+          "min": 1,
+          "max": 1000
+        }
+      },
+      "bodyTemplate": {
+        "procName": "Workloads/Generic/arbitrary_reads.p",
+        "input": {
+          "mode": "run",
+          "TableName": "AccountStatement",
+          "WhereClause": "RandomInt1000 <= {{cutoff}} AND RandomInt1000 = {{band}}",
+          "Limit": 0,
+          "LobFields": [
+            "NoticeText"
+          ]
+        }
+      },
+      "expectedStatus": [
+        200
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "name": "Account",
+      "requestedLobFields": []
+    },
+    {
+      "name": "AccountStatement",
+      "requestedLobFields": [
+        "NoticeText"
+      ]
+    },
+    {
+      "name": "AccountType",
+      "requestedLobFields": []
+    },
+    {
+      "name": "AuditLog",
+      "requestedLobFields": []
+    },
+    {
+      "name": "CardAuthorization",
+      "requestedLobFields": []
+    },
+    {
+      "name": "CreditTransaction",
+      "requestedLobFields": []
+    },
+    {
+      "name": "Currency",
+      "requestedLobFields": []
+    },
+    {
+      "name": "Customer",
+      "requestedLobFields": []
+    },
+    {
+      "name": "CustomerContact",
+      "requestedLobFields": []
+    },
+    {
+      "name": "CustomerDocument",
+      "requestedLobFields": [
+        "Content"
+      ]
+    },
+    {
+      "name": "CustomerNote",
+      "requestedLobFields": [
+        "NoteText"
+      ]
+    },
+    {
+      "name": "DebitTransaction",
+      "requestedLobFields": []
+    },
+    {
+      "name": "Employee",
+      "requestedLobFields": [
+        "Photo"
+      ]
+    },
+    {
+      "name": "LoginEvent",
+      "requestedLobFields": []
+    },
+    {
+      "name": "StatementDocument",
+      "requestedLobFields": [
+        "PdfContent",
+        "StatementXml"
+      ]
+    },
+    {
+      "name": "TransactionType",
+      "requestedLobFields": []
+    }
+  ],
+  "common": {
+    "target": {
+      "restPath": "/work",
+      "pasProtocol": "http",
+      "pasPort": 8810,
+      "healthPath": "/health",
+      "databaseService": "database",
+      "pasService": "pas",
+      "pasReplicas": 1,
+      "timeoutMs": 60000
+    },
+    "load": {
+      "mode": "constant-concurrency",
+      "concurrency": 10,
+      "maxInFlightPerWorker": 1,
+      "seed": 2026
+    },
+    "observers": [
+      {
+        "id": "core",
+        "kind": "core",
+        "required": true,
+        "samplingIntervalSeconds": 5,
+        "configuration": {
+          "metricsUrl": "http://loadgen:9100"
+        }
+      },
+      {
+        "id": "openedge-db",
+        "kind": "openedge_db_v1",
+        "required": true,
+        "samplingIntervalSeconds": 5,
+        "configuration": {
+          "metricsUrl": "http://db-observer:9100"
+        }
+      },
+      {
+        "id": "openedge-pas",
+        "kind": "openedge_pas_v1",
+        "required": true,
+        "samplingIntervalSeconds": 5,
+        "configuration": {
+          "metricsUrl": "http://pas-observer:9100"
+        }
+      },
+      {
+        "id": "files",
+        "kind": "file_sampler_v1",
+        "required": true,
+        "samplingIntervalSeconds": 5,
+        "configuration": {
+          "metricsUrl": "http://file-sampler:9100",
+          "path": "/psc/wrk/parkbench"
+        }
+      }
+    ]
+  }
+}

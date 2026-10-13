@@ -1,0 +1,1596 @@
+{
+  "contractVersion": "openedge-db-metrics-v2",
+  "families": {
+    "buffer_pool": [
+      "_ActBuffer",
+      "effective_run_configuration",
+      "_DbParams"
+    ],
+    "database_activity": [
+      "_ActSummary",
+      "_ActIOType"
+    ],
+    "table_activity": [
+      "_TableStat",
+      "_ActSummary",
+      "table_dictionary"
+    ],
+    "index_activity": [
+      "_IndexStat",
+      "_ActIOType",
+      "index_dictionary",
+      "table_dictionary"
+    ],
+    "checkpoint": [
+      "_Checkpoint",
+      "_ActSummary"
+    ],
+    "apw": [
+      "_ActPWs",
+      "_ActBuffer"
+    ],
+    "bi": [
+      "_ActBILog",
+      "_ActIOType",
+      "_DbStatus",
+      "_Logging",
+      "_DbParams"
+    ],
+    "transaction": [
+      "_ActSummary",
+      "_Trans"
+    ],
+    "latch": [
+      "_Latch"
+    ],
+    "lock": [
+      "_ActLock"
+    ]
+  },
+  "metricNames": [
+    "buffer_pool_configured_buffers",
+    "buffer_pool_active_buffers",
+    "buffer_pool_free_buffers",
+    "buffer_pool_logical_reads_total",
+    "buffer_pool_logical_writes_total",
+    "buffer_pool_os_reads_total",
+    "buffer_pool_os_writes_total",
+    "buffer_pool_deferred_writes_total",
+    "buffer_pool_flushed_buffers_total",
+    "buffer_pool_marked_buffers_total",
+    "buffer_pool_lru_skips_total",
+    "buffer_pool_lru_writes_total",
+    "buffer_pool_apw_enqueues_total",
+    "buffer_pool_checkpoints_total",
+    "buffer_pool_cumulative_cache_hit_ratio",
+    "database_table_operations_total",
+    "transaction_commits_total",
+    "transaction_rollbacks_total",
+    "database_record_locks_total",
+    "database_record_lock_waits_total",
+    "database_buffer_lock_waits_total",
+    "database_blocks_read_total",
+    "database_blocks_written_total",
+    "database_checkpoint_flushed_buffers_total",
+    "table_operations_total",
+    "index_operations_total",
+    "index_blocks_read_total",
+    "index_blocks_written_total",
+    "data_blocks_read_total",
+    "data_blocks_written_total",
+    "checkpoint_events_total",
+    "checkpoint_last_duration_seconds",
+    "checkpoint_last_bi_write_duration_seconds",
+    "checkpoint_last_database_write_duration_seconds",
+    "checkpoint_last_sync_duration_seconds",
+    "checkpoint_last_buffers",
+    "checkpoint_last_dirty_buffers",
+    "checkpoint_last_flushed_buffers",
+    "checkpoint_last_apw_queue_buffers",
+    "checkpoint_last_checkpoint_queue_buffers",
+    "checkpoint_last_apw_scan_buffers",
+    "apw_queue_writes_total",
+    "apw_buffers_scanned_total",
+    "apw_buffers_checkpointed_total",
+    "apw_checkpoint_queue_writes_total",
+    "apw_database_writes_total",
+    "apw_checkpoint_flushes_total",
+    "apw_buffers_marked_total",
+    "apw_scan_cycles_total",
+    "apw_scan_writes_total",
+    "apw_all_process_database_writes_total",
+    "apw_uptime_seconds",
+    "bi_blocks_written_total",
+    "bi_bytes_written_total",
+    "bi_io_operations_total",
+    "bi_file_size_blocks",
+    "bi_file_size_bytes",
+    "bi_block_size_bytes",
+    "bi_cluster_size_bytes",
+    "bi_cluster_count",
+    "bi_buffers",
+    "bi_full_buffers",
+    "bi_current_cluster_free_bytes",
+    "bi_buffered_io_enabled",
+    "recovery_log_threshold_bytes",
+    "transaction_active_count",
+    "transaction_oldest_active_age_seconds",
+    "latch_busy_total",
+    "latch_locks_total",
+    "latch_waits_total",
+    "latch_spins_total",
+    "latch_lock_duration_seconds_total",
+    "latch_wait_or_spin_duration_seconds_total",
+    "lock_requests_total",
+    "lock_grants_total",
+    "lock_waits_total",
+    "lock_find_exclusive_grants_total",
+    "lock_find_share_grants_total",
+    "lock_cancellations_total",
+    "lock_downgrades_total",
+    "lock_redundant_grants_total"
+  ],
+  "entries": [
+    {
+      "name": "buffer_pool_configured_buffers",
+      "family": "buffer_pool",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "Verified run/startup `-B`/`-B2` value, or `_DbParams._DbParams-Name` and `_DbParams-Value` for those parameters",
+      "dimensions": [
+        "pool"
+      ],
+      "semantics": "Configured capacity, never inferred from activity; `pool=primary|alternate`.",
+      "sources": [
+        "_DbParams",
+        "effective_run_configuration"
+      ],
+      "fieldMapping": "Verified run/startup `-B`/`-B2` value, or `_DbParams._DbParams-Name` and `_DbParams-Value` for those parameters",
+      "sourceFields": [
+        "_DbParams._DbParams-Name",
+        "_DbParams._DbParams-Value"
+      ]
+    },
+    {
+      "name": "buffer_pool_active_buffers",
+      "family": "buffer_pool",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_ActBuffer._Buffer-Active`",
+      "dimensions": [
+        "pool"
+      ],
+      "semantics": "Active buffers by `_Buffer-Master`; `pool=primary|alternate`.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-Active`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-Active"
+      ]
+    },
+    {
+      "name": "buffer_pool_free_buffers",
+      "family": "buffer_pool",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_ActBuffer._Buffer-Free`",
+      "dimensions": [
+        "pool"
+      ],
+      "semantics": "Free buffers by `_Buffer-Master`; `pool=primary|alternate`.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-Free`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-Free"
+      ]
+    },
+    {
+      "name": "buffer_pool_logical_reads_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "read requests",
+      "sourceText": "`_ActBuffer._Buffer-LogicRds`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Client logical database block reads by pool.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-LogicRds`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-LogicRds"
+      ]
+    },
+    {
+      "name": "buffer_pool_logical_writes_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "write requests",
+      "sourceText": "`_ActBuffer._Buffer-LogicWrts`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Client logical database block writes by pool.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-LogicWrts`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-LogicWrts"
+      ]
+    },
+    {
+      "name": "buffer_pool_os_reads_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActBuffer._Buffer-OSRds`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Database blocks read from disk by pool.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-OSRds`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-OSRds"
+      ]
+    },
+    {
+      "name": "buffer_pool_os_writes_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActBuffer._Buffer-OSWrts`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Database blocks written to disk by pool.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-OSWrts`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-OSWrts"
+      ]
+    },
+    {
+      "name": "buffer_pool_deferred_writes_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "deferred block changes",
+      "sourceText": "`_ActBuffer._Buffer-Deferred`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Changes made before a block was written; a deferred write may avoid an I/O.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-Deferred`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-Deferred"
+      ]
+    },
+    {
+      "name": "buffer_pool_flushed_buffers_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActBuffer._Buffer-Flushed`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Blocks flushed at checkpoint end.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-Flushed`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-Flushed"
+      ]
+    },
+    {
+      "name": "buffer_pool_marked_buffers_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActBuffer._Buffer-Marked`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Blocks scheduled to be written before checkpoint end.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-Marked`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-Marked"
+      ]
+    },
+    {
+      "name": "buffer_pool_lru_skips_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "skips",
+      "sourceText": "`_ActBuffer._Buffer-LRUSkips`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "LRU-chain buffers skipped because locked or modified.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-LRUSkips`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-LRUSkips"
+      ]
+    },
+    {
+      "name": "buffer_pool_lru_writes_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "block writes",
+      "sourceText": "`_ActBuffer._Buffer-LRUwrts`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Blocks written to free a buffer for a read.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-LRUwrts`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-LRUwrts"
+      ]
+    },
+    {
+      "name": "buffer_pool_apw_enqueues_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "buffer enqueues",
+      "sourceText": "`_ActBuffer._Buffer-APWEnq`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Modified buffers placed on the APW queue.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-APWEnq`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-APWEnq"
+      ]
+    },
+    {
+      "name": "buffer_pool_checkpoints_total",
+      "family": "buffer_pool",
+      "type": "counter",
+      "unit": "checkpoints",
+      "sourceText": "`_ActBuffer._Buffer-Chkpts`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "Checkpoint operations recorded for each pool.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-Chkpts`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-Chkpts"
+      ]
+    },
+    {
+      "name": "buffer_pool_cumulative_cache_hit_ratio",
+      "family": "buffer_pool",
+      "type": "gauge",
+      "unit": "ratio 0–1",
+      "sourceText": "`_ActBuffer._Buffer-LogicRds` and `_ActBuffer._Buffer-OSRds`",
+      "dimensions": [
+        "pool",
+        "database_epoch"
+      ],
+      "semantics": "`(logical_reads - os_reads) / logical_reads` for the database-statistics epoch; unavailable when logical reads are zero or inputs are inconsistent. `pool=primary|alternate`; include `database_epoch`.",
+      "sources": [
+        "_ActBuffer"
+      ],
+      "fieldMapping": "`_ActBuffer._Buffer-LogicRds` and `_ActBuffer._Buffer-OSRds`",
+      "sourceFields": [
+        "_ActBuffer._Buffer-LogicRds",
+        "_ActBuffer._Buffer-OSRds"
+      ]
+    },
+    {
+      "name": "database_table_operations_total",
+      "family": "table_activity",
+      "type": "counter",
+      "unit": "records",
+      "sourceText": "`_ActSummary._Summary-RecCreat`, `_ActSummary._Summary-RecReads`, `_ActSummary._Summary-RecUpd`, `_ActSummary._Summary-RecDel`",
+      "dimensions": [
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Database-wide table record operations; map `create`→`RecCreat`, `read`→`RecReads`, `update`→`RecUpd`, `delete`→`RecDel`; `operation=create|read|update|delete`.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-RecCreat`, `_ActSummary._Summary-RecReads`, `_ActSummary._Summary-RecUpd`, `_ActSummary._Summary-RecDel`",
+      "sourceFields": [
+        "_ActSummary._Summary-RecCreat",
+        "_ActSummary._Summary-RecReads",
+        "_ActSummary._Summary-RecUpd",
+        "_ActSummary._Summary-RecDel"
+      ]
+    },
+    {
+      "name": "transaction_commits_total",
+      "family": "transaction",
+      "type": "counter",
+      "unit": "transactions",
+      "sourceText": "`_ActSummary._Summary-Commits`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database-wide committed transactions.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-Commits`",
+      "sourceFields": [
+        "_ActSummary._Summary-Commits"
+      ]
+    },
+    {
+      "name": "transaction_rollbacks_total",
+      "family": "transaction",
+      "type": "counter",
+      "unit": "transactions",
+      "sourceText": "`_ActSummary._Summary-Undos`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database-wide rolled-back transactions.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-Undos`",
+      "sourceFields": [
+        "_ActSummary._Summary-Undos"
+      ]
+    },
+    {
+      "name": "database_record_locks_total",
+      "family": "database_activity",
+      "type": "counter",
+      "unit": "lock uses",
+      "sourceText": "`_ActSummary._Summary-RecLock`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Record locks used.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-RecLock`",
+      "sourceFields": [
+        "_ActSummary._Summary-RecLock"
+      ]
+    },
+    {
+      "name": "database_record_lock_waits_total",
+      "family": "database_activity",
+      "type": "counter",
+      "unit": "waits",
+      "sourceText": "`_ActSummary._Summary-RecWait`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Waits to access a locked record.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-RecWait`",
+      "sourceFields": [
+        "_ActSummary._Summary-RecWait"
+      ]
+    },
+    {
+      "name": "database_buffer_lock_waits_total",
+      "family": "database_activity",
+      "type": "counter",
+      "unit": "waits",
+      "sourceText": "`_ActSummary._Summary-DbAccesses`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Waits for shared/exclusive locks on database buffers.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-DbAccesses`",
+      "sourceFields": [
+        "_ActSummary._Summary-DbAccesses"
+      ]
+    },
+    {
+      "name": "database_blocks_read_total",
+      "family": "database_activity",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActSummary._Summary-DbReads`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database blocks read.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-DbReads`",
+      "sourceFields": [
+        "_ActSummary._Summary-DbReads"
+      ]
+    },
+    {
+      "name": "database_blocks_written_total",
+      "family": "database_activity",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActSummary._Summary-DbWrites`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database blocks written to disk.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-DbWrites`",
+      "sourceFields": [
+        "_ActSummary._Summary-DbWrites"
+      ]
+    },
+    {
+      "name": "database_checkpoint_flushed_buffers_total",
+      "family": "database_activity",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActSummary._Summary-Flushed`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers flushed because they were not written before checkpoint end.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-Flushed`",
+      "sourceFields": [
+        "_ActSummary._Summary-Flushed"
+      ]
+    },
+    {
+      "name": "table_operations_total",
+      "family": "table_activity",
+      "type": "counter",
+      "unit": "table operations",
+      "sourceText": "`_TableStat._TableStat-Create`, `_TableStat._TableStat-Read`, `_TableStat._TableStat-Update`, `_TableStat._TableStat-Delete`, `_TableStat._TableStat-OSRead`",
+      "dimensions": [
+        "table",
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Per-allowlisted-table counts; map `create/read/update/delete/os_read` to the correspondingly named fields; `table=<allowlist|other>`, `operation=create|read|update|delete|os_read`. `_TableStat-OSRead` is valid only for Type II area tables.",
+      "sources": [
+        "_TableStat"
+      ],
+      "fieldMapping": "`_TableStat._TableStat-Create`, `_TableStat._TableStat-Read`, `_TableStat._TableStat-Update`, `_TableStat._TableStat-Delete`, `_TableStat._TableStat-OSRead`",
+      "sourceFields": [
+        "_TableStat._TableStat-Create",
+        "_TableStat._TableStat-Read",
+        "_TableStat._TableStat-Update",
+        "_TableStat._TableStat-Delete",
+        "_TableStat._TableStat-OSRead"
+      ]
+    },
+    {
+      "name": "index_operations_total",
+      "family": "index_activity",
+      "type": "counter",
+      "unit": "index operations",
+      "sourceText": "`_IndexStat._IndexStat-Create`, `_IndexStat._IndexStat-Read`, `_IndexStat._IndexStat-Delete`, `_IndexStat._IndexStat-Blockdelete`, `_IndexStat._IndexStat-Split`, `_IndexStat._IndexStat-OsRead`",
+      "dimensions": [
+        "index",
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Per-allowlisted-index counts; map `create/read/delete/split/os_read` to the correspondingly named fields and `block_delete` to `_IndexStat-Blockdelete`; `index=<allowlist|other>`, `operation=create|read|delete|block_delete|split|os_read`. `_IndexStat-OsRead` counts index reads from disk.",
+      "sources": [
+        "_IndexStat"
+      ],
+      "fieldMapping": "`_IndexStat._IndexStat-Create`, `_IndexStat._IndexStat-Read`, `_IndexStat._IndexStat-Delete`, `_IndexStat._IndexStat-Blockdelete`, `_IndexStat._IndexStat-Split`, `_IndexStat._IndexStat-OsRead`",
+      "sourceFields": [
+        "_IndexStat._IndexStat-Create",
+        "_IndexStat._IndexStat-Read",
+        "_IndexStat._IndexStat-Delete",
+        "_IndexStat._IndexStat-Blockdelete",
+        "_IndexStat._IndexStat-Split",
+        "_IndexStat._IndexStat-OsRead"
+      ]
+    },
+    {
+      "name": "index_blocks_read_total",
+      "family": "index_activity",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActIOType._IOType-IdxRds`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database-wide index block reads.",
+      "sources": [
+        "_ActIOType"
+      ],
+      "fieldMapping": "`_ActIOType._IOType-IdxRds`",
+      "sourceFields": [
+        "_ActIOType._IOType-IdxRds"
+      ]
+    },
+    {
+      "name": "index_blocks_written_total",
+      "family": "index_activity",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActIOType._IOType-IdxWrts`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database-wide index block writes.",
+      "sources": [
+        "_ActIOType"
+      ],
+      "fieldMapping": "`_ActIOType._IOType-IdxWrts`",
+      "sourceFields": [
+        "_ActIOType._IOType-IdxWrts"
+      ]
+    },
+    {
+      "name": "data_blocks_read_total",
+      "family": "index_activity",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActIOType._IOType-DataReads`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database-wide data block reads.",
+      "sources": [
+        "_ActIOType"
+      ],
+      "fieldMapping": "`_ActIOType._IOType-DataReads`",
+      "sourceFields": [
+        "_ActIOType._IOType-DataReads"
+      ]
+    },
+    {
+      "name": "data_blocks_written_total",
+      "family": "index_activity",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActIOType._IOType-DataWrts`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database-wide data block writes.",
+      "sources": [
+        "_ActIOType"
+      ],
+      "fieldMapping": "`_ActIOType._IOType-DataWrts`",
+      "sourceFields": [
+        "_ActIOType._IOType-DataWrts"
+      ]
+    },
+    {
+      "name": "checkpoint_events_total",
+      "family": "checkpoint",
+      "type": "counter",
+      "unit": "checkpoints",
+      "sourceText": "`_ActSummary._Summary-Chkpts`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Cumulative completed checkpoint count.",
+      "sources": [
+        "_ActSummary"
+      ],
+      "fieldMapping": "`_ActSummary._Summary-Chkpts`",
+      "sourceFields": [
+        "_ActSummary._Summary-Chkpts"
+      ]
+    },
+    {
+      "name": "checkpoint_last_duration_seconds",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "seconds",
+      "sourceText": "`_Checkpoint._Checkpoint-Duration`",
+      "dimensions": [],
+      "semantics": "Housekeeping duration for the row with greatest `_Checkpoint-Number`; latest retained event only.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-Duration`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-Duration"
+      ]
+    },
+    {
+      "name": "checkpoint_last_bi_write_duration_seconds",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "seconds",
+      "sourceText": "`_Checkpoint._Checkpoint-Bi-Write-Time`",
+      "dimensions": [],
+      "semantics": "Latest retained checkpoint BI buffer write duration.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-Bi-Write-Time`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-Bi-Write-Time"
+      ]
+    },
+    {
+      "name": "checkpoint_last_database_write_duration_seconds",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "seconds",
+      "sourceText": "`_Checkpoint._Checkpoint-B-Write-Time`",
+      "dimensions": [],
+      "semantics": "Latest retained checkpoint database-buffer write duration.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-B-Write-Time`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-B-Write-Time"
+      ]
+    },
+    {
+      "name": "checkpoint_last_sync_duration_seconds",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "seconds",
+      "sourceText": "`_Checkpoint._Checkpoint-SyncTime`",
+      "dimensions": [],
+      "semantics": "Latest retained checkpoint filesystem sync duration.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-SyncTime`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-SyncTime"
+      ]
+    },
+    {
+      "name": "checkpoint_last_buffers",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Checkpoint._Checkpoint-Buffers`",
+      "dimensions": [],
+      "semantics": "Buffers checkpointed in the latest retained checkpoint.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-Buffers`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-Buffers"
+      ]
+    },
+    {
+      "name": "checkpoint_last_dirty_buffers",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Checkpoint._Checkpoint-Dirty`",
+      "dimensions": [],
+      "semantics": "Modified buffers scheduled to be written in the latest retained checkpoint.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-Dirty`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-Dirty"
+      ]
+    },
+    {
+      "name": "checkpoint_last_flushed_buffers",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Checkpoint._Checkpoint-Flush`",
+      "dimensions": [],
+      "semantics": "Buffers written at the end of the latest retained checkpoint.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-Flush`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-Flush"
+      ]
+    },
+    {
+      "name": "checkpoint_last_apw_queue_buffers",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Checkpoint._Checkpoint-ApwQ`",
+      "dimensions": [],
+      "semantics": "Buffers written by the APW queue and replaced on the LRU chain in the latest retained checkpoint.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-ApwQ`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-ApwQ"
+      ]
+    },
+    {
+      "name": "checkpoint_last_checkpoint_queue_buffers",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Checkpoint._Checkpoint-CptQ`",
+      "dimensions": [],
+      "semantics": "Buffers written from the checkpoint queue by APWs in the latest retained checkpoint.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-CptQ`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-CptQ"
+      ]
+    },
+    {
+      "name": "checkpoint_last_apw_scan_buffers",
+      "family": "checkpoint",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Checkpoint._Checkpoint-Scan`",
+      "dimensions": [],
+      "semantics": "Buffers written by APWs during the latest retained checkpoint scan.",
+      "sources": [
+        "_Checkpoint"
+      ],
+      "fieldMapping": "`_Checkpoint._Checkpoint-Scan`",
+      "sourceFields": [
+        "_Checkpoint._Checkpoint-Scan"
+      ]
+    },
+    {
+      "name": "apw_queue_writes_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActPWs._PW-ApwQWrites`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers written to clear the APW queue.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-ApwQWrites`",
+      "sourceFields": [
+        "_ActPWs._PW-ApwQWrites"
+      ]
+    },
+    {
+      "name": "apw_buffers_scanned_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActPWs._PW-BuffsScaned`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers scanned during APW cycles.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-BuffsScaned`",
+      "sourceFields": [
+        "_ActPWs._PW-BuffsScaned"
+      ]
+    },
+    {
+      "name": "apw_buffers_checkpointed_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActPWs._PW-BufsCkp`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers checkpointed.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-BufsCkp`",
+      "sourceFields": [
+        "_ActPWs._PW-BufsCkp"
+      ]
+    },
+    {
+      "name": "apw_checkpoint_queue_writes_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActPWs._PW-CkpQWrites`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers written from the checkpoint queue by APWs.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-CkpQWrites`",
+      "sourceFields": [
+        "_ActPWs._PW-CkpQWrites"
+      ]
+    },
+    {
+      "name": "apw_database_writes_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "write operations",
+      "sourceText": "`_ActPWs._PW-DBWrites`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Database write operations performed by APWs.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-DBWrites`",
+      "sourceFields": [
+        "_ActPWs._PW-DBWrites"
+      ]
+    },
+    {
+      "name": "apw_checkpoint_flushes_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "blocks",
+      "sourceText": "`_ActPWs._PW-Flushed`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Blocks flushed at checkpoint end.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-Flushed`",
+      "sourceFields": [
+        "_ActPWs._PW-Flushed"
+      ]
+    },
+    {
+      "name": "apw_buffers_marked_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActPWs._PW-Marked`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers scheduled to be written before checkpoint end.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-Marked`",
+      "sourceFields": [
+        "_ActPWs._PW-Marked"
+      ]
+    },
+    {
+      "name": "apw_scan_cycles_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "cycles",
+      "sourceText": "`_ActPWs._PW-ScanCycles`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "APW scan cycles.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-ScanCycles`",
+      "sourceFields": [
+        "_ActPWs._PW-ScanCycles"
+      ]
+    },
+    {
+      "name": "apw_scan_writes_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "buffers",
+      "sourceText": "`_ActPWs._PW-ScanWrites`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Buffers written during APW scan cycles.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-ScanWrites`",
+      "sourceFields": [
+        "_ActPWs._PW-ScanWrites"
+      ]
+    },
+    {
+      "name": "apw_all_process_database_writes_total",
+      "family": "apw",
+      "type": "counter",
+      "unit": "write operations",
+      "sourceText": "`_ActPWs._PW-TotDBWrites`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Total database write operations by all processes.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-TotDBWrites`",
+      "sourceFields": [
+        "_ActPWs._PW-TotDBWrites"
+      ]
+    },
+    {
+      "name": "apw_uptime_seconds",
+      "family": "apw",
+      "type": "gauge",
+      "unit": "seconds",
+      "sourceText": "`_ActPWs._PW-UpTime`",
+      "dimensions": [],
+      "semantics": "Database uptime at the APW sample.",
+      "sources": [
+        "_ActPWs"
+      ],
+      "fieldMapping": "`_ActPWs._PW-UpTime`",
+      "sourceFields": [
+        "_ActPWs._PW-UpTime"
+      ]
+    },
+    {
+      "name": "bi_blocks_written_total",
+      "family": "bi",
+      "type": "counter",
+      "unit": "BI blocks",
+      "sourceText": "`_ActBILog._BiLog-TotalWrts`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Cumulative total writes to the BI file, expressed in BI blocks.",
+      "sources": [
+        "_ActBILog"
+      ],
+      "fieldMapping": "_ActBILog._BiLog-TotalWrts",
+      "sourceFields": [
+        "_ActBILog._BiLog-TotalWrts"
+      ]
+    },
+    {
+      "name": "bi_bytes_written_total",
+      "family": "bi",
+      "type": "counter",
+      "unit": "bytes",
+      "sourceText": "`_ActBILog._BiLog-BytesWrtn`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Cumulative number of bytes written to the BI file.",
+      "sources": [
+        "_ActBILog"
+      ],
+      "fieldMapping": "_ActBILog._BiLog-BytesWrtn",
+      "sourceFields": [
+        "_ActBILog._BiLog-BytesWrtn"
+      ]
+    },
+    {
+      "name": "bi_io_operations_total",
+      "family": "bi",
+      "type": "counter",
+      "unit": "I/O operations",
+      "sourceText": "`_ActIOType._IOType-BiRds`, `_ActIOType._IOType-BiWrts`",
+      "dimensions": [
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Map `operation=read` to `_IOType-BiRds` and `operation=write` to `_IOType-BiWrts`. This counts I/O operations and is distinct from BI block/byte totals.",
+      "sources": [
+        "_ActIOType"
+      ],
+      "fieldMapping": "`_ActIOType._IOType-BiRds`, `_ActIOType._IOType-BiWrts`",
+      "sourceFields": [
+        "_ActIOType._IOType-BiRds",
+        "_ActIOType._IOType-BiWrts"
+      ]
+    },
+    {
+      "name": "bi_file_size_blocks",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "BI blocks",
+      "sourceText": "`_DbStatus._DbStatus-BiSize`",
+      "dimensions": [],
+      "semantics": "Current logical BI file length in BI blocks.",
+      "sources": [
+        "_DbStatus"
+      ],
+      "fieldMapping": "`_DbStatus._DbStatus-BiSize`",
+      "sourceFields": [
+        "_DbStatus._DbStatus-BiSize"
+      ]
+    },
+    {
+      "name": "bi_file_size_bytes",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "bytes",
+      "sourceText": "`_DbStatus._DbStatus-BiSize × _DbStatus-BiBlkSize`",
+      "dimensions": [],
+      "semantics": "Current logical BI file length converted from blocks to bytes.",
+      "sources": [
+        "_DbStatus"
+      ],
+      "fieldMapping": "`_DbStatus._DbStatus-BiSize × _DbStatus-BiBlkSize`",
+      "sourceFields": [
+        "_DbStatus._DbStatus-BiSize",
+        "_DbStatus._DbStatus-BiBlkSize"
+      ]
+    },
+    {
+      "name": "bi_block_size_bytes",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "bytes",
+      "sourceText": "`_DbStatus._DbStatus-BiBlkSize`",
+      "dimensions": [],
+      "semantics": "Bytes per BI block.",
+      "sources": [
+        "_DbStatus"
+      ],
+      "fieldMapping": "`_DbStatus._DbStatus-BiBlkSize`",
+      "sourceFields": [
+        "_DbStatus._DbStatus-BiBlkSize"
+      ]
+    },
+    {
+      "name": "bi_cluster_size_bytes",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "bytes",
+      "sourceText": "`_DbStatus._DbStatus-BiClSize × 1024`",
+      "dimensions": [],
+      "semantics": "BI cluster size converted from KiB to bytes.",
+      "sources": [
+        "_DbStatus"
+      ],
+      "fieldMapping": "`_DbStatus._DbStatus-BiClSize × 1024`",
+      "sourceFields": [
+        "_DbStatus._DbStatus-BiClSize"
+      ]
+    },
+    {
+      "name": "bi_cluster_count",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "clusters",
+      "sourceText": "`_DbStatus._DbStatus-BiSize`, `-BiBlkSize`, `-BiClSize`",
+      "dimensions": [],
+      "semantics": "`BiSize × BiBlkSize / (BiClSize × 1024)`; emit only when all values are valid and the result is integral.",
+      "sources": [
+        "_DbStatus"
+      ],
+      "fieldMapping": "`_DbStatus._DbStatus-BiSize`, `-BiBlkSize`, `-BiClSize`",
+      "sourceFields": [
+        "_DbStatus._DbStatus-BiSize",
+        "_DbStatus._DbStatus-BiBlkSize",
+        "_DbStatus._DbStatus-BiClSize"
+      ]
+    },
+    {
+      "name": "bi_buffers",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Logging._Logging-BiBuffs`",
+      "dimensions": [],
+      "semantics": "Configured BI buffer count.",
+      "sources": [
+        "_Logging"
+      ],
+      "fieldMapping": "`_Logging._Logging-BiBuffs`",
+      "sourceFields": [
+        "_Logging._Logging-BiBuffs"
+      ]
+    },
+    {
+      "name": "bi_full_buffers",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "buffers",
+      "sourceText": "`_Logging._Logging-BiFullBuffs`",
+      "dimensions": [],
+      "semantics": "Full BI buffer count.",
+      "sources": [
+        "_Logging"
+      ],
+      "fieldMapping": "`_Logging._Logging-BiFullBuffs`",
+      "sourceFields": [
+        "_Logging._Logging-BiFullBuffs"
+      ]
+    },
+    {
+      "name": "bi_current_cluster_free_bytes",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "bytes",
+      "sourceText": "`_Logging._Logging-BiBytesFree`",
+      "dimensions": [],
+      "semantics": "Free bytes remaining in the current BI cluster.",
+      "sources": [
+        "_Logging"
+      ],
+      "fieldMapping": "`_Logging._Logging-BiBytesFree`",
+      "sourceFields": [
+        "_Logging._Logging-BiBytesFree"
+      ]
+    },
+    {
+      "name": "bi_buffered_io_enabled",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "boolean 0/1",
+      "sourceText": "`_Logging._Logging-BiIO`",
+      "dimensions": [],
+      "semantics": "`1` for `BUFFERED`, `0` for `Reliable`; other values are unavailable.",
+      "sources": [
+        "_Logging"
+      ],
+      "fieldMapping": "`_Logging._Logging-BiIO`",
+      "sourceFields": [
+        "_Logging._Logging-BiIO"
+      ]
+    },
+    {
+      "name": "recovery_log_threshold_bytes",
+      "family": "bi",
+      "type": "gauge",
+      "unit": "bytes",
+      "sourceText": "`_DbParams._DbParams-Name`, `-Value` for `-bithold`",
+      "dimensions": [],
+      "semantics": "Effective threshold converted from MB using 1,048,576 bytes per MB; a verified disabled value is zero. It is a configured limit, not current BI usage.",
+      "sources": [
+        "_DbParams"
+      ],
+      "fieldMapping": "`_DbParams._DbParams-Name`, `-Value` for `-bithold`",
+      "sourceFields": [
+        "_DbParams._DbParams-Name",
+        "_DbParams._DbParams-Value"
+      ]
+    },
+    {
+      "name": "transaction_active_count",
+      "family": "transaction",
+      "type": "gauge",
+      "unit": "transactions",
+      "sourceText": "Count of `_Trans` rows",
+      "dimensions": [],
+      "semantics": "Number of active transactions; aggregate only, with no transaction/user identifiers.",
+      "sources": [
+        "_ActSummary",
+        "_Trans"
+      ],
+      "fieldMapping": "Count of `_Trans` rows",
+      "sourceFields": []
+    },
+    {
+      "name": "transaction_oldest_active_age_seconds",
+      "family": "transaction",
+      "type": "gauge",
+      "unit": "seconds",
+      "sourceText": "Maximum `_Trans._Trans-Duration` across rows",
+      "dimensions": [],
+      "semantics": "Age/duration of the longest currently active transaction.",
+      "sources": [
+        "_Trans"
+      ],
+      "fieldMapping": "Maximum `_Trans._Trans-Duration` across rows",
+      "sourceFields": [
+        "_Trans._Trans-Duration"
+      ]
+    },
+    {
+      "name": "latch_busy_total",
+      "family": "latch",
+      "type": "counter",
+      "unit": "busy events",
+      "sourceText": "`_Latch._Latch-Busy`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Sum across all rows; no latch-name/type labels.",
+      "sources": [
+        "_Latch"
+      ],
+      "fieldMapping": "`_Latch._Latch-Busy`",
+      "sourceFields": [
+        "_Latch._Latch-Busy"
+      ]
+    },
+    {
+      "name": "latch_locks_total",
+      "family": "latch",
+      "type": "counter",
+      "unit": "lock events",
+      "sourceText": "`_Latch._Latch-Lock`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Sum across all rows; no latch-name/type labels.",
+      "sources": [
+        "_Latch"
+      ],
+      "fieldMapping": "`_Latch._Latch-Lock`",
+      "sourceFields": [
+        "_Latch._Latch-Lock"
+      ]
+    },
+    {
+      "name": "latch_waits_total",
+      "family": "latch",
+      "type": "counter",
+      "unit": "waits",
+      "sourceText": "`_Latch._Latch-Wait`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Sum across all rows; no latch-name/type labels.",
+      "sources": [
+        "_Latch"
+      ],
+      "fieldMapping": "`_Latch._Latch-Wait`",
+      "sourceFields": [
+        "_Latch._Latch-Wait"
+      ]
+    },
+    {
+      "name": "latch_spins_total",
+      "family": "latch",
+      "type": "counter",
+      "unit": "spins",
+      "sourceText": "`_Latch._Latch-Spin`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Sum across all rows; no latch-name/type labels.",
+      "sources": [
+        "_Latch"
+      ],
+      "fieldMapping": "`_Latch._Latch-Spin`",
+      "sourceFields": [
+        "_Latch._Latch-Spin"
+      ]
+    },
+    {
+      "name": "latch_lock_duration_seconds_total",
+      "family": "latch",
+      "type": "counter",
+      "unit": "seconds",
+      "sourceText": "Sum `_Latch._Latch-LockT` ÷ 1,000,000",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Cumulative lock time converted from microseconds; no latch-name/type labels.",
+      "sources": [
+        "_Latch"
+      ],
+      "fieldMapping": "Sum `_Latch._Latch-LockT` ÷ 1,000,000",
+      "sourceFields": [
+        "_Latch._Latch-LockT"
+      ]
+    },
+    {
+      "name": "latch_wait_or_spin_duration_seconds_total",
+      "family": "latch",
+      "type": "counter",
+      "unit": "seconds",
+      "sourceText": "Sum `_Latch._Latch-WaitT` ÷ 1,000,000",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Cumulative wait-or-spin time converted from microseconds; do not label this as wait-only time; no latch-name/type labels.",
+      "sources": [
+        "_Latch"
+      ],
+      "fieldMapping": "Sum `_Latch._Latch-WaitT` ÷ 1,000,000",
+      "sourceFields": [
+        "_Latch._Latch-WaitT"
+      ]
+    },
+    {
+      "name": "lock_requests_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "requests",
+      "sourceText": "`_ActLock._Lock-ExclLock`, `_ActLock._Lock-RecGetReq`, `_ActLock._Lock-ShrReq`, `_ActLock._Lock-UpgReq`",
+      "dimensions": [
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Map `exclusive/record_get/share/upgrade` to `ExclLock/RecGetReq/ShrReq/UpgReq`; `operation=exclusive|record_get|share|upgrade`.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "_ActLock._Lock-ExclLock, _Lock-RecGetReq, _Lock-ShrReq, _Lock-UpgReq",
+      "sourceFields": [
+        "_ActLock._Lock-ExclLock",
+        "_ActLock._Lock-RecGetReq",
+        "_ActLock._Lock-ShrReq",
+        "_ActLock._Lock-UpgReq"
+      ]
+    },
+    {
+      "name": "lock_grants_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "grants",
+      "sourceText": "`_ActLock._Lock-ExclReq`, `_ActLock._Lock-RecGetLock`, `_ActLock._Lock-ShrLock`, `_ActLock._Lock-UpgLock`",
+      "dimensions": [
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Map `exclusive/record_get/share/upgrade` to `ExclReq/RecGetLock/ShrLock/UpgLock`; `operation=exclusive|record_get|share|upgrade`.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "_ActLock._Lock-ExclReq, _Lock-RecGetLock, _Lock-ShrLock, _Lock-UpgLock",
+      "sourceFields": [
+        "_ActLock._Lock-ExclReq",
+        "_ActLock._Lock-RecGetLock",
+        "_ActLock._Lock-ShrLock",
+        "_ActLock._Lock-UpgLock"
+      ]
+    },
+    {
+      "name": "lock_waits_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "waits",
+      "sourceText": "`_ActLock._Lock-ExclWait`, `_ActLock._Lock-RecGetWait`, `_ActLock._Lock-ShrWait`, `_ActLock._Lock-UpgWait`",
+      "dimensions": [
+        "operation",
+        "database_epoch"
+      ],
+      "semantics": "Map `exclusive/record_get/share/upgrade` to `ExclWait/RecGetWait/ShrWait/UpgWait`; `operation=exclusive|record_get|share|upgrade`.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "`_ActLock._Lock-ExclWait`, `_ActLock._Lock-RecGetWait`, `_ActLock._Lock-ShrWait`, `_ActLock._Lock-UpgWait`",
+      "sourceFields": [
+        "_ActLock._Lock-ExclWait",
+        "_ActLock._Lock-RecGetWait",
+        "_ActLock._Lock-ShrWait",
+        "_ActLock._Lock-UpgWait"
+      ]
+    },
+    {
+      "name": "lock_find_exclusive_grants_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "grants",
+      "sourceText": "`_ActLock._Lock-ExclFind`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Number of exclusive find requests granted.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "`_ActLock._Lock-ExclFind`",
+      "sourceFields": [
+        "_ActLock._Lock-ExclFind"
+      ]
+    },
+    {
+      "name": "lock_find_share_grants_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "grants",
+      "sourceText": "`_ActLock._Lock-ShrFind`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Number of share find requests granted.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "`_ActLock._Lock-ShrFind`",
+      "sourceFields": [
+        "_ActLock._Lock-ShrFind"
+      ]
+    },
+    {
+      "name": "lock_cancellations_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "requests",
+      "sourceText": "`_ActLock._Lock-CanclReq`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Cancelled lock requests.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "`_ActLock._Lock-CanclReq`",
+      "sourceFields": [
+        "_ActLock._Lock-CanclReq"
+      ]
+    },
+    {
+      "name": "lock_downgrades_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "locks",
+      "sourceText": "`_ActLock._Lock-Downgrade`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Downgraded locks.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "`_ActLock._Lock-Downgrade`",
+      "sourceFields": [
+        "_ActLock._Lock-Downgrade"
+      ]
+    },
+    {
+      "name": "lock_redundant_grants_total",
+      "family": "lock",
+      "type": "counter",
+      "unit": "requests",
+      "sourceText": "`_ActLock._Lock-RedReq`",
+      "dimensions": [
+        "database_epoch"
+      ],
+      "semantics": "Duplicate lock requests granted.",
+      "sources": [
+        "_ActLock"
+      ],
+      "fieldMapping": "`_ActLock._Lock-RedReq`",
+      "sourceFields": [
+        "_ActLock._Lock-RedReq"
+      ]
+    }
+  ]
+}

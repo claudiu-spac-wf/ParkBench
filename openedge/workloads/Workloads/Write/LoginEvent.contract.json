@@ -1,0 +1,97 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-login-event",
+  "version": 1,
+  "procedure": "Workloads/Write/LoginEvent.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "LoginEvent",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "LoginEvent.LoginEventId:int64",
+    "LoginEvent.RandomInt10:integer",
+    "LoginEvent.RandomInt100:integer",
+    "LoginEvent.RandomInt1000:integer",
+    "LoginEvent.CreatedAt:datetime-tz",
+    "LoginEvent.CustomerId:int64",
+    "LoginEvent.EventDateTime:datetime-tz",
+    "LoginEvent.EventKind:character",
+    "LoginEvent.Channel:character",
+    "LoginEvent.IpAddress:character",
+    "LoginEvent.DeviceId:character",
+    "LoginEvent.IsSuccess:logical",
+    "LoginEvent.SessionSeconds:integer",
+    "Customer.CustomerId:int64"
+  ],
+  "requiredIndexes": [
+    "LoginEvent.PkLoginEvent",
+    "LoginEvent.IxRandomInt10",
+    "LoginEvent.IxRandomInt100",
+    "LoginEvent.IxRandomInt1000",
+    "LoginEvent.IxCustomerTime",
+    "Customer.PkCustomer"
+  ],
+  "requiredSequences": [
+    "SeqLoginEventId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "LoginEvent"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "LoginEvent"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "LoginEvent"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-payee",
+  "version": 1,
+  "procedure": "Workloads/Write/Payee.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Payee",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Payee.PayeeId:int64",
+    "Payee.RandomInt10:integer",
+    "Payee.RandomInt100:integer",
+    "Payee.RandomInt1000:integer",
+    "Payee.CreatedAt:datetime-tz",
+    "Payee.CustomerId:int64",
+    "Payee.PayeeName:character",
+    "Payee.PayeeKind:character",
+    "Payee.BankRoutingNumber:character",
+    "Payee.AccountNumberMasked:character",
+    "Payee.ReferenceText:character",
+    "Payee.Email:character",
+    "Payee.AddressLine1:character",
+    "Payee.City:character",
+    "Payee.PostalCode:character",
+    "Payee.IsFavorite:logical",
+    "Payee.LastPaidDate:date",
+    "Payee.UpdatedAt:datetime-tz",
+    "Customer.CustomerId:int64"
+  ],
+  "requiredIndexes": [
+    "Payee.PkPayee",
+    "Payee.IxRandomInt10",
+    "Payee.IxRandomInt100",
+    "Payee.IxRandomInt1000",
+    "Payee.IxCustomerName",
+    "Customer.PkCustomer"
+  ],
+  "requiredSequences": [
+    "SeqPayeeId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Payee"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Payee"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Payee"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

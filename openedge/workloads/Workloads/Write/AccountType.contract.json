@@ -1,0 +1,95 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-account-type",
+  "version": 1,
+  "procedure": "Workloads/Write/AccountType.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "AccountType",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "AccountType.AccountTypeId:int64",
+    "AccountType.RandomInt10:integer",
+    "AccountType.RandomInt100:integer",
+    "AccountType.RandomInt1000:integer",
+    "AccountType.CreatedAt:datetime-tz",
+    "AccountType.AccountTypeCode:character",
+    "AccountType.AccountTypeName:character",
+    "AccountType.Category:character",
+    "AccountType.Description:character",
+    "AccountType.TermsText:character",
+    "AccountType.MinimumBalance:decimal",
+    "AccountType.MonthlyFee:decimal",
+    "AccountType.OverdraftAllowed:logical",
+    "AccountType.TermMonths:integer",
+    "AccountType.CurrentInterestRate:decimal",
+    "AccountType.IsActive:logical"
+  ],
+  "requiredIndexes": [
+    "AccountType.PkAccountType",
+    "AccountType.IxRandomInt10",
+    "AccountType.IxRandomInt100",
+    "AccountType.IxRandomInt1000",
+    "AccountType.UxAccountTypeCode",
+    "AccountType.IxCategory"
+  ],
+  "requiredSequences": [
+    "SeqAccountTypeId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "AccountType"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "AccountType"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "AccountType"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

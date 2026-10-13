@@ -1,0 +1,102 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-account-holder",
+  "version": 1,
+  "procedure": "Workloads/Write/AccountHolder.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "AccountHolder",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "AccountHolder.AccountHolderId:int64",
+    "AccountHolder.RandomInt10:integer",
+    "AccountHolder.RandomInt100:integer",
+    "AccountHolder.RandomInt1000:integer",
+    "AccountHolder.CreatedAt:datetime-tz",
+    "AccountHolder.AccountId:int64",
+    "AccountHolder.CustomerId:int64",
+    "AccountHolder.HolderRole:character",
+    "AccountHolder.OwnershipPercent:decimal",
+    "AccountHolder.AddedDate:date",
+    "AccountHolder.UpdatedAt:datetime-tz",
+    "Account.AccountId:int64",
+    "Customer.CustomerId:int64"
+  ],
+  "requiredIndexes": [
+    "AccountHolder.PkAccountHolder",
+    "AccountHolder.IxRandomInt10",
+    "AccountHolder.IxRandomInt100",
+    "AccountHolder.IxRandomInt1000",
+    "AccountHolder.UxAccountCustomer",
+    "AccountHolder.IxCustomerAccount",
+    "Account.PkAccount",
+    "Customer.PkCustomer"
+  ],
+  "requiredSequences": [
+    "SeqAccountHolderId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "AccountHolder"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "AccountHolder"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "AccountHolder"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

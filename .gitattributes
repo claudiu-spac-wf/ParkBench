@@ -1,0 +1,7 @@
+# Windows batch files must keep CRLF; shell scripts must keep LF (they run in Linux containers).
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+docker/openedge-observer/parkbench-openedge-db-observer text eol=lf

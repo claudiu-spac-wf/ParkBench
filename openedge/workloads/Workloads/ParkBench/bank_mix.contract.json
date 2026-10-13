@@ -1,0 +1,115 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-bank-mix",
+  "version": 1,
+  "procedure": "Workloads/ParkBench/bank_mix.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "BenchmarkTableInfo",
+      "minimumRows": 1
+    },
+    {
+      "name": "Currency",
+      "minimumRows": 1
+    },
+    {
+      "name": "Branch",
+      "minimumRows": 1
+    },
+    {
+      "name": "AccountType",
+      "minimumRows": 1
+    },
+    {
+      "name": "CustomerContact",
+      "minimumRows": 1
+    },
+    {
+      "name": "AccountHolder",
+      "minimumRows": 1
+    },
+    {
+      "name": "DebitTransaction",
+      "minimumRows": 1
+    },
+    {
+      "name": "AuditLog",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "BenchmarkTableInfo.TableName:character",
+    "BenchmarkTableInfo.MaxId:int64",
+    "CustomerContact.RandomInt100:integer",
+    "AccountHolder.RandomInt1000:integer",
+    "DebitTransaction.DebitTransactionId:int64",
+    "AuditLog.AuditLogId:int64",
+    "AuditLog.ChangeSummary:character"
+  ],
+  "requiredIndexes": [
+    "CustomerContact.IxRandomInt100",
+    "AccountHolder.IxRandomInt1000",
+    "DebitTransaction.PkDebitTransaction",
+    "AuditLog.PkAuditLog"
+  ],
+  "requiredSequences": ["SeqAuditLogId"],
+  "input": {
+    "mode": ["run", "validate"],
+    "op": ["reference-point", "selective", "range", "audit-write-cycle"],
+    "key": "load-generator record {name:string, value:integer, sequence:integer}"
+  },
+  "operations": [
+    {
+      "op": "reference-point",
+      "tables": ["Currency", "Branch", "AccountType"],
+      "access": "point",
+      "bounds": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    {
+      "op": "selective",
+      "tables": ["CustomerContact", "AccountHolder"],
+      "access": "random-int",
+      "bounds": {
+        "min": 0,
+        "max": 1000
+      }
+    },
+    {
+      "op": "range",
+      "tables": ["DebitTransaction"],
+      "access": "range",
+      "width": 100,
+      "bounds": {
+        "min": 1,
+        "max": 100
+      }
+    },
+    {
+      "op": "audit-write-cycle",
+      "tables": ["AuditLog"],
+      "access": "create-update-delete",
+      "bounds": {
+        "min": 1,
+        "max": 1
+      }
+    }
+  ],
+  "writes": {
+    "tables": ["AuditLog"],
+    "scope": "rows created by the same operation",
+    "cleanup": "created row is deleted in the same transaction"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

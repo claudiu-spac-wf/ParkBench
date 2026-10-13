@@ -1,0 +1,1697 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run-summary.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "metricDefinitionsVersion",
+    "run",
+    "generatedAt",
+    "origin",
+    "windows",
+    "sampling",
+    "quality",
+    "memberships",
+    "workload",
+    "observerHealth",
+    "metricsReference",
+    "contextReference",
+    "totalRowCount",
+    "tableRowCount"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "run-summary.v1"
+    },
+    "metricDefinitionsVersion": {
+      "const": "measurement-summary.v1"
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "experimentId", "variantId", "repetition", "state", "measurementValidity"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "experimentId": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "variantId": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "repetition": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "PROVISIONING",
+            "DB_READY",
+            "PAS_READY",
+            "WARMING_UP",
+            "MEASURING",
+            "COOLDOWN",
+            "FINALIZING",
+            "SUCCEEDED",
+            "INCOMPLETE",
+            "THRESHOLD_FAILED",
+            "FAILED",
+            "CANCELLED",
+            "INTERRUPTED"
+          ]
+        },
+        "measurementValidity": {
+          "enum": ["PENDING", "VALID", "INCOMPLETE", "UNAVAILABLE"]
+        }
+      }
+    },
+    "generatedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "origin": {
+      "enum": ["new_run", "historical_recompute"]
+    },
+    "windows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run", "measurement"],
+      "properties": {
+        "run": {
+          "type": "object",
+          "required": ["start", "end"],
+          "properties": {
+            "start": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "end": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "measurement": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "start", "end", "durationSeconds"],
+          "properties": {
+            "state": {
+              "enum": ["completed", "interrupted", "not_started"]
+            },
+            "start": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "end": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "sampling": {
+      "type": "object",
+      "required": ["baseStepSeconds", "observationStepSeconds", "sources", "boundaryEstimation"],
+      "properties": {
+        "baseStepSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "observationStepSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "sources": {
+          "type": "array",
+          "maxItems": 256
+        },
+        "boundaryEstimation": {
+          "type": "string",
+          "maxLength": 1024
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "required": ["complete", "requiredGaps", "optionalWarnings", "cleanupStatus"],
+      "properties": {
+        "complete": {
+          "type": "boolean"
+        },
+        "requiredGaps": {
+          "type": "array"
+        },
+        "optionalWarnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cleanupStatus": {
+          "enum": ["PENDING", "COMPLETE", "PARTIAL", "FAILED"]
+        },
+        "failureReason": {
+          "type": "string"
+        },
+        "failureKind": {
+          "type": "string"
+        }
+      }
+    },
+    "memberships": {
+      "type": "array"
+    },
+    "workload": {
+      "type": "object"
+    },
+    "observerHealth": {
+      "type": "object"
+    },
+    "metricsReference": {
+      "type": "object",
+      "required": ["source", "queries", "labelKeys"]
+    },
+    "contextReference": {
+      "type": "object",
+      "required": ["path"]
+    },
+    "totalRowCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tableRowCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "expectedTableCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "observedTableCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rowKey",
+        "definitionId",
+        "group",
+        "displayName",
+        "coverageScope",
+        "dimensions",
+        "rateOrLevelUnit",
+        "totalUnit",
+        "statistics",
+        "coverage",
+        "sourceReferences"
+      ],
+      "properties": {
+        "rowKey": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "definitionId": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "group": {
+          "enum": ["platform", "database", "pas"]
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "coverageScope": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "service": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "replica": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "table": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "pool": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "direction": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "operation": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "scope": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            }
+          }
+        },
+        "rateOrLevelUnit": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "totalUnit": {
+          "type": ["string", "null"],
+          "maxLength": 64
+        },
+        "statistics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["average", "p90", "p95"],
+          "properties": {
+            "average": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "status", "reasons", "unit", "coverage"],
+              "properties": {
+                "value": {
+                  "type": ["number", "null"]
+                },
+                "status": {
+                  "enum": ["available", "estimated", "partial", "unavailable"]
+                },
+                "reasons": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "not_configured",
+                      "unsupported",
+                      "not_licensed",
+                      "not_collected",
+                      "temporarily_unavailable",
+                      "insufficient_data",
+                      "measurement_not_started",
+                      "measurement_boundaries_missing",
+                      "expired",
+                      "source_unavailable",
+                      "required_member_missing",
+                      "counter_reset_gap",
+                      "conflicting_observation",
+                      "coverage_mismatch",
+                      "legacy_semantics",
+                      "run_not_finalized",
+                      "summary_limit_exceeded",
+                      "query_timeout",
+                      "persistence_failed"
+                    ]
+                  }
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "coverageModel",
+                    "durationSeconds",
+                    "observedSeconds",
+                    "estimatedEdgeSeconds",
+                    "missingSeconds",
+                    "sourceStepSeconds",
+                    "observationStepSeconds",
+                    "percentileBinCount",
+                    "omittedBinCount",
+                    "expectedAcquisitions",
+                    "observedAcquisitions",
+                    "reasons"
+                  ],
+                  "properties": {
+                    "durationSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "observedSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estimatedEdgeSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "missingSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "percentileBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "omittedBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "expectedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "observedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "supportedContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "incompleteContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "coverageModel": {
+                      "enum": [
+                        "single_source",
+                        "shared_member_intersection",
+                        "constituent_additive"
+                      ]
+                    },
+                    "sourceStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "observationStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "maxItems": 32,
+                      "uniqueItems": true,
+                      "items": {
+                        "enum": [
+                          "not_configured",
+                          "unsupported",
+                          "not_licensed",
+                          "not_collected",
+                          "temporarily_unavailable",
+                          "insufficient_data",
+                          "measurement_not_started",
+                          "measurement_boundaries_missing",
+                          "expired",
+                          "source_unavailable",
+                          "required_member_missing",
+                          "counter_reset_gap",
+                          "conflicting_observation",
+                          "coverage_mismatch",
+                          "legacy_semantics",
+                          "run_not_finalized",
+                          "summary_limit_exceeded",
+                          "query_timeout",
+                          "persistence_failed"
+                        ]
+                      }
+                    },
+                    "constituentSelector": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["definitionIds", "group", "coverageScope"],
+                      "properties": {
+                        "definitionIds": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 16,
+                          "items": {
+                            "type": "string",
+                            "maxLength": 128
+                          }
+                        },
+                        "group": {
+                          "enum": ["platform", "database", "pas"]
+                        },
+                        "coverageScope": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "dimensions": {
+                          "type": "object",
+                          "maxProperties": 8,
+                          "additionalProperties": {
+                            "type": "string",
+                            "maxLength": 1024
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "coverageModel": {
+                            "const": "constituent_additive"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "supportedContributors",
+                          "incompleteContributors",
+                          "constituentSelector"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "observedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "estimatedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "p90": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "status", "reasons", "unit", "coverage"],
+              "properties": {
+                "value": {
+                  "type": ["number", "null"]
+                },
+                "status": {
+                  "enum": ["available", "estimated", "partial", "unavailable"]
+                },
+                "reasons": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "not_configured",
+                      "unsupported",
+                      "not_licensed",
+                      "not_collected",
+                      "temporarily_unavailable",
+                      "insufficient_data",
+                      "measurement_not_started",
+                      "measurement_boundaries_missing",
+                      "expired",
+                      "source_unavailable",
+                      "required_member_missing",
+                      "counter_reset_gap",
+                      "conflicting_observation",
+                      "coverage_mismatch",
+                      "legacy_semantics",
+                      "run_not_finalized",
+                      "summary_limit_exceeded",
+                      "query_timeout",
+                      "persistence_failed"
+                    ]
+                  }
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "coverageModel",
+                    "durationSeconds",
+                    "observedSeconds",
+                    "estimatedEdgeSeconds",
+                    "missingSeconds",
+                    "sourceStepSeconds",
+                    "observationStepSeconds",
+                    "percentileBinCount",
+                    "omittedBinCount",
+                    "expectedAcquisitions",
+                    "observedAcquisitions",
+                    "reasons"
+                  ],
+                  "properties": {
+                    "durationSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "observedSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estimatedEdgeSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "missingSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "percentileBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "omittedBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "expectedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "observedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "supportedContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "incompleteContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "coverageModel": {
+                      "enum": [
+                        "single_source",
+                        "shared_member_intersection",
+                        "constituent_additive"
+                      ]
+                    },
+                    "sourceStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "observationStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "maxItems": 32,
+                      "uniqueItems": true,
+                      "items": {
+                        "enum": [
+                          "not_configured",
+                          "unsupported",
+                          "not_licensed",
+                          "not_collected",
+                          "temporarily_unavailable",
+                          "insufficient_data",
+                          "measurement_not_started",
+                          "measurement_boundaries_missing",
+                          "expired",
+                          "source_unavailable",
+                          "required_member_missing",
+                          "counter_reset_gap",
+                          "conflicting_observation",
+                          "coverage_mismatch",
+                          "legacy_semantics",
+                          "run_not_finalized",
+                          "summary_limit_exceeded",
+                          "query_timeout",
+                          "persistence_failed"
+                        ]
+                      }
+                    },
+                    "constituentSelector": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["definitionIds", "group", "coverageScope"],
+                      "properties": {
+                        "definitionIds": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 16,
+                          "items": {
+                            "type": "string",
+                            "maxLength": 128
+                          }
+                        },
+                        "group": {
+                          "enum": ["platform", "database", "pas"]
+                        },
+                        "coverageScope": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "dimensions": {
+                          "type": "object",
+                          "maxProperties": 8,
+                          "additionalProperties": {
+                            "type": "string",
+                            "maxLength": 1024
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "coverageModel": {
+                            "const": "constituent_additive"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "supportedContributors",
+                          "incompleteContributors",
+                          "constituentSelector"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "observedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "estimatedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "p95": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "status", "reasons", "unit", "coverage"],
+              "properties": {
+                "value": {
+                  "type": ["number", "null"]
+                },
+                "status": {
+                  "enum": ["available", "estimated", "partial", "unavailable"]
+                },
+                "reasons": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "not_configured",
+                      "unsupported",
+                      "not_licensed",
+                      "not_collected",
+                      "temporarily_unavailable",
+                      "insufficient_data",
+                      "measurement_not_started",
+                      "measurement_boundaries_missing",
+                      "expired",
+                      "source_unavailable",
+                      "required_member_missing",
+                      "counter_reset_gap",
+                      "conflicting_observation",
+                      "coverage_mismatch",
+                      "legacy_semantics",
+                      "run_not_finalized",
+                      "summary_limit_exceeded",
+                      "query_timeout",
+                      "persistence_failed"
+                    ]
+                  }
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "coverageModel",
+                    "durationSeconds",
+                    "observedSeconds",
+                    "estimatedEdgeSeconds",
+                    "missingSeconds",
+                    "sourceStepSeconds",
+                    "observationStepSeconds",
+                    "percentileBinCount",
+                    "omittedBinCount",
+                    "expectedAcquisitions",
+                    "observedAcquisitions",
+                    "reasons"
+                  ],
+                  "properties": {
+                    "durationSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "observedSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estimatedEdgeSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "missingSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "percentileBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "omittedBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "expectedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "observedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "supportedContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "incompleteContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "coverageModel": {
+                      "enum": [
+                        "single_source",
+                        "shared_member_intersection",
+                        "constituent_additive"
+                      ]
+                    },
+                    "sourceStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "observationStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "maxItems": 32,
+                      "uniqueItems": true,
+                      "items": {
+                        "enum": [
+                          "not_configured",
+                          "unsupported",
+                          "not_licensed",
+                          "not_collected",
+                          "temporarily_unavailable",
+                          "insufficient_data",
+                          "measurement_not_started",
+                          "measurement_boundaries_missing",
+                          "expired",
+                          "source_unavailable",
+                          "required_member_missing",
+                          "counter_reset_gap",
+                          "conflicting_observation",
+                          "coverage_mismatch",
+                          "legacy_semantics",
+                          "run_not_finalized",
+                          "summary_limit_exceeded",
+                          "query_timeout",
+                          "persistence_failed"
+                        ]
+                      }
+                    },
+                    "constituentSelector": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["definitionIds", "group", "coverageScope"],
+                      "properties": {
+                        "definitionIds": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 16,
+                          "items": {
+                            "type": "string",
+                            "maxLength": 128
+                          }
+                        },
+                        "group": {
+                          "enum": ["platform", "database", "pas"]
+                        },
+                        "coverageScope": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "dimensions": {
+                          "type": "object",
+                          "maxProperties": 8,
+                          "additionalProperties": {
+                            "type": "string",
+                            "maxLength": 1024
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "coverageModel": {
+                            "const": "constituent_additive"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "supportedContributors",
+                          "incompleteContributors",
+                          "constituentSelector"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "observedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "estimatedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "total": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "status", "reasons", "unit", "coverage"],
+              "properties": {
+                "value": {
+                  "type": ["number", "null"]
+                },
+                "status": {
+                  "enum": ["available", "estimated", "partial", "unavailable"]
+                },
+                "reasons": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "not_configured",
+                      "unsupported",
+                      "not_licensed",
+                      "not_collected",
+                      "temporarily_unavailable",
+                      "insufficient_data",
+                      "measurement_not_started",
+                      "measurement_boundaries_missing",
+                      "expired",
+                      "source_unavailable",
+                      "required_member_missing",
+                      "counter_reset_gap",
+                      "conflicting_observation",
+                      "coverage_mismatch",
+                      "legacy_semantics",
+                      "run_not_finalized",
+                      "summary_limit_exceeded",
+                      "query_timeout",
+                      "persistence_failed"
+                    ]
+                  }
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "coverageModel",
+                    "durationSeconds",
+                    "observedSeconds",
+                    "estimatedEdgeSeconds",
+                    "missingSeconds",
+                    "sourceStepSeconds",
+                    "observationStepSeconds",
+                    "percentileBinCount",
+                    "omittedBinCount",
+                    "expectedAcquisitions",
+                    "observedAcquisitions",
+                    "reasons"
+                  ],
+                  "properties": {
+                    "durationSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "observedSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estimatedEdgeSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "missingSeconds": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "percentileBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "omittedBinCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "expectedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "observedAcquisitions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "supportedContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "incompleteContributors": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "coverageModel": {
+                      "enum": [
+                        "single_source",
+                        "shared_member_intersection",
+                        "constituent_additive"
+                      ]
+                    },
+                    "sourceStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "observationStepSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "maxItems": 32,
+                      "uniqueItems": true,
+                      "items": {
+                        "enum": [
+                          "not_configured",
+                          "unsupported",
+                          "not_licensed",
+                          "not_collected",
+                          "temporarily_unavailable",
+                          "insufficient_data",
+                          "measurement_not_started",
+                          "measurement_boundaries_missing",
+                          "expired",
+                          "source_unavailable",
+                          "required_member_missing",
+                          "counter_reset_gap",
+                          "conflicting_observation",
+                          "coverage_mismatch",
+                          "legacy_semantics",
+                          "run_not_finalized",
+                          "summary_limit_exceeded",
+                          "query_timeout",
+                          "persistence_failed"
+                        ]
+                      }
+                    },
+                    "constituentSelector": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["definitionIds", "group", "coverageScope"],
+                      "properties": {
+                        "definitionIds": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 16,
+                          "items": {
+                            "type": "string",
+                            "maxLength": 128
+                          }
+                        },
+                        "group": {
+                          "enum": ["platform", "database", "pas"]
+                        },
+                        "coverageScope": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "dimensions": {
+                          "type": "object",
+                          "maxProperties": 8,
+                          "additionalProperties": {
+                            "type": "string",
+                            "maxLength": 1024
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "coverageModel": {
+                            "const": "constituent_additive"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "supportedContributors",
+                          "incompleteContributors",
+                          "constituentSelector"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "observedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "estimatedTotal": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "coverageModel",
+            "durationSeconds",
+            "observedSeconds",
+            "estimatedEdgeSeconds",
+            "missingSeconds",
+            "sourceStepSeconds",
+            "observationStepSeconds",
+            "percentileBinCount",
+            "omittedBinCount",
+            "expectedAcquisitions",
+            "observedAcquisitions",
+            "reasons"
+          ],
+          "properties": {
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "observedSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "estimatedEdgeSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "missingSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "percentileBinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "omittedBinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expectedAcquisitions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "observedAcquisitions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "supportedContributors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "incompleteContributors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "coverageModel": {
+              "enum": ["single_source", "shared_member_intersection", "constituent_additive"]
+            },
+            "sourceStepSeconds": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "observationStepSeconds": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "reasons": {
+              "type": "array",
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "not_configured",
+                  "unsupported",
+                  "not_licensed",
+                  "not_collected",
+                  "temporarily_unavailable",
+                  "insufficient_data",
+                  "measurement_not_started",
+                  "measurement_boundaries_missing",
+                  "expired",
+                  "source_unavailable",
+                  "required_member_missing",
+                  "counter_reset_gap",
+                  "conflicting_observation",
+                  "coverage_mismatch",
+                  "legacy_semantics",
+                  "run_not_finalized",
+                  "summary_limit_exceeded",
+                  "query_timeout",
+                  "persistence_failed"
+                ]
+              }
+            },
+            "constituentSelector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["definitionIds", "group", "coverageScope"],
+              "properties": {
+                "definitionIds": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 128
+                  }
+                },
+                "group": {
+                  "enum": ["platform", "database", "pas"]
+                },
+                "coverageScope": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "dimensions": {
+                  "type": "object",
+                  "maxProperties": 8,
+                  "additionalProperties": {
+                    "type": "string",
+                    "maxLength": 1024
+                  }
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "coverageModel": {
+                    "const": "constituent_additive"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "supportedContributors",
+                  "incompleteContributors",
+                  "constituentSelector"
+                ]
+              }
+            }
+          ]
+        },
+        "sourceReferences": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric"],
+            "properties": {
+              "metric": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "query": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "contractVersion": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        "catalogOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coverageModel",
+        "durationSeconds",
+        "observedSeconds",
+        "estimatedEdgeSeconds",
+        "missingSeconds",
+        "sourceStepSeconds",
+        "observationStepSeconds",
+        "percentileBinCount",
+        "omittedBinCount",
+        "expectedAcquisitions",
+        "observedAcquisitions",
+        "reasons"
+      ],
+      "properties": {
+        "durationSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "observedSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "estimatedEdgeSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "missingSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "percentileBinCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "omittedBinCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectedAcquisitions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedAcquisitions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supportedContributors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "incompleteContributors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coverageModel": {
+          "enum": ["single_source", "shared_member_intersection", "constituent_additive"]
+        },
+        "sourceStepSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "observationStepSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "reasons": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "not_configured",
+              "unsupported",
+              "not_licensed",
+              "not_collected",
+              "temporarily_unavailable",
+              "insufficient_data",
+              "measurement_not_started",
+              "measurement_boundaries_missing",
+              "expired",
+              "source_unavailable",
+              "required_member_missing",
+              "counter_reset_gap",
+              "conflicting_observation",
+              "coverage_mismatch",
+              "legacy_semantics",
+              "run_not_finalized",
+              "summary_limit_exceeded",
+              "query_timeout",
+              "persistence_failed"
+            ]
+          }
+        },
+        "constituentSelector": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["definitionIds", "group", "coverageScope"],
+          "properties": {
+            "definitionIds": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "type": "string",
+                "maxLength": 128
+              }
+            },
+            "group": {
+              "enum": ["platform", "database", "pas"]
+            },
+            "coverageScope": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "dimensions": {
+              "type": "object",
+              "maxProperties": 8,
+              "additionalProperties": {
+                "type": "string",
+                "maxLength": 1024
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "coverageModel": {
+                "const": "constituent_additive"
+              }
+            }
+          },
+          "then": {
+            "required": ["supportedContributors", "incompleteContributors", "constituentSelector"]
+          }
+        }
+      ]
+    },
+    "statistic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "status", "reasons", "unit", "coverage"],
+      "properties": {
+        "value": {
+          "type": ["number", "null"]
+        },
+        "status": {
+          "enum": ["available", "estimated", "partial", "unavailable"]
+        },
+        "reasons": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "not_configured",
+              "unsupported",
+              "not_licensed",
+              "not_collected",
+              "temporarily_unavailable",
+              "insufficient_data",
+              "measurement_not_started",
+              "measurement_boundaries_missing",
+              "expired",
+              "source_unavailable",
+              "required_member_missing",
+              "counter_reset_gap",
+              "conflicting_observation",
+              "coverage_mismatch",
+              "legacy_semantics",
+              "run_not_finalized",
+              "summary_limit_exceeded",
+              "query_timeout",
+              "persistence_failed"
+            ]
+          }
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "coverageModel",
+            "durationSeconds",
+            "observedSeconds",
+            "estimatedEdgeSeconds",
+            "missingSeconds",
+            "sourceStepSeconds",
+            "observationStepSeconds",
+            "percentileBinCount",
+            "omittedBinCount",
+            "expectedAcquisitions",
+            "observedAcquisitions",
+            "reasons"
+          ],
+          "properties": {
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "observedSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "estimatedEdgeSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "missingSeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "percentileBinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "omittedBinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expectedAcquisitions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "observedAcquisitions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "supportedContributors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "incompleteContributors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "coverageModel": {
+              "enum": ["single_source", "shared_member_intersection", "constituent_additive"]
+            },
+            "sourceStepSeconds": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "observationStepSeconds": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "reasons": {
+              "type": "array",
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "not_configured",
+                  "unsupported",
+                  "not_licensed",
+                  "not_collected",
+                  "temporarily_unavailable",
+                  "insufficient_data",
+                  "measurement_not_started",
+                  "measurement_boundaries_missing",
+                  "expired",
+                  "source_unavailable",
+                  "required_member_missing",
+                  "counter_reset_gap",
+                  "conflicting_observation",
+                  "coverage_mismatch",
+                  "legacy_semantics",
+                  "run_not_finalized",
+                  "summary_limit_exceeded",
+                  "query_timeout",
+                  "persistence_failed"
+                ]
+              }
+            },
+            "constituentSelector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["definitionIds", "group", "coverageScope"],
+              "properties": {
+                "definitionIds": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 128
+                  }
+                },
+                "group": {
+                  "enum": ["platform", "database", "pas"]
+                },
+                "coverageScope": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "dimensions": {
+                  "type": "object",
+                  "maxProperties": 8,
+                  "additionalProperties": {
+                    "type": "string",
+                    "maxLength": 1024
+                  }
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "coverageModel": {
+                    "const": "constituent_additive"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "supportedContributors",
+                  "incompleteContributors",
+                  "constituentSelector"
+                ]
+              }
+            }
+          ]
+        },
+        "observedTotal": {
+          "type": "number",
+          "minimum": 0
+        },
+        "estimatedTotal": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

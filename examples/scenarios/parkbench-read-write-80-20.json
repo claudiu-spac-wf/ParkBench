@@ -1,0 +1,867 @@
+{
+  "schemaVersion": "scenario.v2",
+  "version": "1.0.0",
+  "target": {
+    "restPath": "/work",
+    "pasProtocol": "http",
+    "pasPort": 8810,
+    "healthPath": "/health",
+    "databaseService": "database",
+    "pasService": "pas",
+    "pasReplicas": 1,
+    "timeoutMs": 60000
+  },
+  "phases": {
+    "warmupSeconds": 60,
+    "measurementSeconds": 300,
+    "cooldownSeconds": 30
+  },
+  "observers": [
+    {
+      "id": "core",
+      "kind": "core",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://loadgen:9100"
+      }
+    },
+    {
+      "id": "openedge-db",
+      "kind": "openedge_db_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://db-observer:9100"
+      }
+    },
+    {
+      "id": "openedge-pas",
+      "kind": "openedge_pas_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://pas-observer:9100"
+      }
+    },
+    {
+      "id": "files",
+      "kind": "file_sampler_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://file-sampler:9100",
+        "path": "/psc/wrk/parkbench"
+      }
+    }
+  ],
+  "id": "parkbench-read-write-80-20",
+  "name": "ParkBench reads + writes 80/20",
+  "description": "80/20 read/write selection probabilities with calibrated complete read buckets and unchanged banking writes.",
+  "workload": {
+    "operations": [
+      {
+        "id": "reference-currencies",
+        "method": "POST",
+        "path": "/work",
+        "weight": 1600,
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "Currency",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ],
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        }
+      },
+      {
+        "id": "reference-transaction-types",
+        "method": "POST",
+        "path": "/work",
+        "weight": 1200,
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "TransactionType",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ],
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        }
+      },
+      {
+        "id": "product-catalog",
+        "method": "POST",
+        "path": "/work",
+        "weight": 800,
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "AccountType",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ],
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        }
+      },
+      {
+        "id": "customer-profiles",
+        "method": "POST",
+        "path": "/work",
+        "weight": 2000,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "Customer",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "account-overview",
+        "method": "POST",
+        "path": "/work",
+        "weight": 2400,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "Account",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "contact-lookup",
+        "method": "POST",
+        "path": "/work",
+        "weight": 1200,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "CustomerContact",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "debit-history-amounts",
+        "method": "POST",
+        "path": "/work",
+        "weight": 1000,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "DebitTransaction",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "FieldsList": [
+              "AccountId",
+              "Amount"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "card-auth-amounts",
+        "method": "POST",
+        "path": "/work",
+        "weight": 800,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "CardAuthorization",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "FieldsList": [
+              "CardId",
+              "Amount"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "credit-history",
+        "method": "POST",
+        "path": "/work",
+        "weight": 800,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "CreditTransaction",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "login-history",
+        "method": "POST",
+        "path": "/work",
+        "weight": 600,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "LoginEvent",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "audit-review",
+        "method": "POST",
+        "path": "/work",
+        "weight": 400,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "AuditLog",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "statement-download",
+        "method": "POST",
+        "path": "/work",
+        "weight": 400,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "StatementDocument",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "LobFields": [
+              "PdfContent",
+              "StatementXml"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "kyc-document-review",
+        "method": "POST",
+        "path": "/work",
+        "weight": 400,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "CustomerDocument",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "LobFields": [
+              "Content"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "customer-notes",
+        "method": "POST",
+        "path": "/work",
+        "weight": 600,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "CustomerNote",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "LobFields": [
+              "NoteText"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "staff-directory",
+        "method": "POST",
+        "path": "/work",
+        "weight": 200,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "Employee",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "LobFields": [
+              "Photo"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "statement-notices",
+        "method": "POST",
+        "path": "/work",
+        "weight": 400,
+        "templateValues": {
+          "band": {
+            "kind": "uniformInt",
+            "min": 1,
+            "max": 870
+          }
+        },
+        "bodyTemplate": {
+          "procName": "Workloads/Generic/arbitrary_reads.p",
+          "input": {
+            "mode": "run",
+            "TableName": "AccountStatement",
+            "WhereClause": "RandomInt1000 <= 870 AND RandomInt1000 = {{band}}",
+            "Limit": 0,
+            "LobFields": [
+              "NoticeText"
+            ]
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "post-debits",
+        "method": "POST",
+        "path": "/work",
+        "weight": 740,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/DebitTransaction.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "post-credits",
+        "method": "POST",
+        "path": "/work",
+        "weight": 444,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CreditTransaction.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "record-card-authorizations",
+        "method": "POST",
+        "path": "/work",
+        "weight": 370,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CardAuthorization.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "record-logins",
+        "method": "POST",
+        "path": "/work",
+        "weight": 296,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/LoginEvent.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "record-audit-activity",
+        "method": "POST",
+        "path": "/work",
+        "weight": 296,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/AuditLog.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "change-account-balances",
+        "method": "POST",
+        "path": "/work",
+        "weight": 370,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/Account.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "Account.RandomInt100 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "CurrentBalance",
+              "AvailableBalance",
+              "LastActivityAt",
+              "UpdatedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "maintain-customer-details",
+        "method": "POST",
+        "path": "/work",
+        "weight": 259,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/Customer.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "Customer.RandomInt100 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "Email",
+              "PreferredLanguage",
+              "MarketingOptIn",
+              "LastContactDate",
+              "UpdatedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "verify-contact-details",
+        "method": "POST",
+        "path": "/work",
+        "weight": 185,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CustomerContact.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "CustomerContact.RandomInt100 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "IsVerified",
+              "VerifiedAt",
+              "UpdatedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "maintain-loan-balances",
+        "method": "POST",
+        "path": "/work",
+        "weight": 148,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/Loan.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "Loan.RandomInt100 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "OutstandingPrincipal",
+              "NextPaymentDate",
+              "UpdatedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "refresh-exchange-rates",
+        "method": "POST",
+        "path": "/work",
+        "weight": 74,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/ExchangeRate.p",
+          "input": {
+            "Limit": 5,
+            "WhereClause": "ExchangeRate.RandomInt10 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "Rate",
+              "RateSource"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "maintain-employee-details",
+        "method": "POST",
+        "path": "/work",
+        "weight": 37,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/Employee.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "Employee.RandomInt10 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "JobTitle",
+              "Email",
+              "UpdatedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "add-customer-documents",
+        "method": "POST",
+        "path": "/work",
+        "weight": 111,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CustomerDocument.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [
+              "Content"
+            ],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "add-customer-notes",
+        "method": "POST",
+        "path": "/work",
+        "weight": 111,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CustomerNote.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "",
+            "LobFields": [
+              "NoteText"
+            ],
+            "FieldsList": [],
+            "Operation": "create"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "replace-document-content",
+        "method": "POST",
+        "path": "/work",
+        "weight": 74,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CustomerDocument.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "CustomerDocument.RandomInt100 = 1",
+            "LobFields": [
+              "Content"
+            ],
+            "FieldsList": [
+              "FileSizeBytes",
+              "UpdatedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "resolve-notes-without-rewriting-text",
+        "method": "POST",
+        "path": "/work",
+        "weight": 74,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/CustomerNote.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "CustomerNote.RandomInt100 = 1",
+            "LobFields": [],
+            "FieldsList": [
+              "IsResolved",
+              "FollowUpDate"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "refresh-statement-notices",
+        "method": "POST",
+        "path": "/work",
+        "weight": 74,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/AccountStatement.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "AccountStatement.RandomInt100 = 1",
+            "LobFields": [
+              "NoticeText"
+            ],
+            "FieldsList": [
+              "DeliveryMethod"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      },
+      {
+        "id": "re-render-statement-documents",
+        "method": "POST",
+        "path": "/work",
+        "weight": 37,
+        "bodyTemplate": {
+          "procName": "Workloads/Write/StatementDocument.p",
+          "input": {
+            "Limit": 1,
+            "WhereClause": "StatementDocument.RandomInt100 = 1",
+            "LobFields": [
+              "PdfContent",
+              "StatementXml"
+            ],
+            "FieldsList": [
+              "PageCount",
+              "Checksum",
+              "RenderedAt"
+            ],
+            "Operation": "update"
+          }
+        },
+        "expectedStatus": [
+          200
+        ]
+      }
+    ],
+    "load": {
+      "mode": "constant-concurrency",
+      "concurrency": 10,
+      "maxInFlightPerWorker": 1,
+      "seed": 2026
+    }
+  }
+}

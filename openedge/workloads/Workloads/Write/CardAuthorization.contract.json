@@ -1,0 +1,120 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-card-authorization",
+  "version": 1,
+  "procedure": "Workloads/Write/CardAuthorization.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "CardAuthorization",
+      "minimumRows": 0
+    },
+    {
+      "name": "Card",
+      "minimumRows": 0
+    },
+    {
+      "name": "Currency",
+      "minimumRows": 0
+    },
+    {
+      "name": "DebitTransaction",
+      "minimumRows": 0
+    },
+    {
+      "name": "Merchant",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "CardAuthorization.CardAuthorizationId:int64",
+    "CardAuthorization.RandomInt10:integer",
+    "CardAuthorization.RandomInt100:integer",
+    "CardAuthorization.RandomInt1000:integer",
+    "CardAuthorization.CreatedAt:datetime-tz",
+    "CardAuthorization.CardId:int64",
+    "CardAuthorization.MerchantId:int64",
+    "CardAuthorization.AuthDateTime:datetime-tz",
+    "CardAuthorization.MerchantLocalDateTime:datetime",
+    "CardAuthorization.Amount:decimal",
+    "CardAuthorization.CurrencyCode:character",
+    "CardAuthorization.AuthCode:character",
+    "CardAuthorization.ResponseCode:character",
+    "CardAuthorization.IsApproved:logical",
+    "CardAuthorization.EntryMode:character",
+    "CardAuthorization.AuthKind:character",
+    "CardAuthorization.DebitTransactionId:int64",
+    "Card.CardId:int64",
+    "Merchant.MerchantId:int64",
+    "Currency.CurrencyCode:character",
+    "DebitTransaction.DebitTransactionId:int64"
+  ],
+  "requiredIndexes": [
+    "CardAuthorization.PkCardAuthorization",
+    "CardAuthorization.IxRandomInt10",
+    "CardAuthorization.IxRandomInt100",
+    "CardAuthorization.IxRandomInt1000",
+    "CardAuthorization.IxCardDate",
+    "CardAuthorization.IxMerchantDate",
+    "Card.PkCard",
+    "Merchant.PkMerchant",
+    "Currency.UxCurrencyCode",
+    "DebitTransaction.PkDebitTransaction"
+  ],
+  "requiredSequences": [
+    "SeqCardAuthorizationId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "CardAuthorization"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "CardAuthorization"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "CardAuthorization"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

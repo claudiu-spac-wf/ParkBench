@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "comparison-metric-selection.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "selectionRevision", "runIds", "metrics"],
+  "properties": {
+    "contractVersion": {
+      "const": "comparison-metric-selection.v1"
+    },
+    "selectionRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "runIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 25,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metricId", "statistics", "selectors"],
+        "properties": {
+          "metricId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "statistics": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["average", "p90", "p95", "total", "value"]
+            }
+          },
+          "selectors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          }
+        }
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 8192
+    }
+  },
+  "$defs": {
+    "response": {
+      "type": "object",
+      "required": [
+        "contractVersion",
+        "comparisonId",
+        "selectionRevision",
+        "selectionIdentity",
+        "sourceIdentity",
+        "rows",
+        "hasMore",
+        "returnedRowCount"
+      ],
+      "properties": {
+        "contractVersion": {
+          "const": "comparison-metric-selection.v1"
+        },
+        "comparisonId": {
+          "type": "string"
+        },
+        "selectionRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "selectionIdentity": {
+          "type": "string"
+        },
+        "sourceIdentity": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "#/$defs/projectedValue"
+          }
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "returnedRowCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 500
+        }
+      }
+    },
+    "projectedValue": {
+      "type": "object",
+      "required": [
+        "rowId",
+        "runId",
+        "metricId",
+        "descriptorVersion",
+        "statistic",
+        "unit",
+        "dimensions",
+        "value",
+        "availability",
+        "reasons",
+        "sourceReferences",
+        "sourceIdentity",
+        "warnings",
+        "difference"
+      ],
+      "properties": {
+        "rowId": {
+          "type": "string"
+        },
+        "runId": {
+          "type": "string"
+        },
+        "metricId": {
+          "type": "string"
+        },
+        "descriptorVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "statistic": {
+          "enum": ["average", "p90", "p95", "total", "value"]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "value": {
+          "type": ["number", "null"]
+        },
+        "availability": {
+          "enum": ["available", "partial", "estimated", "unavailable"]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceReferences": {
+          "type": "array"
+        },
+        "sourceIdentity": {
+          "type": "string"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "difference": {
+          "type": "object",
+          "required": ["value", "baseline", "absoluteDifference", "percentageDifference"],
+          "properties": {
+            "value": {
+              "type": ["number", "null"]
+            },
+            "baseline": {
+              "type": ["number", "null"]
+            },
+            "absoluteDifference": {
+              "type": ["number", "null"]
+            },
+            "percentageDifference": {
+              "type": ["number", "null"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

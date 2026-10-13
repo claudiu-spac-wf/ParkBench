@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:parkbench:table-write-input:v1",
+  "title": "Per-table write operational input",
+  "description": "Reserved mode=validate readiness input is a separate existing platform probe, not this operational schema. Schema validation is followed by native field/predicate validation.",
+  "type": "object",
+  "required": [
+    "Operation",
+    "Limit"
+  ],
+  "properties": {
+    "Operation": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update"
+      ]
+    },
+    "Limit": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "LobFields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "mode": {
+      "type": "string",
+      "const": "run"
+    }
+  },
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "Operation": {
+            "const": "update"
+          }
+        },
+        "required": [
+          "Operation"
+        ]
+      },
+      "then": {
+        "required": [
+          "WhereClause"
+        ],
+        "properties": {
+          "WhereClause": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "FieldsList": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "default": []
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "Limit": {
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "Limit"
+              ]
+            },
+            "then": {
+              "anyOf": [
+                {
+                  "required": [
+                    "FieldsList"
+                  ],
+                  "properties": {
+                    "FieldsList": {
+                      "type": "array",
+                      "minItems": 1
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "LobFields"
+                  ],
+                  "properties": {
+                    "LobFields": {
+                      "type": "array",
+                      "minItems": 1
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

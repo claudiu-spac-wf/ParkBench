@@ -1,0 +1,13 @@
+{
+  "service": "parkbench-work-runner",
+  "instance": "oepas1",
+  "transport": "web",
+  "protocol": "http",
+  "port": 8810,
+  "handler": "ParkBenchWorkHandler",
+  "routes": [
+    { "method": "POST", "path": "/work", "handler": "ParkBenchWorkHandler" },
+    { "method": "GET", "path": "/health", "handler": "health" },
+    { "method": "GET", "path": "/metrics", "handler": "metrics" }
+  ]
+}

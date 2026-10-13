@@ -1,0 +1,182 @@
+name: parkbench-platform
+services:
+  control-plane:
+    image: parkbench/control-plane:${PARKBENCH_IMAGE_TAG:?PARKBENCH_IMAGE_TAG must be an explicit non-latest tag}
+    build:
+      context: ..
+      dockerfile: docker/control-plane/Dockerfile
+      args:
+        NODE_BASE_IMAGE: ${PARKBENCH_NODE_BASE_IMAGE:?PARKBENCH_NODE_BASE_IMAGE must be an explicit non-latest tag}
+    ports:
+      - "${PARKBENCH_BIND_ADDRESS:-127.0.0.1}:${PARKBENCH_CONTROL_PLANE_HOST_PORT:-13000}:3000"
+    environment:
+      PARKBENCH_HOST: 0.0.0.0
+      PARKBENCH_HOST_DATA_ROOT: /var/lib/parkbench
+      PARKBENCH_REPOSITORY_ROOT: ${PARKBENCH_REPOSITORY_ROOT:-/app}
+      PARKBENCH_OPENEDGE_DEFAULT_SEED: ${PARKBENCH_OPENEDGE_DEFAULT_SEED:-}
+      PARKBENCH_OPENEDGE_APP_ARCHIVE: ${PARKBENCH_CONTROL_PLANE_OPENEDGE_APP_ARCHIVE:-}
+      PARKBENCH_OPENEDGE_IMAGE_MANIFEST: ${PARKBENCH_CONTROL_PLANE_OPENEDGE_IMAGE_MANIFEST:-}
+      PARKBENCH_DB_PATH: /var/lib/parkbench/parkbench.sqlite
+      PARKBENCH_ARTIFACT_ROOT: /var/lib/parkbench/artifacts
+      PARKBENCH_RUN_ROOT: /var/lib/parkbench/runs
+      PARKBENCH_CONTAINER_PATH_ROOT: /var/lib/parkbench
+      PARKBENCH_ENV_FILE: /app/config/operator.env
+      PARKBENCH_DOCKER_HOST_PATH_ROOT: ${PARKBENCH_DOCKER_HOST_PATH_ROOT:-../.parkbench}
+      # Host path of the seeds bind mount below; seed mounts in run Compose files map through it.
+      PARKBENCH_DOCKER_HOST_SEEDS_ROOT: ${PARKBENCH_HOST_DISCOVERY_SEEDS_ROOT:-}
+      PARKBENCH_METRICS_NETWORK: parkbench-platform
+      PARKBENCH_LOADGEN_IMAGE: ${PARKBENCH_LOADGEN_IMAGE:?PARKBENCH_LOADGEN_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_OBSERVER_IMAGE: ${PARKBENCH_OBSERVER_IMAGE:?PARKBENCH_OBSERVER_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_PROMETHEUS_IMAGE: ${PARKBENCH_PROMETHEUS_IMAGE:?PARKBENCH_PROMETHEUS_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_GRAFANA_IMAGE: ${PARKBENCH_GRAFANA_IMAGE:?PARKBENCH_GRAFANA_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_CADVISOR_IMAGE: ${PARKBENCH_CADVISOR_IMAGE:?PARKBENCH_CADVISOR_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_NODE_EXPORTER_IMAGE: ${PARKBENCH_NODE_EXPORTER_IMAGE:?PARKBENCH_NODE_EXPORTER_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_NODE_BASE_IMAGE: ${PARKBENCH_NODE_BASE_IMAGE:?PARKBENCH_NODE_BASE_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_NGINX_IMAGE: ${PARKBENCH_NGINX_IMAGE:?PARKBENCH_NGINX_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_PROMETHEUS_URL: http://prometheus:9090
+      PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL: ${PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL:-5s}
+      PARKBENCH_CADVISOR_HOUSEKEEPING_INTERVAL: ${PARKBENCH_CADVISOR_HOUSEKEEPING_INTERVAL:-1s}
+      PARKBENCH_GRAFANA_URL: ${PARKBENCH_GRAFANA_URL:-http://127.0.0.1:13001}
+      PARKBENCH_GRAFANA_HEALTH_URL: http://grafana:3000
+      PARKBENCH_CADVISOR_URL: http://cadvisor:8080
+      PARKBENCH_PROMETHEUS_TARGET_DIR: /etc/prometheus/targets
+      PARKBENCH_DISCOVERY_SCENARIOS_ROOT: /var/lib/parkbench/scenarios
+      PARKBENCH_DISCOVERY_WORKLOADS_ROOT: /var/lib/parkbench/workloads
+      PARKBENCH_DISCOVERY_OBSERVERS_ROOT: /var/lib/parkbench/observers
+      PARKBENCH_DISCOVERY_SEEDS_ROOT: /var/lib/parkbench/seeds
+      PARKBENCH_DISCOVERY_ARCHIVES_ROOT: /var/lib/parkbench/archives
+      PARKBENCH_DB_MEMORY_LIMIT: ${PARKBENCH_DB_MEMORY_LIMIT:-10g}
+      PARKBENCH_OPENEDGE_DB_IMAGE: ${PARKBENCH_OPENEDGE_DB_IMAGE:?PARKBENCH_OPENEDGE_DB_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_OPENEDGE_VERSION: ${PARKBENCH_OPENEDGE_VERSION:-12.8.11}
+      PARKBENCH_OPENEDGE_DB_FEATURES: ${PARKBENCH_OPENEDGE_DB_FEATURES:-}
+      PARKBENCH_OPENEDGE_COMPILER: /app/scripts/openedge/compile-with-db.mjs
+      PARKBENCH_OPENEDGE_PAS_IMAGE: ${PARKBENCH_OPENEDGE_PAS_IMAGE:?PARKBENCH_OPENEDGE_PAS_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_OPENEDGE_OBSERVER_IMAGE: ${PARKBENCH_OPENEDGE_OBSERVER_IMAGE:-}
+      PARKBENCH_OPENEDGE_JDK_IMAGE: ${PARKBENCH_OPENEDGE_JDK_IMAGE:?PARKBENCH_OPENEDGE_JDK_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_OPENEDGE_DB_OBSERVER_EXECUTABLE: ${PARKBENCH_OPENEDGE_DB_OBSERVER_EXECUTABLE:-}
+      PARKBENCH_OPENEDGE_DB_OBSERVER_PROCEDURE: ${PARKBENCH_OPENEDGE_DB_OBSERVER_PROCEDURE:-}
+      PARKBENCH_OPENEDGE_DB_OBSERVER_RUNTIME_PATH: ${PARKBENCH_OPENEDGE_DB_OBSERVER_RUNTIME_PATH:-}
+      PARKBENCH_OPENEDGE_DB_OBSERVER_ARGS: ${PARKBENCH_OPENEDGE_DB_OBSERVER_ARGS:-}
+    volumes:
+      - ${PARKBENCH_HOST_DATA_ROOT:-../.parkbench}:/var/lib/parkbench
+      - ${PARKBENCH_HOST_DISCOVERY_SCENARIOS_ROOT:-../examples/scenarios}:/var/lib/parkbench/scenarios:ro
+      - ${PARKBENCH_HOST_DISCOVERY_WORKLOADS_ROOT:-../openedge/workloads/Workloads}:/var/lib/parkbench/workloads:ro
+      - ${PARKBENCH_HOST_DISCOVERY_OBSERVERS_ROOT:-../.parkbench/observers}:/var/lib/parkbench/observers:ro
+      - ${PARKBENCH_HOST_DISCOVERY_SEEDS_ROOT:-../.parkbench/seeds}:/var/lib/parkbench/seeds:ro
+      - ${PARKBENCH_HOST_DISCOVERY_ARCHIVES_ROOT:-../.parkbench/archives}:/var/lib/parkbench/archives
+      - ${PARKBENCH_PROMETHEUS_TARGET_DIR:-../.parkbench/prometheus-targets}:/etc/prometheus/targets
+      # The control plane loads the operator-owned active profile at startup.
+      - ${PARKBENCH_ENV_FILE:-../.env.local}:/app/config/operator.env:ro
+      - "${PARKBENCH_DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
+    cpuset: "${PARKBENCH_PLATFORM_CPUSET:-}"
+    depends_on: [prometheus]
+  web:
+    image: parkbench/web:${PARKBENCH_IMAGE_TAG:?PARKBENCH_IMAGE_TAG must be an explicit non-latest tag}
+    build:
+      context: ..
+      dockerfile: docker/web/Dockerfile
+      args:
+        NODE_BASE_IMAGE: ${PARKBENCH_NODE_BASE_IMAGE:?PARKBENCH_NODE_BASE_IMAGE must be an explicit non-latest tag}
+        NGINX_IMAGE: ${PARKBENCH_NGINX_IMAGE:?PARKBENCH_NGINX_IMAGE must be an explicit non-latest tag}
+    ports:
+      - "${PARKBENCH_BIND_ADDRESS:-127.0.0.1}:${PARKBENCH_WEB_HOST_PORT:-13002}:80"
+    cpuset: "${PARKBENCH_PLATFORM_CPUSET:-}"
+    depends_on: [control-plane]
+  prometheus:
+    image: ${PARKBENCH_PROMETHEUS_IMAGE:?PARKBENCH_PROMETHEUS_IMAGE must be an explicit non-latest tag}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - >-
+        awk '{marker = sprintf("%c{PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL}", 36);
+        position = index($0, marker); if (position) $0 = substr($0, 1, position - 1)
+        ENVIRON["PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL"] substr($0, position + length(marker));
+        print}' /etc/prometheus/prometheus.yml > /tmp/parkbench-prometheus.yml
+        && exec /bin/prometheus --config.file=/tmp/parkbench-prometheus.yml
+        --storage.tsdb.path=/prometheus
+        --storage.tsdb.retention.time=${PARKBENCH_PROMETHEUS_RETENTION:-7d}
+    environment:
+      PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL: ${PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL:-5s}
+    ports:
+      - "${PARKBENCH_BIND_ADDRESS:-127.0.0.1}:${PARKBENCH_PROMETHEUS_HOST_PORT:-19090}:9090"
+    cpuset: "${PARKBENCH_PLATFORM_CPUSET:-}"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - ${PARKBENCH_PROMETHEUS_TARGET_DIR:-../.parkbench/prometheus-targets}:/etc/prometheus/targets
+      - ${PARKBENCH_PROMETHEUS_DATA_ROOT:-../.parkbench/prometheus_data}:/prometheus
+  grafana:
+    image: ${PARKBENCH_GRAFANA_IMAGE:?PARKBENCH_GRAFANA_IMAGE must be an explicit non-latest tag}
+    entrypoint: ["/bin/sh", "/etc/parkbench-grafana/start.sh"]
+    environment:
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_USER: ${PARKBENCH_GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${PARKBENCH_GRAFANA_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${PARKBENCH_BIND_ADDRESS:-127.0.0.1}:${PARKBENCH_GRAFANA_HOST_PORT:-13001}:3000"
+    cpuset: "${PARKBENCH_PLATFORM_CPUSET:-}"
+    volumes:
+      - ./grafana/frontend:/etc/parkbench-grafana:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+  cadvisor:
+    image: ${PARKBENCH_CADVISOR_IMAGE:?PARKBENCH_CADVISOR_IMAGE must be an explicit non-latest tag}
+    # The host root, containerd socket and Docker data root are reached through the
+    # Docker engine's PID 1 (`pid: host` + /proc/1/root) rather than bind mounts. Under
+    # Docker Desktop's WSL2 integration, bind-mount sources resolve inside the calling
+    # distro (e.g. Ubuntu), not the engine VM: /run/containerd and /var/lib/docker do
+    # not exist there, so the Docker factory fails to register and every container is
+    # exported as a bare cgroup id with no name/image/labels, and per-container network
+    # stats are read from the wrong PID namespace. On native Linux /proc/1/root is the
+    # host root, so the same layout works unchanged.
+    pid: host
+    entrypoint:
+      - /bin/sh
+      - -c
+      - ln -sfn /proc/1/root /rootfs && mkdir -p /var/lib && ln -sfn /proc/1/root/var/lib/docker /var/lib/docker && exec /usr/bin/cadvisor -logtostderr "$$@"
+      - cadvisor
+    # cAdvisor's default disabled-metric list minus `percpu`, so per-core container CPU is
+    # collected (feature 013 FR-026). `diskIO` stays enabled by default.
+    command:
+      - --allow_dynamic_housekeeping=false
+      # cAdvisor jitters collection up to twice this interval, even without dynamic housekeeping.
+      # Keep source capture faster than the Prometheus scrape so captures remain fresh.
+      - --housekeeping_interval=${PARKBENCH_CADVISOR_HOUSEKEEPING_INTERVAL:-1s}
+      - --docker=unix:///rootfs/run/docker.sock
+      - --containerd=/rootfs/run/containerd/containerd.sock
+      - --disable_metrics=advtcp,cpu_topology,cpuset,hugetlb,memory_numa,referenced_memory,resctrl,sched,tcp,udp
+    privileged: true
+    ports:
+      - "${PARKBENCH_BIND_ADDRESS:-127.0.0.1}:${PARKBENCH_CADVISOR_HOST_PORT:-18080}:8080"
+    cpuset: "${PARKBENCH_PLATFORM_CPUSET:-}"
+    volumes:
+      - /sys:/sys:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+  node-exporter:
+    image: ${PARKBENCH_NODE_EXPORTER_IMAGE:?PARKBENCH_NODE_EXPORTER_IMAGE must be an explicit non-latest tag}
+    pid: host
+    command: ["--path.rootfs=/host"]
+    cpuset: "${PARKBENCH_PLATFORM_CPUSET:-}"
+    volumes: ["/:/host:ro"]
+  loadgen-image:
+    image: ${PARKBENCH_LOADGEN_IMAGE:?PARKBENCH_LOADGEN_IMAGE must be an explicit non-latest tag}
+    build:
+      context: ..
+      dockerfile: docker/loadgen/Dockerfile
+      args:
+        NODE_BASE_IMAGE: ${PARKBENCH_NODE_BASE_IMAGE:?PARKBENCH_NODE_BASE_IMAGE must be an explicit non-latest tag}
+    profiles: [build]
+  observer-image:
+    image: ${PARKBENCH_OBSERVER_IMAGE:?PARKBENCH_OBSERVER_IMAGE must be an explicit non-latest tag}
+    build:
+      context: ..
+      dockerfile: docker/observer/Dockerfile
+      args:
+        NODE_BASE_IMAGE: ${PARKBENCH_NODE_BASE_IMAGE:?PARKBENCH_NODE_BASE_IMAGE must be an explicit non-latest tag}
+    profiles: [build]
+networks:
+  default:
+    name: parkbench-platform

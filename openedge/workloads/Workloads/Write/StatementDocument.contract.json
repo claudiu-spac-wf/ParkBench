@@ -1,0 +1,96 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-statement-document",
+  "version": 1,
+  "procedure": "Workloads/Write/StatementDocument.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "StatementDocument",
+      "minimumRows": 0
+    },
+    {
+      "name": "AccountStatement",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "StatementDocument.StatementDocumentId:int64",
+    "StatementDocument.RandomInt10:integer",
+    "StatementDocument.RandomInt100:integer",
+    "StatementDocument.RandomInt1000:integer",
+    "StatementDocument.CreatedAt:datetime-tz",
+    "StatementDocument.AccountStatementId:int64",
+    "StatementDocument.DocumentFormat:character",
+    "StatementDocument.PageCount:integer",
+    "StatementDocument.Checksum:character",
+    "StatementDocument.RenderedAt:datetime-tz",
+    "StatementDocument.PdfContent:blob",
+    "StatementDocument.StatementXml:clob",
+    "AccountStatement.AccountStatementId:int64"
+  ],
+  "requiredIndexes": [
+    "StatementDocument.PkStatementDocument",
+    "StatementDocument.IxRandomInt10",
+    "StatementDocument.IxRandomInt100",
+    "StatementDocument.IxRandomInt1000",
+    "StatementDocument.UxAccountStatement",
+    "AccountStatement.PkAccountStatement"
+  ],
+  "requiredSequences": [
+    "SeqStatementDocumentId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "StatementDocument"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "StatementDocument"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "StatementDocument"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

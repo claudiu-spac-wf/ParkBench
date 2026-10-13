@@ -1,0 +1,35 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "generic-arbitrary-reads",
+  "version": 1,
+  "procedure": "Workloads/Generic/arbitrary_reads.p",
+  "databaseName": "*",
+  "tableScope": "any",
+  "requiredTables": [],
+  "input": {
+    "mode": ["run", "validate"],
+    "TableName": "string (required)",
+    "WhereClause": "string|null",
+    "Limit": "integer|null (<=0 or null = unlimited)",
+    "FieldsList": "string[]",
+    "LobFields": "string[] (BLOB/CLOB only)"
+  },
+  "operations": [
+    {
+      "op": "arbitrary-read",
+      "tables": ["*"],
+      "access": "dynamic-query",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "readiness": {
+    "mode": "none"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "not written"
+  }
+}

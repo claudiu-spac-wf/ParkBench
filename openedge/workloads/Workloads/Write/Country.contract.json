@@ -1,0 +1,94 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-country",
+  "version": 1,
+  "procedure": "Workloads/Write/Country.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Country",
+      "minimumRows": 0
+    },
+    {
+      "name": "Currency",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Country.CountryId:int64",
+    "Country.RandomInt10:integer",
+    "Country.RandomInt100:integer",
+    "Country.RandomInt1000:integer",
+    "Country.CreatedAt:datetime-tz",
+    "Country.CountryCode:character",
+    "Country.CountryName:character",
+    "Country.DefaultCurrencyCode:character",
+    "Country.PhonePrefix:character",
+    "Currency.CurrencyCode:character"
+  ],
+  "requiredIndexes": [
+    "Country.PkCountry",
+    "Country.IxRandomInt10",
+    "Country.IxRandomInt100",
+    "Country.IxRandomInt1000",
+    "Country.UxCountryCode",
+    "Country.IxDefaultCurrency",
+    "Currency.UxCurrencyCode"
+  ],
+  "requiredSequences": [
+    "SeqCountryId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Country"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Country"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Country"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

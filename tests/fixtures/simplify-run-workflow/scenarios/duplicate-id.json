@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "scenario.v2",
+  "id": "disk-scenario",
+  "version": "1.0.0",
+  "name": "Same declared ID, separate path",
+  "target": {
+    "restPath": "/echo",
+    "databaseService": "database",
+    "pasService": "pas",
+    "pasReplicas": 1
+  },
+  "workload": {
+    "operations": [
+      {
+        "id": "crud-cycle",
+        "method": "POST",
+        "path": "/echo",
+        "weight": 1,
+        "bodyTemplate": {
+          "procName": "Workloads/Sports2020/crud_cycle.p"
+        }
+      }
+    ],
+    "load": {
+      "mode": "constant-concurrency",
+      "concurrency": 1,
+      "seed": 2020
+    }
+  },
+  "phases": {
+    "warmupSeconds": 1,
+    "measurementSeconds": 10,
+    "cooldownSeconds": 1
+  },
+  "observers": [
+    {
+      "id": "db-observer",
+      "kind": "openedge_db_v1",
+      "required": true,
+      "samplingIntervalSeconds": 5,
+      "configuration": {
+        "metricsUrl": "http://db-observer:9100"
+      }
+    }
+  ],
+  "requiredMeasurements": [
+    {
+      "id": "db-activity",
+      "metricName": "parkbench_openedge_db_activity_total",
+      "source": "observer",
+      "observerId": "db-observer"
+    }
+  ]
+}

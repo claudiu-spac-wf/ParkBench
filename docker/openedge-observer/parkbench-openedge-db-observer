@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+procedure="${1:-/app/openedge/observers/db/parkbench-db-observer-v2.r}"
+case "$procedure" in
+  /app/openedge/observers/db/parkbench-db-observer-v2.r) ;;
+  *) echo "observer_procedure_not_approved" >&2; exit 41 ;;
+esac
+if [ "${PARKBENCH_OBSERVER_READ_ONLY:-false}" != "true" ]; then
+  echo "observer_read_only_required" >&2
+  exit 42
+fi
+
+if [ -z "${DB_NAME:-}" ]; then
+  echo "db_name_unset" >&2
+  exit 45
+fi
+
+# The OpenEdge client executable is setuid and creates a temporary client file
+# in its current working directory.  The image application directory is
+# intentionally read-only, so use the standard writable temporary directory.
+cd /tmp
+export TERM="${TERM:-xterm}"
+
+if [ -x /psc/dlc/bin/_progres ]; then
+  case "${2:-}" in
+    "") exec /psc/dlc/bin/_progres -b -p "$procedure" -db "$DB_NAME" -H "${DB_HOST:-database}" -S "${DB_BROKER_PORT:-20931}" ;;
+    parameter-capture) exec /psc/dlc/bin/_progres -b -p "$procedure" -db "$DB_NAME" -H "${DB_HOST:-database}" -S "${DB_BROKER_PORT:-20931}" -param parameter-capture ;;
+    *) echo "observer_mode_not_approved" >&2; exit 44 ;;
+  esac
+fi
+echo "openedge_runtime_missing" >&2
+exit 43

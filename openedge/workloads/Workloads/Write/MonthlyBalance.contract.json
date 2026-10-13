@@ -1,0 +1,102 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-monthly-balance",
+  "version": 1,
+  "procedure": "Workloads/Write/MonthlyBalance.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "MonthlyBalance",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "MonthlyBalance.MonthlyBalanceId:int64",
+    "MonthlyBalance.RandomInt10:integer",
+    "MonthlyBalance.RandomInt100:integer",
+    "MonthlyBalance.RandomInt1000:integer",
+    "MonthlyBalance.CreatedAt:datetime-tz",
+    "MonthlyBalance.AccountId:int64",
+    "MonthlyBalance.BalanceMonth:date",
+    "MonthlyBalance.OpeningBalance:decimal",
+    "MonthlyBalance.ClosingBalance:decimal",
+    "MonthlyBalance.MinimumBalance:decimal",
+    "MonthlyBalance.MaximumBalance:decimal",
+    "MonthlyBalance.AverageDailyBalance:decimal",
+    "MonthlyBalance.TotalDebits:decimal",
+    "MonthlyBalance.TotalCredits:decimal",
+    "MonthlyBalance.DebitCount:integer",
+    "MonthlyBalance.CreditCount:integer",
+    "MonthlyBalance.DaysOverdrawn:integer",
+    "Account.AccountId:int64"
+  ],
+  "requiredIndexes": [
+    "MonthlyBalance.PkMonthlyBalance",
+    "MonthlyBalance.IxRandomInt10",
+    "MonthlyBalance.IxRandomInt100",
+    "MonthlyBalance.IxRandomInt1000",
+    "MonthlyBalance.UxAccountMonth",
+    "MonthlyBalance.IxBalanceMonth",
+    "Account.PkAccount"
+  ],
+  "requiredSequences": [
+    "SeqMonthlyBalanceId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "MonthlyBalance"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "MonthlyBalance"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "MonthlyBalance"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

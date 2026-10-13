@@ -1,0 +1,100 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-branch",
+  "version": 1,
+  "procedure": "Workloads/Write/Branch.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Branch",
+      "minimumRows": 0
+    },
+    {
+      "name": "Country",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Branch.BranchId:int64",
+    "Branch.RandomInt10:integer",
+    "Branch.RandomInt100:integer",
+    "Branch.RandomInt1000:integer",
+    "Branch.CreatedAt:datetime-tz",
+    "Branch.BranchCode:character",
+    "Branch.BranchName:character",
+    "Branch.AddressLine1:character",
+    "Branch.City:character",
+    "Branch.StateProvince:character",
+    "Branch.PostalCode:character",
+    "Branch.CountryCode:character",
+    "Branch.Phone:character",
+    "Branch.OpenDate:date",
+    "Branch.IsActive:logical",
+    "Country.CountryCode:character"
+  ],
+  "requiredIndexes": [
+    "Branch.PkBranch",
+    "Branch.IxRandomInt10",
+    "Branch.IxRandomInt100",
+    "Branch.IxRandomInt1000",
+    "Branch.UxBranchCode",
+    "Branch.IxCountryCity",
+    "Country.UxCountryCode"
+  ],
+  "requiredSequences": [
+    "SeqBranchId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Branch"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Branch"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Branch"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

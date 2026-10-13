@@ -1,0 +1,115 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-credit-transaction",
+  "version": 1,
+  "procedure": "Workloads/Write/CreditTransaction.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "CreditTransaction",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "AccountStatement",
+      "minimumRows": 0
+    },
+    {
+      "name": "TransactionType",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "CreditTransaction.CreditTransactionId:int64",
+    "CreditTransaction.RandomInt10:integer",
+    "CreditTransaction.RandomInt100:integer",
+    "CreditTransaction.RandomInt1000:integer",
+    "CreditTransaction.CreatedAt:datetime-tz",
+    "CreditTransaction.AccountId:int64",
+    "CreditTransaction.TransactionTypeId:int64",
+    "CreditTransaction.AccountStatementId:int64",
+    "CreditTransaction.PostedDate:date",
+    "CreditTransaction.PostedAt:datetime-tz",
+    "CreditTransaction.Amount:decimal",
+    "CreditTransaction.RunningBalance:decimal",
+    "CreditTransaction.Description:character",
+    "CreditTransaction.PayerName:character",
+    "CreditTransaction.ReferenceNumber:character",
+    "CreditTransaction.IsPayroll:logical",
+    "Account.AccountId:int64",
+    "TransactionType.TransactionTypeId:int64",
+    "AccountStatement.AccountStatementId:int64",
+    "TransactionType.Direction:character"
+  ],
+  "requiredIndexes": [
+    "CreditTransaction.PkCreditTransaction",
+    "CreditTransaction.IxRandomInt10",
+    "CreditTransaction.IxRandomInt100",
+    "CreditTransaction.IxRandomInt1000",
+    "CreditTransaction.IxAccountPosted",
+    "CreditTransaction.IxAccountStatement",
+    "CreditTransaction.IxPostedDate",
+    "Account.PkAccount",
+    "TransactionType.PkTransactionType",
+    "AccountStatement.PkAccountStatement"
+  ],
+  "requiredSequences": [
+    "SeqCreditTransactionId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "CreditTransaction"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "CreditTransaction"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "CreditTransaction"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

@@ -1,0 +1,2201 @@
+{
+  "uid": "parkbench-database-concurrency",
+  "title": "Database transactions, locks, and latches",
+  "tags": [
+    "parkbench",
+    "concurrency"
+  ],
+  "description": "One run: real clock time (UTC). Several runs: runs are aligned on elapsed time since measurement start, which reads 00:00:00 on the axis; times before it are warmup.",
+  "editable": false,
+  "graphTooltip": 1,
+  "timezone": "utc",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "run_id",
+        "label": "Runs",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "label_values(parkbench_run_window, run_id)",
+        "query": {
+          "query": "label_values(parkbench_run_window, run_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "multi": true,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 0,
+        "current": {},
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "phase",
+        "label": "Phase",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "query": {
+          "query": "label_values(parkbench_run_phase_boundary{run_id=~\"$run_id\"}, phase)",
+          "refId": "filter"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "refresh": 1
+      },
+      {
+        "type": "query",
+        "name": "notice_time_range",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"time_range\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_time_range"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "notice_excluded_runs",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "definition": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+        "query": {
+          "query": "query_result(parkbench_run_notice_text{run_id=~\"$run_id\",kind=\"excluded_runs\",window_start=\"$__from\",window_end=\"$__to\"})",
+          "refId": "notice_excluded_runs"
+        },
+        "regex": "/message=\"((?:\\\\.|[^\"\\\\])*)\"/",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 0,
+        "current": {
+          "text": "Notice unavailable; refresh the dashboard.",
+          "value": "Notice unavailable; refresh the dashboard."
+        },
+        "options": []
+      },
+      {
+        "type": "constant",
+        "name": "parkbench_web_url",
+        "hide": 2,
+        "query": "http://127.0.0.1:13002",
+        "current": {
+          "text": "http://127.0.0.1:13002",
+          "value": "http://127.0.0.1:13002"
+        },
+        "options": [
+          {
+            "text": "http://127.0.0.1:13002",
+            "value": "http://127.0.0.1:13002",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "disk_exclude",
+        "hide": 2,
+        "query": "(loop|ram|zram|fd|sr|dm-|md).*",
+        "current": {
+          "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+          "value": "(loop|ram|zram|fd|sr|dm-|md).*"
+        },
+        "options": [
+          {
+            "text": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "value": "(loop|ram|zram|fd|sr|dm-|md).*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      },
+      {
+        "type": "constant",
+        "name": "interface_exclude",
+        "hide": 2,
+        "query": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+        "current": {
+          "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+          "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*"
+        },
+        "options": [
+          {
+            "text": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "value": "lo|docker.*|br-.*|veth.*|virbr.*|cni.*|flannel.*|cali.*|vxlan.*|tun.*|tap.*|wg.*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Run phases",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "parkbench-runs"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "expr": "parkbench_run_phase_boundary{run_id=~\"$run_id\"}",
+        "step": "",
+        "titleFormat": "{{run_id}}: {{phase}} {{edge}}",
+        "textFormat": "",
+        "tagKeys": "phase,edge",
+        "useValueForTime": false
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Host Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Host Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-host-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Platform Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Platform Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-platform-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Run Summary",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Run Summary with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-run-summary",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "DB Resources",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open DB Resources with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-db-resources",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Activity",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Activity with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-activity",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database BI & APW data",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database BI & APW data with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-recovery-concurrency",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Database Parameters",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open Database Parameters with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-parameters",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "PAS Instances",
+      "type": "link",
+      "icon": "dashboard",
+      "tooltip": "Open PAS Instances with the current time range and runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-pas-instances",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Reset range to selected runs",
+      "type": "link",
+      "icon": "sync",
+      "tooltip": "Recalculate the time range and mode for the selected runs",
+      "url": "${parkbench_web_url}/api/v1/grafana/open?dashboard=parkbench-database-concurrency&reset=1",
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Notices",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "title": "Time range notice",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.mode_mismatch",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_time_range:text}"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Excluded runs",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 12,
+        "h": 2
+      },
+      "parkbench": {
+        "panelId": "notice.excluded_runs",
+        "category": "requests",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "text",
+      "options": {
+        "mode": "markdown",
+        "content": "${notice_excluded_runs:text}"
+      }
+    },
+    {
+      "id": 4,
+      "type": "row",
+      "title": "Transactions",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "Transaction commits per second",
+      "description": "Filtered to the selected run and phase.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-recovery-concurrency.36",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-recovery-concurrency",
+          "panelId": 36
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops/s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"transaction_commits_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+          "legendFormat": "{{run_id}} {{service}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Transaction rollbacks per second",
+      "description": "Filtered to the selected run and phase.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-recovery-concurrency.37",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-recovery-concurrency",
+          "panelId": 37
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops/s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"transaction_rollbacks_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+          "legendFormat": "{{run_id}} {{service}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Active transactions",
+      "description": "Filtered to the selected run and phase.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-recovery-concurrency.38",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-recovery-concurrency",
+          "panelId": 38
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"transaction_active_count\",view=\"gauge\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{service}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Oldest active transaction age",
+      "description": "Filtered to the selected run and phase.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "legacy.database-recovery-concurrency.39",
+        "category": "duration",
+        "split": "none",
+        "breakdown": "none",
+        "legacy": {
+          "uid": "parkbench-database-recovery-concurrency",
+          "panelId": 39
+        }
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"transaction_oldest_active_age_seconds\",view=\"gauge\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
+          "legendFormat": "{{run_id}} {{service}}",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "row",
+      "title": "Record and buffer locks",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 10,
+          "title": "Record locks and record lock waits per second",
+          "description": "Filtered to the selected run and phase; collection status remains available in the saved run summary.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 21,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.11",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 11
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"database_record_locks_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} database_record_locks_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            },
+            {
+              "refId": "B",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"database_record_lock_waits_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} database_record_lock_waits_total {{pool}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "title": "Buffer lock waits per second",
+          "description": "Filtered to the selected run and phase; collection status remains available in the saved run summary.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 21,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-activity.12",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-activity",
+              "panelId": 12
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"database_buffer_lock_waits_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} database",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "Named latch waits",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "title": "Named latch waits (naps/s)",
+      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "latch.named.wait_rate",
+        "category": "event_rate",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:naps/s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_named_waits_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+          "legendFormat": "{{run_id}} {{latch_name}} ({{latch_type}}, {{latch_id}})",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Named latch waits (total naps)",
+      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "latch.named.wait_total",
+        "category": "count",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "bargauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:naps",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "text",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_named_waits_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",group=\"name_type\"}",
+          "legendFormat": "{{run_id}} {{latch_name}} ({{latch_type}})",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Named latch wait-or-spin duration (s/s)",
+      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "latch.named.duration_rate",
+        "category": "duration_rate",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:s/s",
+          "noValue": "No data",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "axisLabel": ""
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_named_wait_or_spin_duration_seconds_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+          "legendFormat": "{{run_id}} {{latch_name}} ({{latch_type}}, {{latch_id}})",
+          "range": true,
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Named latch wait-or-spin duration (seconds)",
+      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "parkbench-runs"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 38,
+        "w": 12,
+        "h": 8
+      },
+      "parkbench": {
+        "panelId": "latch.named.duration_total",
+        "category": "duration",
+        "split": "none",
+        "breakdown": "none"
+      },
+      "type": "bargauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "text",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_named_wait_or_spin_duration_seconds_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",group=\"name_type\"}",
+          "legendFormat": "{{run_id}} {{latch_name}} ({{latch_type}})",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "Aggregate latches",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 18,
+          "title": "Latch busy events per second (aggregate)",
+          "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+          "links": [
+            {
+              "title": "Named latch breakdown",
+              "url": "/d/parkbench-database-concurrency?${__all_variables}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 47,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.40",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 40
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_busy_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "title": "Latch locks per second (aggregate)",
+          "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+          "links": [
+            {
+              "title": "Named latch breakdown",
+              "url": "/d/parkbench-database-concurrency?${__all_variables}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 47,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.41",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 41
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_locks_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "title": "Latch waits per second (aggregate)",
+          "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+          "links": [
+            {
+              "title": "Named latch breakdown",
+              "url": "/d/parkbench-database-concurrency?${__all_variables}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 55,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.42",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 42
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_waits_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "title": "Latch spins per second (aggregate)",
+          "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+          "links": [
+            {
+              "title": "Named latch breakdown",
+              "url": "/d/parkbench-database-concurrency?${__all_variables}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 55,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.43",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 43
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_spins_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "title": "Latch lock time per second (aggregate)",
+          "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+          "links": [
+            {
+              "title": "Named latch breakdown",
+              "url": "/d/parkbench-database-concurrency?${__all_variables}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 63,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.44",
+            "category": "duration_rate",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 44
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "suffix:s/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_lock_duration_seconds_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "title": "Latch wait-or-spin time per second (aggregate)",
+          "description": "Filtered to the selected run and phase. Aggregate across native latch instances. Use Named latch waits in the concurrency dashboard for the name/type/instance breakdown.",
+          "links": [
+            {
+              "title": "Named latch breakdown",
+              "url": "/d/parkbench-database-concurrency?${__all_variables}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 63,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.45",
+            "category": "duration_rate",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 45
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "suffix:s/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_wait_or_spin_duration_seconds_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "type": "row",
+      "title": "Lock operations",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 71,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 25,
+          "title": "Lock requests per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 72,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.46",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 46
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_requests_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "title": "Lock grants per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 72,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.47",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 47
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_grants_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "title": "Lock waits per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 80,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.48",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 48
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_waits_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{operation}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "title": "Exclusive find grants per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 80,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.49",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 49
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_find_exclusive_grants_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "title": "Share find grants per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 88,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.50",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 50
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_find_share_grants_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "title": "Lock cancellations per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 88,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.51",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 51
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_cancellations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "title": "Lock downgrades per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 96,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.52",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 52
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_downgrades_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "title": "Redundant lock grants per second",
+          "description": "Filtered to the selected run and phase.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "parkbench-runs"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 96,
+            "w": 12,
+            "h": 8
+          },
+          "parkbench": {
+            "panelId": "legacy.database-recovery-concurrency.53",
+            "category": "count",
+            "split": "none",
+            "breakdown": "none",
+            "legacy": {
+              "uid": "parkbench-database-recovery-concurrency",
+              "panelId": 53
+            }
+          },
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops/s",
+              "noValue": "No data",
+              "min": 0,
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": false,
+                "insertNulls": false,
+                "showPoints": "never",
+                "axisLabel": ""
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "parkbench-runs"
+              },
+              "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"lock_redundant_grants_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\"}",
+              "legendFormat": "{{run_id}} {{service}}",
+              "range": true,
+              "instant": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

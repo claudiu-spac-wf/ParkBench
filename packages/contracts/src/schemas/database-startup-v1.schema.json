@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://parkbench.local/contracts/database-startup-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "databaseName", "startupFile", "parameters"],
+  "properties": {
+    "contractVersion": {
+      "const": "db-startup-parameters.v1"
+    },
+    "databaseName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "startupFile": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "const": "absent"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "relativePath"],
+          "properties": {
+            "status": {
+              "const": "present"
+            },
+            "relativePath": {
+              "enum": ["startup.pf", "db/startup.pf"]
+            }
+          }
+        }
+      ]
+    },
+    "parameters": {
+      "type": "array",
+      "maxItems": 161,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "displayValue",
+          "source",
+          "overrides",
+          "applicability",
+          "verification"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^-[A-Za-z][A-Za-z0-9-]*$",
+            "maxLength": 128
+          },
+          "displayValue": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "source": {
+            "enum": ["queued", "scenario", "startup_file"]
+          },
+          "overrides": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": ["queued", "scenario", "startup_file"]
+            }
+          },
+          "sourceReference": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "applicability": {
+            "const": "database_broker"
+          },
+          "verification": {
+            "enum": ["pending", "matched", "mismatched", "unverifiable"]
+          },
+          "observedValue": {
+            "type": ["string", "null"],
+            "maxLength": 8192
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "expandedParameterFiles": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 8192 }
+    },
+    "registryVersion": {
+      "type": "string",
+      "enum": ["openedge-startup-catalog.12.8.v1"]
+    }
+  }
+}

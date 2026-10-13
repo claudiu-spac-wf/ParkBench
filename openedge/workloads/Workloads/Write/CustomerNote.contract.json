@@ -1,0 +1,105 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-customer-note",
+  "version": 1,
+  "procedure": "Workloads/Write/CustomerNote.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "CustomerNote",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    },
+    {
+      "name": "Employee",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "CustomerNote.CustomerNoteId:int64",
+    "CustomerNote.RandomInt10:integer",
+    "CustomerNote.RandomInt100:integer",
+    "CustomerNote.RandomInt1000:integer",
+    "CustomerNote.CreatedAt:datetime-tz",
+    "CustomerNote.CustomerId:int64",
+    "CustomerNote.EmployeeId:int64",
+    "CustomerNote.NoteKind:character",
+    "CustomerNote.NoteDateTime:datetime-tz",
+    "CustomerNote.Summary:character",
+    "CustomerNote.NoteText:clob",
+    "CustomerNote.FollowUpDate:date",
+    "CustomerNote.IsResolved:logical",
+    "Customer.CustomerId:int64",
+    "Employee.EmployeeId:int64"
+  ],
+  "requiredIndexes": [
+    "CustomerNote.PkCustomerNote",
+    "CustomerNote.IxRandomInt10",
+    "CustomerNote.IxRandomInt100",
+    "CustomerNote.IxRandomInt1000",
+    "CustomerNote.IxCustomerDate",
+    "CustomerNote.IxEmployeeDate",
+    "CustomerNote.WxSummary",
+    "Customer.PkCustomer",
+    "Employee.PkEmployee"
+  ],
+  "requiredSequences": [
+    "SeqCustomerNoteId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "CustomerNote"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "CustomerNote"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "CustomerNote"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "contractVersion": "catalog-discovery-fixture.v1",
+  "dockerImageCount": 20,
+  "fileCount": 50,
+  "dockerImages": [
+    {
+      "repository": "parkbench/database",
+      "tag": "fixture-01",
+      "role": "database"
+    },
+    {
+      "repository": "parkbench/pas",
+      "tag": "fixture-02",
+      "role": "pas"
+    },
+    {
+      "repository": "parkbench/loadgen",
+      "tag": "fixture-03",
+      "role": "loadgen"
+    },
+    {
+      "repository": "parkbench/observer",
+      "tag": "fixture-04",
+      "role": "observer"
+    },
+    {
+      "repository": "parkbench/database",
+      "tag": "fixture-05",
+      "role": "database"
+    },
+    {
+      "repository": "parkbench/pas",
+      "tag": "fixture-06",
+      "role": "pas"
+    },
+    {
+      "repository": "parkbench/loadgen",
+      "tag": "fixture-07",
+      "role": "loadgen"
+    },
+    {
+      "repository": "parkbench/observer",
+      "tag": "fixture-08",
+      "role": "observer"
+    },
+    {
+      "repository": "parkbench/database",
+      "tag": "fixture-09",
+      "role": "database"
+    },
+    {
+      "repository": "parkbench/pas",
+      "tag": "fixture-10",
+      "role": "pas"
+    },
+    {
+      "repository": "parkbench/loadgen",
+      "tag": "fixture-11",
+      "role": "loadgen"
+    },
+    {
+      "repository": "parkbench/observer",
+      "tag": "fixture-12",
+      "role": "observer"
+    },
+    {
+      "repository": "parkbench/database",
+      "tag": "fixture-13",
+      "role": "database"
+    },
+    {
+      "repository": "parkbench/pas",
+      "tag": "fixture-14",
+      "role": "pas"
+    },
+    {
+      "repository": "parkbench/loadgen",
+      "tag": "fixture-15",
+      "role": "loadgen"
+    },
+    {
+      "repository": "parkbench/observer",
+      "tag": "fixture-16",
+      "role": "observer"
+    },
+    {
+      "repository": "parkbench/database",
+      "tag": "fixture-17",
+      "role": "database"
+    },
+    {
+      "repository": "parkbench/pas",
+      "tag": "fixture-18",
+      "role": "pas"
+    },
+    {
+      "repository": "parkbench/loadgen",
+      "tag": "fixture-19",
+      "role": "loadgen"
+    },
+    {
+      "repository": "parkbench/observer",
+      "tag": "fixture-20",
+      "role": "observer"
+    }
+  ],
+  "fileRoots": {
+    "scenarios": "scenarios",
+    "workloads": "workloads",
+    "observers": "observers",
+    "seeds": "seeds",
+    "archives": "archives",
+    "configs": "configs"
+  },
+  "filePattern": "fixture-{category}-{index}.dat"
+}

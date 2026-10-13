@@ -1,0 +1,120 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-loan",
+  "version": 1,
+  "procedure": "Workloads/Write/Loan.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Loan",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    },
+    {
+      "name": "Employee",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Loan.LoanId:int64",
+    "Loan.RandomInt10:integer",
+    "Loan.RandomInt100:integer",
+    "Loan.RandomInt1000:integer",
+    "Loan.CreatedAt:datetime-tz",
+    "Loan.LoanNumber:character",
+    "Loan.CustomerId:int64",
+    "Loan.DisbursementAccountId:int64",
+    "Loan.LoanOfficerEmployeeId:int64",
+    "Loan.LoanKind:character",
+    "Loan.PrincipalAmount:decimal",
+    "Loan.InterestRate:decimal",
+    "Loan.TermMonths:integer",
+    "Loan.OriginationDate:date",
+    "Loan.MaturityDate:date",
+    "Loan.MonthlyPaymentAmount:decimal",
+    "Loan.OutstandingPrincipal:decimal",
+    "Loan.NextPaymentDate:date",
+    "Loan.LoanStatus:character",
+    "Loan.CollateralDescription:character",
+    "Loan.UnderwritingNotes:character",
+    "Loan.UpdatedAt:datetime-tz",
+    "Customer.CustomerId:int64",
+    "Account.AccountId:int64",
+    "Employee.EmployeeId:int64"
+  ],
+  "requiredIndexes": [
+    "Loan.PkLoan",
+    "Loan.IxRandomInt10",
+    "Loan.IxRandomInt100",
+    "Loan.IxRandomInt1000",
+    "Loan.UxLoanNumber",
+    "Loan.IxCustomer",
+    "Loan.IxStatusNextPayment",
+    "Customer.PkCustomer",
+    "Account.PkAccount",
+    "Employee.PkEmployee"
+  ],
+  "requiredSequences": [
+    "SeqLoanId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Loan"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Loan"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Loan"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

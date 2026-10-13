@@ -1,0 +1,105 @@
+{
+  "absent": {
+    "content": null,
+    "parameters": []
+  },
+  "valid": {
+    "content": "# primary broker\n-B 500\n-spin 2\n",
+    "parameters": [
+      {
+        "name": "-B",
+        "value": "500"
+      },
+      {
+        "name": "-spin",
+        "value": "2"
+      }
+    ]
+  },
+  "duplicate": {
+    "content": "-B 500\n-B 1000\n",
+    "parameters": [
+      {
+        "name": "-B",
+        "value": "1000"
+      }
+    ]
+  },
+  "quotedCommented": {
+    "content": "# comment\n-B \"500\"  # buffers\n",
+    "parameters": [
+      {
+        "name": "-B",
+        "value": "500"
+      }
+    ]
+  },
+  "malformed": {
+    "content": "-B\n",
+    "error": "database_startup_file_invalid:-B:1"
+  },
+  "unsupported": {
+    "content": "-unknown 5\n",
+    "error": "database_startup_file_invalid:-unknown:1"
+  },
+  "clientOnly": {
+    "content": "-db parkbench\n",
+    "error": "database_startup_file_invalid:-db:1"
+  },
+  "nestedPf": {
+    "content": "-pf other.pf\n",
+    "parameters": [
+      {
+        "name": "-pf",
+        "value": "other.pf"
+      }
+    ]
+  },
+  "absolutePf": {
+    "content": "-pf /tmp/other.pf\n",
+    "error": "database_startup_file_invalid:-pf:1"
+  },
+  "traversalPf": {
+    "content": "-pf ../other.pf\n",
+    "error": "database_startup_file_invalid:-pf:1"
+  },
+  "multipleOnOneLine": {
+    "content": "-B 500 -spin 2 # one line\n",
+    "parameters": [
+      {
+        "name": "-B",
+        "value": "500"
+      },
+      {
+        "name": "-spin",
+        "value": "2"
+      }
+    ]
+  },
+  "nativeEscape": {
+    "content": "-diagPrefix \"quoted\\\"value\"\n",
+    "parameters": [
+      {
+        "name": "-diagPrefix",
+        "value": "quoted\"value"
+      }
+    ]
+  },
+  "managedService": {
+    "content": "-S 20999\n",
+    "error": "database_startup_file_invalid:-S:1"
+  },
+  "valuedFalse": {
+    "content": "-ssj 0 -threadedServer 0\n",
+    "parameters": [
+      {
+        "name": "-ssj",
+        "value": "0"
+      },
+      {
+        "name": "-threadedServer",
+        "value": "0"
+      }
+    ]
+  }
+}

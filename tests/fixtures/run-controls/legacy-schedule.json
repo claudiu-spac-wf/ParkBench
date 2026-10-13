@@ -1,0 +1,42 @@
+{
+  "description": "Sanitized aggregate-only schedule before feature 021; omitted controls inherit legacy behavior.",
+  "scenario": {
+    "id": "fixture-write",
+    "version": "1.0.0"
+  },
+  "parameters": {
+    "-bibufs": 64
+  },
+  "databaseStartup": {
+    "contractVersion": "db-startup-parameters.v1",
+    "startupFile": {
+      "status": "absent"
+    },
+    "parameters": [
+      {
+        "name": "-bibufs",
+        "displayValue": "64",
+        "source": "queued",
+        "overrides": [],
+        "applicability": "database_broker",
+        "verification": "pending"
+      }
+    ],
+    "databaseName": "parkbench"
+  },
+  "metricContracts": ["openedge-db.v3"],
+  "phaseBoundaries": {
+    "warmup": {
+      "startedAt": "2026-10-03T00:00:00Z",
+      "finishedAt": "2026-10-03T00:00:05Z"
+    },
+    "measurement": {
+      "startedAt": "2026-10-03T00:00:05Z",
+      "finishedAt": "2026-10-03T00:00:15Z"
+    },
+    "cooldown": {
+      "startedAt": "2026-10-03T00:00:15Z",
+      "finishedAt": "2026-10-03T00:00:20Z"
+    }
+  }
+}

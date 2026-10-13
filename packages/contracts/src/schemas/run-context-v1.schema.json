@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run-context.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "runId",
+    "scenario",
+    "requested",
+    "effective",
+    "observed",
+    "inputs",
+    "loadSeed",
+    "host",
+    "tools",
+    "images",
+    "sources",
+    "capturedAt"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "run-context.v1"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loadSeed": {
+      "type": [
+        "number",
+        "string"
+      ]
+    },
+    "capturedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "finalizedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "sources": {
+      "type": "array"
+    },
+    "scenario": {
+      "type": "object"
+    },
+    "requested": {
+      "type": "object"
+    },
+    "effective": {
+      "type": "object"
+    },
+    "observed": {
+      "type": "object"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "host": {
+      "type": "object"
+    },
+    "tools": {
+      "type": "object"
+    },
+    "images": {
+      "type": "object"
+    },
+    "health": {
+      "type": "object"
+    },
+    "parameterReference": {
+      "type": "object"
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "databaseRunControls": {
+      "type": "object",
+      "required": [
+        "contractVersion"
+      ],
+      "properties": {
+        "contractVersion": {
+          "const": "db-run-controls.v1"
+        }
+      }
+    }
+  }
+}

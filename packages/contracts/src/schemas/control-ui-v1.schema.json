@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/control-ui.v1",
+  "type": "object",
+  "required": ["contractVersion"],
+  "properties": {
+    "contractVersion": { "const": "control-ui.v1" },
+    "items": { "type": "array" },
+    "nextPageToken": { "type": "string" },
+    "hasMore": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/ui-options.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contractVersion": {
+      "const": "ui-options.v1"
+    },
+    "databaseParameters": {
+      "type": "object",
+      "required": ["contractVersion", "openedgeVersion", "parameters"],
+      "properties": {
+        "contractVersion": {
+          "enum": ["database-parameter-options.v1", "database-parameter-options.v2"]
+        },
+        "openedgeVersion": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "explanation": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "runParameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["canonicalName", "type", "description", "source", "matrixAllowed"],
+        "properties": {
+          "explanation": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "required": ["contractVersion", "databaseParameters"]
+}

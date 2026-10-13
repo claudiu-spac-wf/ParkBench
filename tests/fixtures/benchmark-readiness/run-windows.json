@@ -1,0 +1,60 @@
+{
+  "window": [
+    1000,
+    2000
+  ],
+  "now": 2500,
+  "cases": [
+    {
+      "id": "inside",
+      "start": 1200,
+      "end": 1800,
+      "expected": true
+    },
+    {
+      "id": "earlier",
+      "start": 500,
+      "end": 1500,
+      "expected": true
+    },
+    {
+      "id": "left-edge",
+      "start": 500,
+      "end": 1000,
+      "expected": true
+    },
+    {
+      "id": "right-edge",
+      "start": 2000,
+      "end": 2200,
+      "expected": true
+    },
+    {
+      "id": "outside",
+      "start": 2001,
+      "end": 2200,
+      "expected": false
+    },
+    {
+      "id": "active",
+      "start": 1900,
+      "end": null,
+      "expected": true
+    }
+  ],
+  "aligned": {
+    "anchor": 100000,
+    "runStart": 5000,
+    "measurementStart": 5030,
+    "runEnd": 5160,
+    "expectedStart": 99970,
+    "expectedEnd": 100130
+  },
+  "missingAnchor": {
+    "expectedExcluded": true,
+    "metadataStillVisible": true
+  },
+  "expiredMetrics": {
+    "metadataStillVisible": true
+  }
+}

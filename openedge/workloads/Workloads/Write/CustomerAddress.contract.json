@@ -1,0 +1,108 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-customer-address",
+  "version": 1,
+  "procedure": "Workloads/Write/CustomerAddress.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "CustomerAddress",
+      "minimumRows": 0
+    },
+    {
+      "name": "Country",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "CustomerAddress.CustomerAddressId:int64",
+    "CustomerAddress.RandomInt10:integer",
+    "CustomerAddress.RandomInt100:integer",
+    "CustomerAddress.RandomInt1000:integer",
+    "CustomerAddress.CreatedAt:datetime-tz",
+    "CustomerAddress.CustomerId:int64",
+    "CustomerAddress.AddressKind:character",
+    "CustomerAddress.AddressLine1:character",
+    "CustomerAddress.AddressLine2:character",
+    "CustomerAddress.City:character",
+    "CustomerAddress.StateProvince:character",
+    "CustomerAddress.PostalCode:character",
+    "CustomerAddress.CountryCode:character",
+    "CustomerAddress.IsPrimary:logical",
+    "CustomerAddress.ValidFrom:date",
+    "CustomerAddress.ValidTo:date",
+    "CustomerAddress.UpdatedAt:datetime-tz",
+    "Customer.CustomerId:int64",
+    "Country.CountryCode:character"
+  ],
+  "requiredIndexes": [
+    "CustomerAddress.PkCustomerAddress",
+    "CustomerAddress.IxRandomInt10",
+    "CustomerAddress.IxRandomInt100",
+    "CustomerAddress.IxRandomInt1000",
+    "CustomerAddress.IxCustomer",
+    "CustomerAddress.IxCountryPostal",
+    "Customer.PkCustomer",
+    "Country.UxCountryCode"
+  ],
+  "requiredSequences": [
+    "SeqCustomerAddressId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "CustomerAddress"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "CustomerAddress"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "CustomerAddress"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}

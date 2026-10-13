@@ -1,0 +1,200 @@
+{
+  "description": "Independent historical and current native evidence; timestamps are Unix seconds.",
+  "timeline": {
+    "runId": "cache-1-abcd",
+    "startedAt": 1800000000000,
+    "phases": {
+      "warmup": [
+        1800000010,
+        1800000040
+      ],
+      "measurement": [
+        1800000040,
+        1800000160
+      ],
+      "cooldown": [
+        1800000160,
+        1800000170
+      ]
+    },
+    "endedAt": 1800000175000
+  },
+  "historical": [
+    {
+      "timestamp": 1800000020,
+      "phase": "idle",
+      "capacity": 100,
+      "active": 99,
+      "logical": 1000,
+      "os": 100
+    },
+    {
+      "timestamp": 1800000020,
+      "phase": "warmup",
+      "capacity": 100,
+      "active": 10,
+      "logical": 1000,
+      "os": 100
+    },
+    {
+      "timestamp": 1800000020,
+      "phase": "measurement",
+      "capacity": 100,
+      "active": 42,
+      "logical": 1000,
+      "os": 100
+    },
+    {
+      "timestamp": 1800000020,
+      "phase": "cooldown",
+      "capacity": 100,
+      "active": 75,
+      "logical": 1000,
+      "os": 100
+    }
+  ],
+  "continuous": [
+    {
+      "timestamp": 1800000035,
+      "capacity": 100,
+      "active": 10,
+      "logical": 1000,
+      "os": 100
+    },
+    {
+      "timestamp": 1800000040,
+      "capacity": 100,
+      "active": 20,
+      "logical": 1200,
+      "os": 120
+    }
+  ],
+  "expected": {
+    "free": 90,
+    "hitRatio": 0.9,
+    "ownerAt20": "warmup",
+    "ownerAt40": "measurement",
+    "seriesPerRunPoolEpoch": 1
+  },
+  "counterCases": [
+    {
+      "name": "steady",
+      "samples": [
+        [
+          0,
+          100
+        ],
+        [
+          5,
+          150
+        ],
+        [
+          10,
+          200
+        ]
+      ],
+      "expectedIncrease": 100,
+      "expectedRate": 10
+    },
+    {
+      "name": "reset",
+      "samples": [
+        [
+          0,
+          100
+        ],
+        [
+          5,
+          20
+        ],
+        [
+          10,
+          70
+        ]
+      ],
+      "expectedIncrease": 70,
+      "expectedRate": 7
+    },
+    {
+      "name": "zero",
+      "samples": [
+        [
+          0,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "expectedIncrease": 0,
+      "expectedRate": 0
+    },
+    {
+      "name": "unavailable-gap",
+      "samples": [
+        [
+          0,
+          100
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          10,
+          200
+        ]
+      ],
+      "expectedAvailable": false
+    },
+    {
+      "name": "single",
+      "samples": [
+        [
+          0,
+          100
+        ]
+      ],
+      "expectedAvailable": false
+    }
+  ],
+  "identities": [
+    {
+      "runId": "cache-1-abcd",
+      "name": "same-name",
+      "pool": "primary",
+      "database_epoch": "one"
+    },
+    {
+      "runId": "cache-2-abcd",
+      "name": "same-name",
+      "pool": "primary",
+      "database_epoch": "one"
+    },
+    {
+      "runId": "cache-1-abcd",
+      "name": "same-name",
+      "pool": "alternate",
+      "database_epoch": "one"
+    },
+    {
+      "runId": "cache-1-abcd",
+      "name": "same-name",
+      "pool": "primary",
+      "database_epoch": "two"
+    }
+  ],
+  "conflict": {
+    "timestamp": 1800000020,
+    "values": [
+      10,
+      11
+    ],
+    "expectedAvailable": false
+  }
+}

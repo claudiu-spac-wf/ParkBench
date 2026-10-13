@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://parkbench.local/contracts/host-environment-v1.schema.json",
+  "title": "ParkBench Host Environment v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "capturedAt", "status", "host", "toolchain", "engine", "checks"],
+  "properties": {
+    "contractVersion": { "const": "host-environment.v1" },
+    "capturedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+    },
+    "status": { "enum": ["ready", "blocked"] },
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["osId", "osRelease", "codename", "kernel", "architecture"],
+      "properties": {
+        "osId": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "osRelease": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "codename": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "kernel": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "architecture": { "type": "string", "minLength": 1, "maxLength": 64 }
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "npm", "dockerClient", "compose", "compilerAdapterVersion"],
+      "properties": {
+        "node": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "npm": { "type": ["string", "null"], "maxLength": 80 },
+        "dockerClient": { "type": ["string", "null"], "maxLength": 80 },
+        "compose": { "type": ["string", "null"], "maxLength": 80 },
+        "compilerAdapterVersion": { "type": ["string", "null"], "maxLength": 80 }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reachable",
+        "contextName",
+        "serverVersion",
+        "operatingSystem",
+        "architecture",
+        "endpointKind"
+      ],
+      "properties": {
+        "reachable": { "type": "boolean" },
+        "contextName": {
+          "type": ["string", "null"],
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_.-]+$"
+        },
+        "serverVersion": { "type": ["string", "null"], "maxLength": 80 },
+        "operatingSystem": { "type": ["string", "null"], "maxLength": 40 },
+        "architecture": { "type": ["string", "null"], "maxLength": 64 },
+        "endpointKind": {
+          "type": ["string", "null"],
+          "enum": ["local-unix-socket", "unsupported", null]
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "diagnosticCode", "action"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$" },
+          "status": { "enum": ["pass", "fail", "warning"] },
+          "diagnosticCode": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,95}$" },
+          "action": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "observed": { "type": ["string", "number", "boolean", "null"], "maxLength": 160 }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "ready" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "engine": {
+            "properties": {
+              "reachable": { "const": true },
+              "operatingSystem": { "const": "linux" },
+              "architecture": { "const": "amd64" },
+              "endpointKind": { "enum": ["local-unix-socket", "unsupported", null] }
+            }
+          },
+          "host": {
+            "properties": {
+              "osId": { "const": "ubuntu" },
+              "osRelease": { "const": "26.04.1 LTS" },
+              "codename": { "const": "resolute" },
+              "architecture": { "const": "x86_64" }
+            }
+          },
+          "toolchain": {
+            "properties": {
+              "node": { "pattern": "^(?:24|2[5-9]|[3-9][0-9]|[1-9][0-9]{2,})\\.\\d+\\.\\d+$" }
+            }
+          },
+          "checks": { "items": { "properties": { "status": { "enum": ["pass", "warning"] } } } }
+        }
+      }
+    }
+  ]
+}

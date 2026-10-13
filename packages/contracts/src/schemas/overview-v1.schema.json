@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/overview.v1",
+  "type": "object",
+  "required": ["contractVersion", "health", "discovery", "queue", "recentRuns"],
+  "properties": {
+    "contractVersion": { "const": "overview.v1" },
+    "health": { "type": "object", "required": ["sqlite", "docker", "prometheus", "checkedAt"] },
+    "discovery": { "$ref": "parkbench/catalog-discovery.v1" },
+    "queue": {
+      "type": "object",
+      "required": ["activeExperiment", "queued", "running", "blocked", "nextRetryAt"]
+    },
+    "recentRuns": { "type": "array", "items": { "type": "object" } }
+  },
+  "additionalProperties": false
+}

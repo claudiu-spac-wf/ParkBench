@@ -1,0 +1,2342 @@
+{
+  "protocolVersion": 2,
+  "database": {
+    "productVersion": "12.8.11.0.0",
+    "startedAt": "2026-09-24T09:00:00Z",
+    "statisticsResetAt": "2026-09-24T09:00:00Z"
+  },
+  "collectedAt": "2026-09-24T10:00:00Z",
+  "families": [
+    {
+      "name": "buffer_pool",
+      "sources": [
+        "_ActBuffer",
+        "effective_run_configuration",
+        "_DbParams"
+      ],
+      "measurements": [
+        {
+          "name": "buffer_pool_configured_buffers",
+          "availability": "not_collected",
+          "source": "_DbParams",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_configured_buffers",
+          "availability": "not_collected",
+          "source": "_DbParams",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_active_buffers",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_active_buffers",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_free_buffers",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_free_buffers",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_logical_reads_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_logical_reads_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_logical_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_logical_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_os_reads_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_os_reads_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_os_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_os_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_deferred_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_deferred_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_flushed_buffers_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_flushed_buffers_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_marked_buffers_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_marked_buffers_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_lru_skips_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_lru_skips_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_lru_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_lru_writes_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_apw_enqueues_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_apw_enqueues_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_checkpoints_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_checkpoints_total",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        },
+        {
+          "name": "buffer_pool_cumulative_cache_hit_ratio",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "primary"
+          }
+        },
+        {
+          "name": "buffer_pool_cumulative_cache_hit_ratio",
+          "availability": "not_collected",
+          "source": "_ActBuffer",
+          "reason": "not_applicable",
+          "labels": {
+            "pool": "alternate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "database_activity",
+      "sources": [
+        "_ActSummary",
+        "_ActIOType"
+      ],
+      "measurements": [
+        {
+          "name": "database_record_locks_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "database_record_lock_waits_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "database_buffer_lock_waits_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "database_blocks_read_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "database_blocks_written_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "database_checkpoint_flushed_buffers_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "table_activity",
+      "sources": [
+        "_TableStat",
+        "_ActSummary",
+        "table_dictionary"
+      ],
+      "measurements": [
+        {
+          "name": "database_table_operations_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "create"
+          }
+        },
+        {
+          "name": "database_table_operations_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "read"
+          }
+        },
+        {
+          "name": "database_table_operations_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "update"
+          }
+        },
+        {
+          "name": "database_table_operations_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Customer",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Customer",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Customer",
+            "operation": "update"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Customer",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Customer",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Item",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Item",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Item",
+            "operation": "update"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Item",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Item",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Order",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Order",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Order",
+            "operation": "update"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Order",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "Order",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "OrderLine",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "OrderLine",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "OrderLine",
+            "operation": "update"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "OrderLine",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "OrderLine",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "other",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "other",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "other",
+            "operation": "update"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "other",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "table_operations_total",
+          "availability": "not_collected",
+          "source": "_TableStat",
+          "reason": "not_applicable",
+          "labels": {
+            "table": "other",
+            "operation": "os_read"
+          }
+        }
+      ]
+    },
+    {
+      "name": "index_activity",
+      "sources": [
+        "_IndexStat",
+        "_ActIOType",
+        "index_dictionary",
+        "table_dictionary"
+      ],
+      "measurements": [
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CustNum",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CustNum",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CustNum",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CustNum",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CustNum",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CustNum",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Comments",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Comments",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Comments",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Comments",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Comments",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Comments",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CountryPost",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CountryPost",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CountryPost",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CountryPost",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CountryPost",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.CountryPost",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Name",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Name",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Name",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Name",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Name",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.Name",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.SalesRep",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.SalesRep",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.SalesRep",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.SalesRep",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.SalesRep",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Customer.SalesRep",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemNum",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemNum",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemNum",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemNum",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemNum",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemNum",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CatDescription",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CatDescription",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CatDescription",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CatDescription",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CatDescription",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CatDescription",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.Category2ItemName",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.Category2ItemName",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.Category2ItemName",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.Category2ItemName",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.Category2ItemName",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.Category2ItemName",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CategoryItemName",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CategoryItemName",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CategoryItemName",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CategoryItemName",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CategoryItemName",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.CategoryItemName",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemName",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemName",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemName",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemName",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemName",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Item.ItemName",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderNum",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderNum",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderNum",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderNum",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderNum",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderNum",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.CustOrder",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.CustOrder",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.CustOrder",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.CustOrder",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.CustOrder",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.CustOrder",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderDate",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderDate",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderDate",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderDate",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderDate",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderDate",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderStatus",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderStatus",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderStatus",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderStatus",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderStatus",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.OrderStatus",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.SalesRep",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.SalesRep",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.SalesRep",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.SalesRep",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.SalesRep",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "Order.SalesRep",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLine",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLine",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLine",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLine",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLine",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLine",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.ItemNum",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.ItemNum",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.ItemNum",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.ItemNum",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.ItemNum",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.ItemNum",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLineStatus",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLineStatus",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLineStatus",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLineStatus",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLineStatus",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "OrderLine.OrderLineStatus",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "other",
+            "operation": "create"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "other",
+            "operation": "read"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "other",
+            "operation": "delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "other",
+            "operation": "block_delete"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "other",
+            "operation": "split"
+          }
+        },
+        {
+          "name": "index_operations_total",
+          "availability": "not_collected",
+          "source": "_IndexStat",
+          "reason": "not_applicable",
+          "labels": {
+            "index": "other",
+            "operation": "os_read"
+          }
+        },
+        {
+          "name": "index_blocks_read_total",
+          "availability": "not_collected",
+          "source": "_ActIOType",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "index_blocks_written_total",
+          "availability": "not_collected",
+          "source": "_ActIOType",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "data_blocks_read_total",
+          "availability": "not_collected",
+          "source": "_ActIOType",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "data_blocks_written_total",
+          "availability": "not_collected",
+          "source": "_ActIOType",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "checkpoint",
+      "sources": [
+        "_Checkpoint",
+        "_ActSummary"
+      ],
+      "measurements": [
+        {
+          "name": "checkpoint_events_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_duration_seconds",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_bi_write_duration_seconds",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_database_write_duration_seconds",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_sync_duration_seconds",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_buffers",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_dirty_buffers",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_flushed_buffers",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_apw_queue_buffers",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_checkpoint_queue_buffers",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "checkpoint_last_apw_scan_buffers",
+          "availability": "not_collected",
+          "source": "_Checkpoint",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "apw",
+      "sources": [
+        "_ActPWs",
+        "_ActBuffer"
+      ],
+      "measurements": [
+        {
+          "name": "apw_queue_writes_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_buffers_scanned_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_buffers_checkpointed_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_checkpoint_queue_writes_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_database_writes_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_checkpoint_flushes_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_buffers_marked_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_scan_cycles_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_scan_writes_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_all_process_database_writes_total",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "apw_uptime_seconds",
+          "availability": "not_collected",
+          "source": "_ActPWs",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "bi",
+      "sources": [
+        "_ActBILog",
+        "_ActIOType",
+        "_DbStatus",
+        "_Logging",
+        "_DbParams"
+      ],
+      "measurements": [
+        {
+          "name": "bi_blocks_written_total",
+          "availability": "not_collected",
+          "source": "_ActBILog",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_bytes_written_total",
+          "availability": "not_collected",
+          "source": "_ActBILog",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_io_operations_total",
+          "availability": "not_collected",
+          "source": "_ActIOType",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "read"
+          }
+        },
+        {
+          "name": "bi_io_operations_total",
+          "availability": "not_collected",
+          "source": "_ActIOType",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "write"
+          }
+        },
+        {
+          "name": "bi_file_size_blocks",
+          "availability": "not_collected",
+          "source": "_DbStatus",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_file_size_bytes",
+          "availability": "not_collected",
+          "source": "_DbStatus",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_block_size_bytes",
+          "availability": "not_collected",
+          "source": "_DbStatus",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_cluster_size_bytes",
+          "availability": "not_collected",
+          "source": "_DbStatus",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_cluster_count",
+          "availability": "not_collected",
+          "source": "_DbStatus",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_buffers",
+          "availability": "not_collected",
+          "source": "_Logging",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_full_buffers",
+          "availability": "not_collected",
+          "source": "_Logging",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_current_cluster_free_bytes",
+          "availability": "not_collected",
+          "source": "_Logging",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "bi_buffered_io_enabled",
+          "availability": "not_collected",
+          "source": "_Logging",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "recovery_log_threshold_bytes",
+          "availability": "not_collected",
+          "source": "_DbParams",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "transaction",
+      "sources": [
+        "_ActSummary",
+        "_Trans"
+      ],
+      "measurements": [
+        {
+          "name": "transaction_commits_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "transaction_rollbacks_total",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "transaction_active_count",
+          "availability": "not_collected",
+          "source": "_ActSummary",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "transaction_oldest_active_age_seconds",
+          "availability": "not_collected",
+          "source": "_Trans",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "latch",
+      "sources": [
+        "_Latch"
+      ],
+      "measurements": [
+        {
+          "name": "latch_busy_total",
+          "availability": "not_collected",
+          "source": "_Latch",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "latch_locks_total",
+          "availability": "not_collected",
+          "source": "_Latch",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "latch_waits_total",
+          "availability": "not_collected",
+          "source": "_Latch",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "latch_spins_total",
+          "availability": "not_collected",
+          "source": "_Latch",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "latch_lock_duration_seconds_total",
+          "availability": "not_collected",
+          "source": "_Latch",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "latch_wait_or_spin_duration_seconds_total",
+          "availability": "not_collected",
+          "source": "_Latch",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    },
+    {
+      "name": "lock",
+      "sources": [
+        "_ActLock"
+      ],
+      "measurements": [
+        {
+          "name": "lock_requests_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "exclusive"
+          }
+        },
+        {
+          "name": "lock_requests_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "record_get"
+          }
+        },
+        {
+          "name": "lock_requests_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "share"
+          }
+        },
+        {
+          "name": "lock_requests_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "upgrade"
+          }
+        },
+        {
+          "name": "lock_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "exclusive"
+          }
+        },
+        {
+          "name": "lock_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "record_get"
+          }
+        },
+        {
+          "name": "lock_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "share"
+          }
+        },
+        {
+          "name": "lock_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "upgrade"
+          }
+        },
+        {
+          "name": "lock_waits_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "exclusive"
+          }
+        },
+        {
+          "name": "lock_waits_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "record_get"
+          }
+        },
+        {
+          "name": "lock_waits_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "share"
+          }
+        },
+        {
+          "name": "lock_waits_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {
+            "operation": "upgrade"
+          }
+        },
+        {
+          "name": "lock_find_exclusive_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "lock_find_share_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "lock_cancellations_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "lock_downgrades_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {}
+        },
+        {
+          "name": "lock_redundant_grants_total",
+          "availability": "not_collected",
+          "source": "_ActLock",
+          "reason": "not_applicable",
+          "labels": {}
+        }
+      ]
+    }
+  ],
+  "metrics": []
+}

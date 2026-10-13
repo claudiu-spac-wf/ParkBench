@@ -1,0 +1,1 @@
+-- Catalog entries are read directly from managed roots. No asset rows are stored.

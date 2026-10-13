@@ -1,0 +1,111 @@
+{
+  "contractVersion": "workload-contract.v1",
+  "id": "parkbench-write-card",
+  "version": 1,
+  "procedure": "Workloads/Write/Card.p",
+  "databaseName": "parkbench",
+  "requiredTables": [
+    {
+      "name": "Card",
+      "minimumRows": 0
+    },
+    {
+      "name": "Account",
+      "minimumRows": 0
+    },
+    {
+      "name": "Customer",
+      "minimumRows": 0
+    }
+  ],
+  "requiredFields": [
+    "Card.CardId:int64",
+    "Card.RandomInt10:integer",
+    "Card.RandomInt100:integer",
+    "Card.RandomInt1000:integer",
+    "Card.CreatedAt:datetime-tz",
+    "Card.CardToken:character",
+    "Card.CardNumberMasked:character",
+    "Card.AccountId:int64",
+    "Card.CustomerId:int64",
+    "Card.CardKind:character",
+    "Card.Network:character",
+    "Card.EmbossedName:character",
+    "Card.ExpiryMonth:integer",
+    "Card.ExpiryYear:integer",
+    "Card.IssueDate:date",
+    "Card.CardStatus:character",
+    "Card.DailyLimit:decimal",
+    "Card.IsContactless:logical",
+    "Card.UpdatedAt:datetime-tz",
+    "Account.AccountId:int64",
+    "Customer.CustomerId:int64"
+  ],
+  "requiredIndexes": [
+    "Card.PkCard",
+    "Card.IxRandomInt10",
+    "Card.IxRandomInt100",
+    "Card.IxRandomInt1000",
+    "Card.UxCardToken",
+    "Card.IxAccount",
+    "Card.IxCustomer",
+    "Account.PkAccount",
+    "Customer.PkCustomer"
+  ],
+  "requiredSequences": [
+    "SeqCardId"
+  ],
+  "input": {
+    "Operation": [
+      "create",
+      "update"
+    ],
+    "Limit": {
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "WhereClause": "native target-table condition for updates",
+    "FieldsList": "ordinary-field-name array for updates",
+    "LobFields": "LOB-field-name array for either operation"
+  },
+  "operations": [
+    {
+      "op": "create",
+      "tables": [
+        "Card"
+      ],
+      "access": "create",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "op": "update",
+      "tables": [
+        "Card"
+      ],
+      "access": "update",
+      "bounds": {
+        "min": 0,
+        "max": 10000
+      }
+    }
+  ],
+  "writes": {
+    "tables": [
+      "Card"
+    ],
+    "scope": "target records created or selected by this invocation",
+    "cleanup": "none; persists until normal run-copy cleanup"
+  },
+  "readiness": {
+    "mode": "validate",
+    "readOnly": true,
+    "failurePrefix": "database_schema_invalid:"
+  },
+  "seedOwnership": {
+    "sourceIsImmutable": true,
+    "writableState": "fresh run-owned database volume"
+  }
+}
