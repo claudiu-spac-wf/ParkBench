@@ -2,6 +2,57 @@ import { expect, test } from "@playwright/test";
 import { createControlUiFixture } from "../fixtures/control-ui";
 import { installControlUiFixture } from "./support/control-ui-fixture";
 
+test("dimension removal preserves values, help identity, and keyboard focus", async ({ page }) => {
+  const fixture = await createControlUiFixture();
+  try {
+    await installControlUiFixture(page, fixture);
+    await page.goto("/#experiments");
+    const add = page.getByRole("button", { name: "Add dimension", exact: true });
+    await expect(add).toBeEnabled({ timeout: 15_000 });
+    await add.click();
+    await add.click();
+    await page.getByRole("textbox", { name: "Parameter 1 values", exact: true }).fill("500");
+    await page.getByRole("textbox", { name: "Parameter 2 values", exact: true }).fill("1000");
+    await page.getByRole("textbox", { name: "Parameter 3 values", exact: true }).fill("1500");
+    const lastHelp = await page
+      .getByRole("combobox", { name: "Parameter 3 name", exact: true })
+      .getAttribute("aria-describedby");
+    await page
+      .locator(".dimension-row")
+      .nth(1)
+      .getByRole("button", { name: "Remove", exact: true })
+      .click();
+    await expect(
+      page.getByRole("combobox", { name: "Parameter 2 name", exact: true })
+    ).toBeFocused();
+    await expect(
+      page.getByRole("textbox", { name: "Parameter 2 values", exact: true })
+    ).toHaveValue("1500");
+    await expect(
+      page.getByRole("combobox", { name: "Parameter 2 name", exact: true })
+    ).toHaveAttribute("aria-describedby", lastHelp!);
+    await page
+      .locator(".dimension-row")
+      .first()
+      .getByRole("button", { name: "Remove", exact: true })
+      .click();
+    await expect(
+      page.getByRole("combobox", { name: "Parameter 1 name", exact: true })
+    ).toBeFocused();
+    await expect(
+      page.getByRole("textbox", { name: "Parameter 1 values", exact: true })
+    ).toHaveValue("1500");
+    await page
+      .locator(".dimension-row")
+      .first()
+      .getByRole("button", { name: "Remove", exact: true })
+      .click();
+    await expect(add).toBeFocused();
+  } finally {
+    await fixture.close();
+  }
+});
+
 test("Schedule controls have accessible names and only database dimensions", async ({ page }) => {
   const fixture = await createControlUiFixture();
   try {

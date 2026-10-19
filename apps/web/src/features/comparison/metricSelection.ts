@@ -1,8 +1,33 @@
 import {
   COMPARISON_METRIC_CATALOG,
   validateMetricSelections,
-  type MetricSelection
+  type MetricSelection,
+  type MetricStatistic
 } from "../../../../../packages/contracts/src/comparison-metric-selection";
+
+/** Change one recorded selector entry without affecting its same-metric siblings. */
+export function changeMetricStatistic(
+  selection: MetricSelection[],
+  index: number,
+  statistic: MetricStatistic,
+  checked: boolean
+): MetricSelection[] {
+  const entry = selection[index];
+  const descriptor = COMPARISON_METRIC_CATALOG.find((item) => item.metricId === entry?.metricId);
+  if (!entry || !descriptor?.statistics.includes(statistic)) return selection;
+  try {
+    validateMetricSelections([entry]);
+  } catch {
+    return selection;
+  }
+  if (entry.statistics.includes(statistic) === checked) return selection;
+  const statistics = checked
+    ? [...entry.statistics, statistic]
+    : entry.statistics.filter((item) => item !== statistic);
+  return statistics.length
+    ? selection.map((item, current) => (current === index ? { ...item, statistics } : item))
+    : selection.filter((_, current) => current !== index);
+}
 export function supportedMetricSelection(selection: MetricSelection[]): {
   metrics: MetricSelection[];
   warnings: string[];

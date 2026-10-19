@@ -28,7 +28,7 @@ import {
   validRunControlsInput
 } from "./RunControlsFields";
 
-type Dimension = { name: string; values: string };
+type Dimension = { id: number; name: string; values: string };
 const LATENCY_PARAMETER = "network.databaseLatencyMs";
 /** Matrix cells show a non-zero Database Latency with its round-trip effect. */
 export const latencyLabel = (value: unknown) =>
@@ -42,6 +42,10 @@ const assetFieldLabels: Record<string, string> = {
 
 export function MatrixExperimentPage() {
   const parameterSummaryId = React.useId();
+  const nextDimensionId = React.useRef(2);
+  const dimensionSelectors = React.useRef(new Map<number, HTMLSelectElement>());
+  const addDimensionButton = React.useRef(null as HTMLButtonElement | null);
+  const pendingDimensionFocus = React.useRef(undefined as number | "add" | undefined);
   const [runName, setRunName] = useState("");
   const [scenarios, setScenarios] = useState([] as any[]);
   const [scenario, setScenario] = useState(undefined as any);
@@ -51,8 +55,15 @@ export function MatrixExperimentPage() {
   const [fixedStartup, setFixedStartup] = useState({} as Record<string, string | number | boolean>);
   const [parameterOptions, setParameterOptions] = useState([] as any[]);
   const [dimensions, setDimensions] = useState([
-    { name: "-B", values: "500, 1000, 1500, 2000" }
+    { id: 1, name: "-B", values: "500, 1000, 1500, 2000" }
   ] as Dimension[]);
+  React.useLayoutEffect(() => {
+    const target = pendingDimensionFocus.current;
+    if (target === undefined) return;
+    pendingDimensionFocus.current = undefined;
+    if (target === "add") addDimensionButton.current?.focus();
+    else dimensionSelectors.current.get(target)?.focus();
+  }, [dimensions]);
   const [repetitions, setRepetitions] = useState(1);
   const [databaseLatency, setDatabaseLatency] = useState("");
   const [runControls, setRunControls] = useState({} as Record<string, string>);
@@ -569,7 +580,7 @@ export function MatrixExperimentPage() {
           </FieldHelp>
         </h2>
         {dimensions.map((dimension, index) => (
-          <div className="dimension-row" key={index}>
+          <div className="dimension-row schedule-dimension" key={dimension.id}>
             <label>
               <span>
                 Parameter name{" "}
@@ -582,7 +593,11 @@ export function MatrixExperimentPage() {
               <select
                 disabled={pending || loadingChoices}
                 aria-label={`Parameter ${index + 1} name`}
-                aria-describedby={`${parameterSummaryId}-${index}`}
+                aria-describedby={`${parameterSummaryId}-${dimension.id}`}
+                ref={(node) => {
+                  if (node) dimensionSelectors.current.set(dimension.id, node);
+                  else dimensionSelectors.current.delete(dimension.id);
+                }}
                 value={dimension.name}
                 onChange={(event) => {
                   setDimensions((current) =>
@@ -602,7 +617,7 @@ export function MatrixExperimentPage() {
                     </option>
                   ))}
               </select>
-              <small id={`${parameterSummaryId}-${index}`} className="parameter-summary">
+              <small id={`${parameterSummaryId}-${dimension.id}`} className="parameter-summary">
                 {parameterOptions.find((p) => p.name === dimension.name)?.description ??
                   "Choose a database startup parameter."}
               </small>
@@ -633,7 +648,9 @@ export function MatrixExperimentPage() {
               type="button"
               disabled={pending || loadingChoices}
               onClick={() => {
-                setDimensions((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                pendingDimensionFocus.current =
+                  (dimensions[index + 1] ?? dimensions[index - 1])?.id ?? "add";
+                setDimensions((current) => current.filter((item) => item.id !== dimension.id));
                 invalidatePreview();
               }}
             >
@@ -646,9 +663,11 @@ export function MatrixExperimentPage() {
             type="button"
             disabled={pending || loadingChoices}
             onClick={() => {
-              setDimensions((current) => [...current, { name: "", values: "" }]);
+              const id = nextDimensionId.current++;
+              setDimensions((current) => [...current, { id, name: "", values: "" }]);
               invalidatePreview();
             }}
+            ref={addDimensionButton}
           >
             Add dimension
           </button>

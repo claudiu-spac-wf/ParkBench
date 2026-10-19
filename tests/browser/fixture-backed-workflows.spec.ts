@@ -8,7 +8,8 @@ test("disk catalog and Overview expose bulk actions without asset editing", asyn
     await installControlUiFixture(page, fixture);
     await page.goto("/#catalog");
     await expect(page.getByRole("heading", { name: "Catalog", exact: true })).toBeVisible();
-    await expect(page.getByRole("tab")).toHaveCount(5);
+    await expect(page.getByRole("tab")).toHaveCount(4);
+    await expect(page.getByRole("tab", { name: /Observers/ })).toHaveCount(0);
     await expect(page.getByRole("tab", { name: /Docker|Configurations/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Register|Verify|Build/ })).toHaveCount(0);
     await page.goto("/#");
@@ -38,7 +39,9 @@ test("disk scenario expands a 16-run matrix and queues named runs", async ({ pag
     const runs = fixture.platform.controlUi.listQueue();
     expect(runs).toHaveLength(16);
     expect(runs.every((run) => /^db-cache-\d+-[0-9a-f]{4}$/.test(run.id))).toBe(true);
-    expect(runs.map((run) => Number(run.id.split("-").at(-2))).sort((a,b) => a - b)).toEqual(Array.from({length:16},(_,index)=>index+1));
+    expect(runs.map((run) => Number(run.id.split("-").at(-2))).sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 16 }, (_, index) => index + 1)
+    );
     await page.goto("/#queue");
     await expect(page.getByRole("heading", { name: "Run queue" })).toBeVisible();
     await expect(

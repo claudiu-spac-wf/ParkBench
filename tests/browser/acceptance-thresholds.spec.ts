@@ -28,7 +28,7 @@ test("browser acceptance protocol records preview, update, and operator journey 
       const started = performance.now();
       await page.goto("/#catalog");
       await expect(page.getByRole("heading", { name: "Catalog", exact: true })).toBeVisible();
-      await expect(page.getByRole("tab")).toHaveCount(5);
+      await expect(page.getByRole("tab")).toHaveCount(4);
       if (await page.getByText(/source unavailable/).count()) {
         unavailableCatalogSamples += 1;
       }
@@ -69,8 +69,8 @@ test("browser acceptance protocol records preview, update, and operator journey 
       const started = performance.now();
       await page.goto(`/#comparison/${seeded.experimentId}`);
       await expect(page.getByRole("heading", { name: "Compare runs" })).toBeVisible();
-      await page.getByRole("button", {name:"Select all candidates",exact:true}).click();
-      await page.getByLabel("Baseline", {exact:true}).selectOption({index:1});
+      await page.getByRole("button", { name: "Select all candidates", exact: true }).click();
+      await page.getByLabel("Baseline", { exact: true }).selectOption({ index: 1 });
       await page.getByRole("button", { name: "Create comparison" }).click();
       await expect(page.getByRole("cell", { name: "BASELINE", exact: true })).toBeVisible();
       comparisonDurations.push(performance.now() - started);

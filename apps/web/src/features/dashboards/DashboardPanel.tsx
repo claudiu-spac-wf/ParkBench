@@ -126,7 +126,7 @@ export function DashboardPanel({ contextId }: { contextId?: string }) {
                 <>
                   <button
                     type="button"
-                    className="secondary"
+                    className="button secondary"
                     onClick={() =>
                       select(
                         dashboards[(dashboardIndex - 1 + dashboards.length) % dashboards.length].uid
@@ -137,7 +137,7 @@ export function DashboardPanel({ contextId }: { contextId?: string }) {
                   </button>
                   <button
                     type="button"
-                    className="secondary"
+                    className="button secondary"
                     onClick={() => select(dashboards[(dashboardIndex + 1) % dashboards.length].uid)}
                   >
                     Next dashboard
@@ -146,7 +146,11 @@ export function DashboardPanel({ contextId }: { contextId?: string }) {
               )}
             </div>
             {dashboardUrl ? (
-              <iframe title="ParkBench Grafana dashboard" src={dashboardUrl} />
+              <iframe
+                className="grafana-dashboard-frame"
+                title="ParkBench Grafana dashboard"
+                src={dashboardUrl}
+              />
             ) : (
               <WorkflowState
                 state="error"

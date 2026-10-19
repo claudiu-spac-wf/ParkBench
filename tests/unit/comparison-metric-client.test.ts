@@ -3,8 +3,34 @@ import { it } from "node:test";
 import { MetricValuesLoader } from "../../apps/web/src/features/comparison/comparisonApi";
 import {
   supportedMetricSelection,
-  removeUnavailableMetricSelection
+  removeUnavailableMetricSelection,
+  changeMetricStatistic
 } from "../../apps/web/src/features/comparison/metricSelection";
+
+it("statistic edits preserve exact selector identity, valid arrays, and stale siblings", () => {
+  const first = {
+    metricId: "database.db.table.read",
+    statistics: ["average", "p95"] as any,
+    selectors: { table: "Customer" }
+  };
+  const second = { ...first, selectors: { table: "Order" } };
+  const stale = { metricId: "future.metric", statistics: ["value"] as any, selectors: {} };
+  const selection = [first, second, stale];
+  const original = JSON.stringify(selection);
+  const reduced = changeMetricStatistic(selection, 0, "p95", false);
+  assert.deepEqual(reduced[0].statistics, ["average"]);
+  assert.equal(reduced[1], second);
+  assert.equal(reduced[2], stale);
+  const removed = changeMetricStatistic(reduced, 0, "average", false);
+  assert.deepEqual(removed, [second, stale]);
+  const restored = changeMetricStatistic(reduced, 0, "p95", true);
+  assert.deepEqual(restored[0].statistics, ["average", "p95"]);
+  assert.equal(changeMetricStatistic(restored, 0, "p95", true), restored);
+  assert.equal(changeMetricStatistic(selection, 0, "value", true), selection);
+  assert.equal(changeMetricStatistic(selection, 2, "total", true), selection);
+  assert.equal(changeMetricStatistic(selection, -1, "average", true), selection);
+  assert.equal(JSON.stringify(selection), original);
+});
 it("removing a stale choice preserves overlapping ids and other statistics/selectors of the same id", () => {
   const selection: any = [
     { metricId: "resource.platform.cpu.usage", statistics: ["average"], selectors: {} },

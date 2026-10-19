@@ -37,15 +37,30 @@ function App() {
     ) : route === "runs" && id && !extra ? (
       <ActiveRunPage runId={id} />
     ) : route === "comparison" && !extra ? (
-      <ComparisonPage experimentId={id} comparisonId={new URLSearchParams(query).get("comparisonId") ?? undefined} />
+      <ComparisonPage
+        experimentId={id}
+        comparisonId={new URLSearchParams(query).get("comparisonId") ?? undefined}
+      />
     ) : route === "history" && !id ? (
       <HistoryPage />
     ) : route === "dashboards" && id && !extra ? (
       <DashboardDirectoryPage contextId={id} />
     ) : (
       <main className="control-page">
-        <header className="page-heading"><div><p className="eyebrow">PARKBENCH / NAVIGATION</p><h1>Destination unavailable</h1></div></header>
-        <WorkflowState state="unavailable" message="This destination is unavailable. Check the link or return to Overview." action="Open Overview" onAction={() => { window.location.hash = ""; }} />
+        <header className="page-heading">
+          <div>
+            <p className="eyebrow">PARKBENCH / NAVIGATION</p>
+            <h1>Destination unavailable</h1>
+          </div>
+        </header>
+        <WorkflowState
+          state="unavailable"
+          message="This destination is unavailable. Check the link or return to Overview."
+          action="Open Overview"
+          onAction={() => {
+            window.location.hash = "";
+          }}
+        />
       </main>
     );
   return (
@@ -55,12 +70,30 @@ function App() {
           PARKBENCH / CONTROL
         </a>
         <div className="nav">
-          <a href="#">Overview</a>
-          <a href="#catalog">Catalog</a>
-          <a href="#experiments">Schedule</a>
-          <a href="#queue">Queue</a>
-          <a href="#comparison">Comparisons</a>
-          <a href="#history">History</a>
+          <a
+            href="#"
+            aria-current={(route === "" || route === "overview") && !id ? "page" : undefined}
+          >
+            Overview
+          </a>
+          <a href="#catalog" aria-current={route === "catalog" && !id ? "page" : undefined}>
+            Catalog
+          </a>
+          <a href="#experiments" aria-current={route === "experiments" && !id ? "page" : undefined}>
+            Schedule
+          </a>
+          <a href="#queue" aria-current={route === "queue" && !id ? "page" : undefined}>
+            Queue
+          </a>
+          <a
+            href="#comparison"
+            aria-current={route === "comparison" && !extra ? "page" : undefined}
+          >
+            Comparisons
+          </a>
+          <a href="#history" aria-current={route === "history" && !id ? "page" : undefined}>
+            History
+          </a>
         </div>
       </nav>
       <FieldHelpProvider>{page}</FieldHelpProvider>

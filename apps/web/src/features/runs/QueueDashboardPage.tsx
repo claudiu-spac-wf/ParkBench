@@ -7,6 +7,7 @@ import { WorkflowState } from "../../shared/workflow-state";
 export function QueueDashboardPage() {
   const [queue, setQueue] = useState({ items: [] } as any);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [startPending, setStartPending] = useState(false);
   const [cancelPending, setCancelPending] = useState([] as string[]);
   const [errorAction, setErrorAction] = useState("refresh" as "refresh" | "start" | "cancel");
@@ -20,6 +21,7 @@ export function QueueDashboardPage() {
     const currentRequest = ++requestId.current;
     if (silent) pollPending.current = true;
     if (!silent) {
+      setLoading(true);
       setError("");
       setErrorAction("refresh");
     }
@@ -31,6 +33,7 @@ export function QueueDashboardPage() {
         if (currentRequest === requestId.current) setError((current) => current || reason.message);
       })
       .finally(() => {
+        if (currentRequest === requestId.current) setLoading(false);
         if (silent) pollPending.current = false;
       });
   };
@@ -90,19 +93,34 @@ export function QueueDashboardPage() {
         <WorkflowState
           state="error"
           message={error}
-          action={errorAction === "start" ? "Try again" : errorAction === "cancel" ? "Retry cancel" : "Retry"}
-          onAction={errorAction === "start" ? start : errorAction === "cancel" ? () => cancel(failedCancelId) : refresh}
+          action={
+            errorAction === "start"
+              ? "Try again"
+              : errorAction === "cancel"
+                ? "Retry cancel"
+                : "Retry"
+          }
+          onAction={
+            errorAction === "start"
+              ? start
+              : errorAction === "cancel"
+                ? () => cancel(failedCancelId)
+                : refresh
+          }
         />
       )}
       <section className="panel">
-        <div className="queue-summary">
-          <strong>
-            {queue.activeExperiment ? `Active: ${queue.activeExperiment}` : "No active experiment"}
-          </strong>
-          <span>
-            {queue.items?.length ?? 0} nonterminal runs
-          </span>
-        </div>
+        {loading && <WorkflowState state="loading" message="Loading run queue…" />}
+        {!loading && (
+          <div className="queue-summary">
+            <strong>
+              {queue.activeExperiment
+                ? `Active: ${queue.activeExperiment}`
+                : "No active experiment"}
+            </strong>
+            <span>{queue.items?.length ?? 0} nonterminal runs</span>
+          </div>
+        )}
         <table aria-label="Nonterminal run activity">
           <thead>
             <tr>
@@ -126,11 +144,18 @@ export function QueueDashboardPage() {
                 <td>
                   {run.cellOrdinal} / r{run.repetition}
                 </td>
-                <td>{(run.snapshot?.databaseStartup?.parameters ?? []).map((item: any) =>
-                  `${item.name}=${item.displayValue} (${item.source})`).join(", ") || "Database defaults"}
-                  <RunControlsSummary controls={run.snapshot?.databaseRunControls} evidence={run.databaseRunControlEvidence} />
+                <td>
+                  {(run.snapshot?.databaseStartup?.parameters ?? [])
+                    .map((item: any) => `${item.name}=${item.displayValue} (${item.source})`)
+                    .join(", ") || "Database defaults"}
+                  <RunControlsSummary
+                    controls={run.snapshot?.databaseRunControls}
+                    evidence={run.databaseRunControlEvidence}
+                  />
                   {latencyOf(run.snapshot?.parameters ?? run.effectiveConfiguration) > 0 && (
-                    <span className="status">Latency {latencyOf(run.snapshot?.parameters ?? run.effectiveConfiguration)} ms</span>
+                    <span className="status">
+                      Latency {latencyOf(run.snapshot?.parameters ?? run.effectiveConfiguration)} ms
+                    </span>
                   )}
                 </td>
                 <td>
@@ -144,9 +169,15 @@ export function QueueDashboardPage() {
                 </td>
                 <td>
                   <a href={`#runs/${run.id}`}>Monitor</a>
-                  {run.experimentId && <a href={`#comparison/${run.experimentId}`}>Compare experiment</a>}
+                  {run.experimentId && (
+                    <a href={`#comparison/${run.experimentId}`}>Compare experiment</a>
+                  )}
                   {run.queueState !== "CANCELLED" && (
-                    <button className="button secondary" onClick={() => cancel(run.id)} disabled={cancelPending.includes(run.id)}>
+                    <button
+                      className="button secondary"
+                      onClick={() => cancel(run.id)}
+                      disabled={cancelPending.includes(run.id)}
+                    >
                       {cancelPending.includes(run.id) ? "Cancelling…" : "Cancel"}
                     </button>
                   )}
@@ -155,7 +186,7 @@ export function QueueDashboardPage() {
             ))}
           </tbody>
         </table>
-        {!(queue.items ?? []).length && (
+        {!loading && !error && !(queue.items ?? []).length && (
           <WorkflowState
             state="empty"
             message="The queue is empty. Preview a matrix to schedule work."

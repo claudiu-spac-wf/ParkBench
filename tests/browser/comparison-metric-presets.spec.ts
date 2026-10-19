@@ -1,6 +1,86 @@
 import { test, expect } from "@playwright/test";
 import { createControlUiFixture } from "../fixtures/control-ui";
 import { installControlUiFixture, seedTerminalMatrix } from "./support/control-ui-fixture";
+
+test("grouped statistic edits retain selector focus and remove only the cleared entry", async ({
+  page
+}) => {
+  const fixture = await createControlUiFixture();
+  try {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "parkbench.comparisonMetricPresets.v1",
+        JSON.stringify({
+          schemaVersion: 1,
+          presets: [
+            {
+              id: "layout-selectors",
+              name: "Layout selectors",
+              revision: "one",
+              createdAt: "2026-10-16T00:00:00Z",
+              updatedAt: "2026-10-16T00:00:00Z",
+              catalogVersion: "comparison-metrics.v1",
+              descriptorVersions: {},
+              selections: [
+                ...["Customer", "Order"].map((table) => ({
+                  metricId: "database.db.table.read",
+                  statistics: ["average"],
+                  selectors: { table }
+                })),
+                { metricId: "resource.platform.memory.used", statistics: ["p95"], selectors: {} }
+              ]
+            }
+          ]
+        })
+      );
+    });
+    await openPicker(page, fixture);
+    await page.getByLabel("Saved metric presets", { exact: true }).selectOption("layout-selectors");
+    await page.getByRole("button", { name: "Apply preset", exact: true }).click();
+    const before = await page.evaluate(() =>
+      localStorage.getItem("parkbench.comparisonMetricPresets.v1")
+    );
+    await page.getByLabel("Find metrics", { exact: true }).fill("db table read");
+    const rows = page.locator('.metric-choice-row[data-metric-id="database.db.table.read"]');
+    await expect(rows).toHaveCount(2);
+    const customer = rows.first().getByRole("checkbox", { name: /average/ });
+    const customerId = await customer.getAttribute("id");
+    const order = rows.last().getByRole("checkbox", { name: /average/ });
+    const orderId = await order.getAttribute("id");
+    const orderEditor = rows
+      .last()
+      .locator("..")
+      .getByRole("textbox", { name: / table \(/ });
+    await orderEditor.focus();
+    await orderEditor.press("End");
+    await orderEditor.press("x");
+    await expect(orderEditor).toHaveValue("Orderx");
+    await expect(orderEditor).toBeFocused();
+    await page.locator(`[id="${customerId}"]`).click();
+    await expect(rows).toHaveCount(1);
+    await expect(page.locator(`[id="${orderId}"]`)).toBeChecked();
+    await expect(page.locator(`[id="${orderId}"]`)).toBeFocused();
+    await expect(page.getByRole("textbox", { name: /table$/, exact: false })).toHaveValue("Orderx");
+    expect(
+      await page.evaluate(() => localStorage.getItem("parkbench.comparisonMetricPresets.v1"))
+    ).toBe(before);
+    await page.getByRole("button", { name: "Apply preset", exact: true }).click();
+    await expect(rows).toHaveCount(2);
+    const restoredCustomerId = await rows
+      .first()
+      .getByRole("checkbox", { name: /average/ })
+      .getAttribute("id");
+    const restoredOrderId = await rows
+      .last()
+      .getByRole("checkbox", { name: /average/ })
+      .getAttribute("id");
+    await page.locator(`[id="${restoredOrderId}"]`).click();
+    await expect(rows).toHaveCount(1);
+    await expect(page.locator(`[id="${restoredCustomerId}"]`)).toBeFocused();
+  } finally {
+    await fixture.close();
+  }
+});
 test("three metric presets reuse explicitly after reload in a different comparison", async ({
   page
 }) => {

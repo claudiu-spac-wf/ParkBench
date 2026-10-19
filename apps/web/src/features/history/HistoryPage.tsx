@@ -5,8 +5,20 @@ import { getHistory, getHistoryDetail } from "../../shared/control-ui-client";
 import { FieldHelp } from "../../shared/FieldHelp";
 import { WorkflowState } from "../../shared/workflow-state";
 
-type HistoryFilters = Record<"status" | "scenario" | "workload" | "image" | "parameter" | "repetition" | "from" | "to", string>;
-const emptyFilters = (): HistoryFilters => ({ status: "", scenario: "", workload: "", image: "", parameter: "", repetition: "", from: "", to: "" });
+type HistoryFilters = Record<
+  "status" | "scenario" | "workload" | "image" | "parameter" | "repetition" | "from" | "to",
+  string
+>;
+const emptyFilters = (): HistoryFilters => ({
+  status: "",
+  scenario: "",
+  workload: "",
+  image: "",
+  parameter: "",
+  repetition: "",
+  from: "",
+  to: ""
+});
 
 export function HistoryPage() {
   const [items, setItems] = useState([] as any[]);
@@ -149,7 +161,12 @@ export function HistoryPage() {
           {input("Scenario filter", scenario, setScenario, "Scenario@version")}
           {input("Workload filter", workload, setWorkload, "Workload path or id")}
           {input("Image filter", image, setImage, "Image reference")}
-          {input("Parameter filter", parameter, setParameter, "-B=500 or network.databaseLatencyMs=20")}
+          {input(
+            "Parameter filter",
+            parameter,
+            setParameter,
+            "-B=500 or network.databaseLatencyMs=20"
+          )}
           {input("Repetition filter", repetition, setRepetition, "Repetition")}
           <label>
             <span>
@@ -185,6 +202,7 @@ export function HistoryPage() {
           </button>
         </div>
       </section>
+      {loading && <WorkflowState state="loading" message="Loading run history…" />}
       {error && (
         <WorkflowState state="error" message={error} action="Retry" onAction={() => refresh()} />
       )}
@@ -205,7 +223,10 @@ export function HistoryPage() {
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} onClick={() => open(item)}>
-                  <td className="mono">{item.name ?? item.id}{item.name && <small className="run-identity">{item.id}</small>}</td>
+                  <td className="mono">
+                    {item.name ?? item.id}
+                    {item.name && <small className="run-identity">{item.id}</small>}
+                  </td>
                   <td>
                     {item.scenario?.id}@{item.scenario?.version}
                   </td>
@@ -216,14 +237,34 @@ export function HistoryPage() {
                     </span>
                   </td>
                   <td>{item.evidence?.cleanupStatus ?? "—"}</td>
-                  <td>{item.dashboardContextId && <a href={`#dashboards/${item.dashboardContextId}`}
-                    onClick={(event) => event.stopPropagation()}>Open dashboard</a>}</td>
-                  <td><button type="button" className="button secondary" aria-label={`Inspect ${item.id}`} onClick={(event) => { event.stopPropagation(); open(item); }}>Inspect</button></td>
+                  <td>
+                    {item.dashboardContextId && (
+                      <a
+                        href={`#dashboards/${item.dashboardContextId}`}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        Open dashboard
+                      </a>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      aria-label={`Inspect ${item.id}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        open(item);
+                      }}
+                    >
+                      Inspect
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {!loading && !items.length && (
+          {!loading && !error && !items.length && (
             <WorkflowState
               state={hasFilters ? "no-match" : "empty"}
               message={hasFilters ? "No runs match these filters." : "No run history yet."}
@@ -254,7 +295,8 @@ export function HistoryPage() {
               <p>Measurement: {selected.run?.measurementValidity}</p>
               <p>Cleanup: {selected.run?.cleanupStatus}</p>
               <p>
-                Measurement completeness: {selected.run?.completeness?.complete ? "complete" : "incomplete"}
+                Measurement completeness:{" "}
+                {selected.run?.completeness?.complete ? "complete" : "incomplete"}
                 {selected.run?.completeness?.requiredGaps?.length
                   ? ` — ${selected.run.completeness.requiredGaps.length} required gaps`
                   : ""}
@@ -267,9 +309,7 @@ export function HistoryPage() {
                 <h3>Selected inputs</h3>
                 <p>Database image: {selectedInputs.databaseImage ?? "not recorded"}</p>
                 <p>PAS image: {selectedInputs.pasImage ?? "not recorded"}</p>
-                {selectedInputs.seed && (
-                  <p>Seed: selected local input</p>
-                )}
+                {selectedInputs.seed && <p>Seed: selected local input</p>}
                 {selectedInputs.applicationArchive && (
                   <p>Application archive: selected local input</p>
                 )}
@@ -280,7 +320,8 @@ export function HistoryPage() {
                   <dl className="details">
                     {Object.entries(selected.run.effectiveConfiguration).map(([key, value]) => (
                       <React.Fragment key={key}>
-                        <dt>{key}</dt><dd>{String(value)}</dd>
+                        <dt>{key}</dt>
+                        <dd>{String(value)}</dd>
                       </React.Fragment>
                     ))}
                   </dl>
@@ -291,58 +332,124 @@ export function HistoryPage() {
                   <h3>Database latency</h3>
                   <p>
                     {latencySummary(
-                      latencyOf(selected.run.effectiveConfiguration ?? selected.run.environmentSnapshot?.effectiveConfiguration),
+                      latencyOf(
+                        selected.run.effectiveConfiguration ??
+                          selected.run.environmentSnapshot?.effectiveConfiguration
+                      ),
                       selected.run.environmentSnapshot?.databaseLatency
                     )}
                   </p>
                   {selected.run.environmentSnapshot?.databaseLatency?.probe && (
                     <p>
-                      Probe round trip: {selected.run.environmentSnapshot.databaseLatency.probe.baselineRttMs.toFixed(2)} ms
-                      {" → "}{selected.run.environmentSnapshot.databaseLatency.probe.measuredRttMs.toFixed(2)} ms
+                      Probe round trip:{" "}
+                      {selected.run.environmentSnapshot.databaseLatency.probe.baselineRttMs.toFixed(
+                        2
+                      )}{" "}
+                      ms
+                      {" → "}
+                      {selected.run.environmentSnapshot.databaseLatency.probe.measuredRttMs.toFixed(
+                        2
+                      )}{" "}
+                      ms
                     </p>
                   )}
                   {selected.run.environmentSnapshot?.databaseLatency?.failureCode && (
-                    <p role="alert">{selected.run.environmentSnapshot.databaseLatency.failureCode}</p>
+                    <p role="alert">
+                      {selected.run.environmentSnapshot.databaseLatency.failureCode}
+                    </p>
                   )}
                 </section>
               )}
               {selected.run?.environmentSnapshot?.databaseStartup && (
                 <section aria-label="Database startup settings">
                   <h3>Database startup settings</h3>
-                  <p>startup.pf: {selected.run.environmentSnapshot.databaseStartup.startupFile?.status}</p>
-                  <p>Catalog: {selected.run.environmentSnapshot.databaseStartup.registryVersion ?? "Retained v1 metadata"}. Unverified values retain their requested configuration and native startup logs.</p>
+                  <p>
+                    startup.pf:{" "}
+                    {selected.run.environmentSnapshot.databaseStartup.startupFile?.status}
+                  </p>
+                  <p>
+                    Catalog:{" "}
+                    {selected.run.environmentSnapshot.databaseStartup.registryVersion ??
+                      "Retained v1 metadata"}
+                    . Unverified values retain their requested configuration and native startup
+                    logs.
+                  </p>
                   <dl className="details">
-                    {(selected.run.environmentSnapshot.databaseStartup.parameters ?? []).map((item: any) => (
-                      <React.Fragment key={item.name}>
-                        <dt>{item.name}</dt><dd>{item.displayValue} ({item.source}; {item.verification === "unverifiable" ? "unverified" : item.verification}){item.observedValue != null ? `; observed ${item.observedValue}` : ""}{item.reason ? `; ${item.reason}` : ""}{item.sourceReference ? `; ${item.sourceReference}` : ""}</dd>
-                      </React.Fragment>
-                    ))}
+                    {(selected.run.environmentSnapshot.databaseStartup.parameters ?? []).map(
+                      (item: any) => (
+                        <React.Fragment key={item.name}>
+                          <dt>{item.name}</dt>
+                          <dd>
+                            {item.displayValue} ({item.source};{" "}
+                            {item.verification === "unverifiable"
+                              ? "unverified"
+                              : item.verification}
+                            ){item.observedValue != null ? `; observed ${item.observedValue}` : ""}
+                            {item.reason ? `; ${item.reason}` : ""}
+                            {item.sourceReference ? `; ${item.sourceReference}` : ""}
+                          </dd>
+                        </React.Fragment>
+                      )
+                    )}
                   </dl>
                 </section>
               )}
               {selected.run?.environmentSnapshot?.databaseRunControls && (
-                <section aria-label="Database run controls"><h3>Database run controls</h3>
-                  <RunControlsSummary controls={selected.run.environmentSnapshot.databaseRunControls} evidence={selected.run.environmentSnapshot.databaseRunControlEvidence} />
-                  {selected.run.environmentSnapshot.databaseRunControlEvidence && <dl className="details">
-                    <dt>Verification</dt><dd>{selected.run.environmentSnapshot.databaseRunControlEvidence.verification}</dd>
-                    <dt>Writer health</dt><dd>{selected.run.environmentSnapshot.databaseRunControlEvidence.writerHealth}</dd>
-                    <dt>Observed BI cluster</dt><dd>{selected.run.environmentSnapshot.databaseRunControlEvidence.observed ? `${selected.run.environmentSnapshot.databaseRunControlEvidence.observed.nativeClusterKiB / 1024} MiB` : "Unavailable"}</dd>
-                    <dt>Captured</dt><dd>{selected.run.environmentSnapshot.databaseRunControlEvidence.capturedAt}</dd>
-                    <dt>Preparation</dt><dd>{selected.run.environmentSnapshot.databaseRunControlEvidence.preparation?.status ?? "unavailable"}</dd>
-                    <dt>Reason</dt><dd>{selected.run.environmentSnapshot.databaseRunControlEvidence.reason || "Matched requested configuration"}</dd>
-                  </dl>}
+                <section aria-label="Database run controls">
+                  <h3>Database run controls</h3>
+                  <RunControlsSummary
+                    controls={selected.run.environmentSnapshot.databaseRunControls}
+                    evidence={selected.run.environmentSnapshot.databaseRunControlEvidence}
+                  />
+                  {selected.run.environmentSnapshot.databaseRunControlEvidence && (
+                    <dl className="details">
+                      <dt>Verification</dt>
+                      <dd>
+                        {selected.run.environmentSnapshot.databaseRunControlEvidence.verification}
+                      </dd>
+                      <dt>Writer health</dt>
+                      <dd>
+                        {selected.run.environmentSnapshot.databaseRunControlEvidence.writerHealth}
+                      </dd>
+                      <dt>Observed BI cluster</dt>
+                      <dd>
+                        {selected.run.environmentSnapshot.databaseRunControlEvidence.observed
+                          ? `${selected.run.environmentSnapshot.databaseRunControlEvidence.observed.nativeClusterKiB / 1024} MiB`
+                          : "Unavailable"}
+                      </dd>
+                      <dt>Captured</dt>
+                      <dd>
+                        {selected.run.environmentSnapshot.databaseRunControlEvidence.capturedAt}
+                      </dd>
+                      <dt>Preparation</dt>
+                      <dd>
+                        {selected.run.environmentSnapshot.databaseRunControlEvidence.preparation
+                          ?.status ?? "unavailable"}
+                      </dd>
+                      <dt>Reason</dt>
+                      <dd>
+                        {selected.run.environmentSnapshot.databaseRunControlEvidence.reason ||
+                          "Matched requested configuration"}
+                      </dd>
+                    </dl>
+                  )}
                 </section>
               )}
               {selected.run?.phaseBoundaries && (
                 <section aria-label="Run phases">
                   <h3>Run phases</h3>
                   <dl className="details">
-                    {Object.entries(selected.run.phaseBoundaries).map(([phase, boundary]: [string, any]) => (
-                      <React.Fragment key={phase}>
-                        <dt>{phase}</dt>
-                        <dd>{boundary.startedAt ?? "start unavailable"} → {boundary.endedAt ?? "in progress"}</dd>
-                      </React.Fragment>
-                    ))}
+                    {Object.entries(selected.run.phaseBoundaries).map(
+                      ([phase, boundary]: [string, any]) => (
+                        <React.Fragment key={phase}>
+                          <dt>{phase}</dt>
+                          <dd>
+                            {boundary.startedAt ?? "start unavailable"} →{" "}
+                            {boundary.endedAt ?? "in progress"}
+                          </dd>
+                        </React.Fragment>
+                      )
+                    )}
                   </dl>
                 </section>
               )}

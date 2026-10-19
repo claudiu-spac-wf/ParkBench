@@ -1,15 +1,25 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   COMPARISON_METRIC_CATALOG,
-  DEFAULT_COMPARISON_METRICS,
-  type MetricSelection
+  type MetricSelection,
+  type MetricStatistic
 } from "../../../../../packages/contracts/src/comparison-metric-selection";
 import {
   toggleMetricSelection,
   supportedMetricSelection,
-  removeUnavailableMetricSelection
+  removeUnavailableMetricSelection,
+  changeMetricStatistic
 } from "./metricSelection";
 import { MetricPresetControls } from "./MetricPresetControls";
+import { FieldHelp } from "../../shared/FieldHelp";
+
+const aggregateStatistics: Array<[MetricStatistic, string]> = [
+  ["average", "Avg"],
+  ["p90", "p90"],
+  ["p95", "p95"],
+  ["total", "Total"]
+];
+
 export function MetricSelectionPanel({
   selection,
   onChange,
@@ -19,98 +29,215 @@ export function MetricSelectionPanel({
   onChange: (metrics: MetricSelection[]) => void;
   onDefaults: () => void;
 }) {
-  const [open, setOpen] = useState(false),
-    [domain, setDomain] = useState("all"),
-    [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const [domain, setDomain] = useState("all");
+  const [search, setSearch] = useState("");
+  const prefix = React.useId();
+  const keys = useRef(new WeakMap<MetricSelection, number>());
+  const nextKey = useRef(1);
+  const pendingFocus = useRef(undefined as { target: string; fallback: string } | undefined);
+  const keyFor = (entry: MetricSelection) => {
+    let key = keys.current.get(entry);
+    if (key === undefined) {
+      key = nextKey.current++;
+      keys.current.set(entry, key);
+    }
+    return `${prefix}-metric-${key}`;
+  };
+  React.useLayoutEffect(() => {
+    const focus = pendingFocus.current;
+    if (!focus) return;
+    pendingFocus.current = undefined;
+    (document.getElementById(focus.target) ?? document.getElementById(focus.fallback))?.focus();
+  }, [selection]);
+  const supported = supportedMetricSelection(selection);
+  const valid = new Set(supported.metrics);
+  const descriptors = COMPARISON_METRIC_CATALOG.filter(
+    (descriptor) =>
+      (domain === "all" || descriptor.domain === domain) &&
+      descriptor.displayName.toLowerCase().includes(search.toLowerCase())
+  );
+  const visibleEntries = descriptors.flatMap((descriptor) =>
+    selection.filter((entry) => entry.metricId === descriptor.metricId && valid.has(entry))
+  );
+  const keepKey = (old: MetricSelection, replacement: MetricSelection) => {
+    keyFor(old);
+    keys.current.set(replacement, keys.current.get(old)!);
+  };
+
   return (
-    <section aria-label="Comparison metrics">
+    <section aria-label="Comparison metrics" className="metric-selection">
       <button aria-expanded={open} onClick={() => setOpen(!open)}>
         Choose metrics
       </button>
       {open && (
         <>
           <p>{selection.length} selected metrics</p>
-          <button onClick={() => onChange([])}>Clear metrics</button>{" "}
-          <button onClick={onDefaults}>Restore default metrics</button>
+          <div className="button-row metric-selection-actions">
+            <button onClick={() => onChange([])}>Clear metrics</button>
+            <button onClick={onDefaults}>Restore default metrics</button>
+          </div>
           <label>
             Metric domain
-            <select value={domain} onChange={(e) => setDomain(e.target.value)}>
+            <select value={domain} onChange={(event) => setDomain(event.target.value)}>
               <option value="all">All domains</option>
-              {["resource", "database", "workload", "native_latch"].map((d) => (
-                <option key={d} value={d}>
-                  {d.replaceAll("_", " ")}
+              {["resource", "database", "workload", "native_latch"].map((value) => (
+                <option key={value} value={value}>
+                  {value.replaceAll("_", " ")}
                 </option>
               ))}
             </select>
           </label>
           <label>
             Find metrics
-            <input value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} />
           </label>
-          {COMPARISON_METRIC_CATALOG.filter(
-            (d) =>
-              (domain === "all" || d.domain === domain) &&
-              d.displayName.toLowerCase().includes(search.toLowerCase())
-          ).map((d) => {
-            const entries = selection.filter((m) => m.metricId === d.metricId);
+          {descriptors.map((descriptor) => {
+            const matching = selection
+              .map((entry, index) => ({ entry, index }))
+              .filter(({ entry }) => entry.metricId === descriptor.metricId);
+            const entries = matching.filter(({ entry }) => valid.has(entry));
+            const rows = entries.length ? entries : [{ entry: undefined, index: -1 }];
+            const masterId = `${prefix}-${descriptor.metricId}-enable`;
             return (
-              <fieldset key={d.metricId}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={!!entries.length}
-                    onChange={(e) =>
-                      onChange(toggleMetricSelection(selection, d.metricId, e.target.checked))
-                    }
-                  />
-                  {d.displayName}
-                </label>
-                {entries.map((entry, index) => (
-                  <div key={index}>
-                    <span>{d.scope}</span>
-                    {d.statistics.map((stat) => (
-                      <label key={stat}>
-                        <input
-                          type="checkbox"
-                          aria-label={`${d.displayName} ${stat}`}
-                          checked={entry.statistics.includes(stat)}
-                          onChange={(e) => {
-                            const stats = e.target.checked
-                              ? [...entry.statistics, stat]
-                              : entry.statistics.filter((s) => s !== stat);
-                            if (stats.length)
-                              onChange(
-                                selection.map((m) =>
-                                  m === entry ? { ...m, statistics: stats } : m
+              <fieldset
+                className="metric-definition"
+                key={descriptor.metricId}
+                aria-label={`${descriptor.displayName} statistics`}
+              >
+                {rows.map(({ entry, index }, rowIndex) => {
+                  const rowId = entry ? keyFor(entry) : `${prefix}-${descriptor.metricId}-inactive`;
+                  const context = entry
+                    ? Object.entries(entry.selectors)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join(", ")
+                    : "";
+                  const suffix = entries.length > 1 ? ` (${context || "all recorded values"})` : "";
+                  const statistics = descriptor.statistics.includes("value")
+                    ? [...aggregateStatistics, ["value", "Value"] as [MetricStatistic, string]]
+                    : aggregateStatistics;
+                  return (
+                    <div className="metric-entry" key={rowId}>
+                      <div className="metric-choice-row" data-metric-id={descriptor.metricId}>
+                        {rowIndex === 0 ? (
+                          <label className="metric-name">
+                            <input
+                              id={masterId}
+                              type="checkbox"
+                              aria-label={descriptor.displayName}
+                              checked={matching.length > 0}
+                              onChange={(event) =>
+                                onChange(
+                                  toggleMetricSelection(
+                                    selection,
+                                    descriptor.metricId,
+                                    event.target.checked
+                                  )
                                 )
-                              );
-                          }}
-                        />
-                        {stat} ({d.units[stat]})
-                      </label>
-                    ))}
-                    {d.selectors.map((key) => (
-                      <label key={key}>
-                        {d.displayName} {key}
-                        <input
-                          aria-label={`${d.displayName} ${key}`}
-                          value={entry.selectors[key] ?? ""}
-                          placeholder="All recorded values"
-                          onChange={(e) => {
-                            const selectors = { ...entry.selectors };
-                            if (e.target.value) selectors[key] = e.target.value;
-                            else delete selectors[key];
-                            onChange(selection.map((m) => (m === entry ? { ...m, selectors } : m)));
-                          }}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                ))}
+                              }
+                            />
+                            <span>{descriptor.displayName}</span>
+                          </label>
+                        ) : (
+                          <span className="metric-name">{descriptor.displayName}</span>
+                        )}
+                        {statistics.map(([statistic, label]) => {
+                          const available = descriptor.statistics.includes(statistic);
+                          const enabled = available && !!entry;
+                          const name = `${descriptor.displayName} ${statistic}${suffix}`;
+                          const reason = !available
+                            ? `This metric does not support ${label}.`
+                            : !entry
+                              ? matching.length
+                                ? "Remove or replace the unavailable recorded choice, then enable this metric to choose statistics."
+                                : "Enable this metric to choose statistics."
+                              : `Unit: ${descriptor.units[statistic] ?? "recorded units"}.`;
+                          return (
+                            <div className="metric-stat" key={statistic}>
+                              <label htmlFor={`${rowId}-${statistic}`}>
+                                <span>{label}:</span>
+                                <input
+                                  id={`${rowId}-${statistic}`}
+                                  type="checkbox"
+                                  aria-label={name}
+                                  checked={enabled && entry!.statistics.includes(statistic)}
+                                  disabled={!enabled}
+                                  onChange={(event) => {
+                                    const next = changeMetricStatistic(
+                                      selection,
+                                      index,
+                                      statistic,
+                                      event.target.checked
+                                    );
+                                    if (next === selection) return;
+                                    if (next.length === selection.length)
+                                      keepKey(entry!, next[index]);
+                                    else {
+                                      const position = visibleEntries.indexOf(entry!);
+                                      const neighbour =
+                                        visibleEntries[position + 1] ??
+                                        visibleEntries[position - 1];
+                                      const firstStatistic = descriptors.find(
+                                        (item) => item.metricId === neighbour?.metricId
+                                      )?.statistics[0];
+                                      pendingFocus.current = {
+                                        target: neighbour
+                                          ? `${keyFor(neighbour)}-${firstStatistic}`
+                                          : masterId,
+                                        fallback: masterId
+                                      };
+                                    }
+                                    onChange(next);
+                                  }}
+                                />
+                              </label>
+                              <FieldHelp label={name}>{reason}</FieldHelp>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {entry && (
+                        <>
+                          <small className="metric-context">
+                            {descriptor.scope}
+                            {context ? ` · ${context}` : ""}
+                          </small>
+                          {descriptor.selectors.length > 0 && (
+                            <div className="metric-selectors">
+                              {descriptor.selectors.map((key) => (
+                                <label key={key}>
+                                  {descriptor.displayName} {key}
+                                  {suffix}
+                                  <input
+                                    aria-label={`${descriptor.displayName} ${key}${suffix}`}
+                                    value={entry.selectors[key] ?? ""}
+                                    placeholder="All recorded values"
+                                    onChange={(event) => {
+                                      const selectors = { ...entry.selectors };
+                                      if (event.target.value) selectors[key] = event.target.value;
+                                      else delete selectors[key];
+                                      const replacement = { ...entry, selectors };
+                                      keepKey(entry, replacement);
+                                      onChange(
+                                        selection.map((item, itemIndex) =>
+                                          itemIndex === index ? replacement : item
+                                        )
+                                      );
+                                    }}
+                                  />
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </fieldset>
             );
           })}
-          {supportedMetricSelection(selection).unavailable.map((choice) => (
+          {supported.unavailable.map((choice) => (
             <p key={choice.index} className="comparison-warning">
               {choice.message}
               <button
