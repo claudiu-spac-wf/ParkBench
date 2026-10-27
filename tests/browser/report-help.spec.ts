@@ -9,5 +9,5 @@ test("guide explains scopes, exact units, concern limits and cleanup", async ({ 
   await expect(page.getByText(/no automatic time limit/i)).toBeVisible();
   await expect(page.getByText(/five seconds after each failed attempt/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Metric reference" })).toBeVisible();
-  await expect(page.getByText("Size [bytes]", { exact: true })).toBeVisible();
+  await expect(page.getByText("Size", { exact: true })).toBeVisible();
 });

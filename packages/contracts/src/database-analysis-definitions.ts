@@ -66,7 +66,10 @@ export function nativeColumns(kind: DatasetKind, headers: string[]): ReportColum
         : known
           ? sourceHeader
           : `${sourceHeader} [unit unknown]`,
-      type: m?.[1] ?? "text",
+      type:
+        kind === "lob" && ["Min", "Max", "Mean"].includes(sourceHeader)
+          ? "decimal"
+          : (m?.[1] ?? "text"),
       unit: m?.[0] ?? null,
       description:
         m?.[2] ??

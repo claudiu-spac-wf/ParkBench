@@ -75,7 +75,7 @@ export function ReportsGuidePage({ query }: { query?: string }) {
                 <tbody>
                   {data.columns.map((c: any) => (
                     <tr key={c.ordinal}>
-                      <th>{c.csvHeader}</th>
+                      <th>{c.sourceHeader}</th>
                       <td>{c.description}</td>
                       <td>{c.unit ?? "Identity / context"}</td>
                     </tr>

@@ -1,5 +1,5 @@
 import { COVERAGE } from "../../../../packages/contracts/src/database-analysis-definitions";
-import { rebuildRetainedProjection } from "./rebuild";
+import { rebuildRetainedProjection, needsNativeNumberRepair } from "./rebuild";
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -386,16 +386,25 @@ export class ReportService {
     for (const report of this.repository
       .list()
       .filter((r) => terminalReport(r.state) && r.projectionRevision)) {
-      if (
-        !this.repository.db
-          .prepare("SELECT 1 FROM report_summaries WHERE report_id=? AND revision=?")
-          .get(report.id, report.projectionRevision)
-      ) {
+      const repair = needsNativeNumberRepair(this.repository, report);
+      const summaryExists = !!this.repository.db
+        .prepare("SELECT 1 FROM report_summaries WHERE report_id=? AND revision=?")
+        .get(report.id, report.projectionRevision);
+      if (repair || !summaryExists) {
         try {
           await rebuildRetainedProjection(this.repository, this.artifacts, report.id);
         } catch {
           const current = this.repository.get(report.id)!;
-          current.projectionState = "UNAVAILABLE";
+          if (!summaryExists) current.projectionState = "UNAVAILABLE";
+          if (repair)
+            current.warnings = [
+              ...current.warnings.filter((w) => w.code !== "report_projection_repair_failed"),
+              {
+                code: "report_projection_repair_failed",
+                message: "Retained report measurements could not be corrected.",
+                correctiveAction: "Restore the report CSV artifacts and restart ParkBench to retry."
+              }
+            ];
           this.repository.save(current);
         }
       }

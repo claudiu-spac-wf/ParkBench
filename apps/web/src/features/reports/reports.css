@@ -21,6 +21,7 @@
   display: grid;
   gap: 0.4rem;
   min-width: 180px;
+  margin-bottom: 0;
 }
 .report-form select,
 .report-form input {
@@ -141,6 +142,22 @@
   margin: 0 0 0 0.5rem;
   padding: 0.1rem 0.25rem;
   border-radius: 3px;
+}
+.report-cell-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  white-space: normal;
+}
+.report-cell-content > span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.report-grid .report-cell-content .report-concern {
+  margin: 0;
+  white-space: nowrap;
 }
 .report-metric-methodology {
   display: block;

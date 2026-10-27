@@ -10,9 +10,14 @@ export function ReportMetricHelp({
   guideHref?: string;
 }) {
   return (
-    <FieldHelp label={column.csvHeader}>
+    <FieldHelp label={column.sourceHeader}>
       {column.description} Native column: {column.sourceHeader}. Unit:{" "}
       {column.unit ?? "not specified"}.{" "}
+      {column.unit === "bytes"
+        ? "Size labels are rounded; numeric filters use exact bytes. "
+        : column.unit === "%"
+          ? "Numeric filters use the percentage without the % sign. "
+          : ""}
       {REPORT_RULES.filter((rule) => rule.metric === column.sourceHeader).map((rule) => (
         <span key={rule.id} className="report-metric-methodology">
           {rule.explanation} Source: {rule.source}.{" "}

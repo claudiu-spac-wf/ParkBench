@@ -8,6 +8,7 @@ import {
 } from "material-react-table";
 import {
   ReportCell,
+  ReportColumn,
   ReportDataset,
   ReportRow
 } from "../../../../../packages/contracts/src/database-analysis-report";
@@ -15,6 +16,7 @@ import { reportsApi } from "./reportsApi";
 import { ReportMetricHelp } from "./ReportMetricHelp";
 import { loadReportDatasetRows } from "./reportDatasetRows";
 import { queryLoadedReportRows } from "./reportLoadedQuery";
+import { formatReportCell, reportColumnLabel } from "./reportPresentation";
 const EMPTY_ROWS: ReportRow[] = [];
 function concernLabel(value: string) {
   return value === "higher_concern"
@@ -27,18 +29,25 @@ function concernLabel(value: string) {
           ? "Not assessed"
           : "Neutral";
 }
-function MetricCell({ cell }: { cell: ReportCell }) {
+function hasConcern(severity: string) {
+  return severity === "review" || severity === "higher_concern";
+}
+function MetricCell({ cell, column }: { cell: ReportCell; column: ReportColumn }) {
   if (!cell) return <span>Missing</span>;
   return (
-    <>
-      {cell.sourceText === "" ? <span>Missing</span> : cell.sourceText}
-      {cell.assessments?.map((a) => (
-        <small key={a.ruleId} className={"report-concern " + a.severity}>
-          {concernLabel(a.severity)}
-        </small>
-      ))}
+    <span className="report-cell-content">
+      <span title={`${cell.sourceText.trim()}${column.unit ? " " + column.unit : ""}`}>
+        {formatReportCell(cell, column)}
+      </span>
+      {cell.assessments
+        ?.filter((a) => hasConcern(a.severity))
+        .map((a) => (
+          <small key={a.ruleId} className={"report-concern " + a.severity}>
+            {concernLabel(a.severity)}
+          </small>
+        ))}
       {cell.availability === "INVALID" && <small> Unavailable: invalid measurement</small>}
-    </>
+    </span>
   );
 }
 export function ReportDatasetTable({
@@ -86,29 +95,29 @@ export function ReportDatasetTable({
         enableColumnActions: false,
         size: 260,
         Cell: ({ row }) => (
-          <>
-            {row.original.label || "Native row " + row.original.sourceRowOrdinal}
-            <span className={"report-concern " + row.original.concern}>
-              {row.original.concern === "none"
-                ? "Neutral / not assessed"
-                : concernLabel(row.original.concern)}
-            </span>
-          </>
+          <span className="report-cell-content">
+            <span>{row.original.label || "Native row " + row.original.sourceRowOrdinal}</span>
+            {hasConcern(row.original.concern) && (
+              <span className={"report-concern " + row.original.concern}>
+                {concernLabel(row.original.concern)}
+              </span>
+            )}
+          </span>
         )
       },
       ...dataset.columns.map((c): MRT_ColumnDef<ReportRow> => ({
         id: String(c.ordinal),
-        header: c.csvHeader,
+        header: reportColumnLabel(c),
         accessorFn: (row) => row.cells[c.ordinal]?.sourceText ?? "",
         Header: () => (
           <span className="report-column-label">
-            {c.csvHeader}
+            {reportColumnLabel(c)}
             <span onClick={(e) => e.stopPropagation()}>
               <ReportMetricHelp column={c} guideHref={guideHref} />
             </span>
           </span>
         ),
-        Cell: ({ row }) => <MetricCell cell={row.original.cells[c.ordinal]} />,
+        Cell: ({ row }) => <MetricCell cell={row.original.cells[c.ordinal]} column={c} />,
         filterFn: c.type === "text" ? "contains" : "equals",
         columnFilterModeOptions:
           c.type === "text"
@@ -136,6 +145,7 @@ export function ReportDatasetTable({
               "tenancy",
               "tenancy#",
               "partitionpolicy",
+              "partitiontype",
               "partition",
               "partition#",
               "owner",
@@ -345,7 +355,8 @@ export function ReportDatasetTable({
           <p id={captionId}>
             {dataset.kind}: showing {result?.rows.length ?? 0} of {result?.matchingRowCount ?? 0}{" "}
             matching rows{loading ? " (loading the rest)" : error ? " (incomplete load)" : ""};
-            exact source precision. Missing markers are unavailable, not zero.
+            source values retained; size labels are rounded. Missing markers are unavailable, not
+            zero.
           </p>
           <div className="report-grid" aria-busy={loading}>
             <MaterialReactTable table={table} />

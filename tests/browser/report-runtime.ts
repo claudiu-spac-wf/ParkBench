@@ -6,7 +6,7 @@ import { registerReportRoutes } from "../../apps/control-plane/src/api/report-ro
 import { reportHarness, request, eventually } from "../fixtures/reports/harness";
 import { tenThousandTables } from "../fixtures/reports/fixtures";
 /** Actual SQLite projection/API behind the browser; native execution alone uses a fake. */
-export async function reportRuntime(page: any, large = false) {
+export async function reportRuntime(page: any, large = false, configure?: (h: any) => void) {
   const h = reportHarness();
   const original = h.runner.execute.bind(h.runner);
   if (large)
@@ -15,6 +15,7 @@ export async function reportRuntime(page: any, large = false) {
       fs.writeFileSync(path.join(a[1].directory, "raw", "report.tab.txt"), tenThousandTables());
       return result;
     };
+  configure?.(h);
   const created = h.service.create(
       { ...request, type: large ? "TABANALYS" : "DBANALYS" },
       "browser"

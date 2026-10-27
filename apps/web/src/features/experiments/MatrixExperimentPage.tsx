@@ -391,7 +391,7 @@ export function MatrixExperimentPage() {
           onAction={loadChoices}
         />
       )}
-      <section className="panel form-panel">
+      <section className="panel">
         <label>
           <span>
             Scenario{" "}

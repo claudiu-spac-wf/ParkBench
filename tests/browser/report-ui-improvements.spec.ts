@@ -36,6 +36,7 @@ test("report views show compact sizes, percentages and a configurable grid with 
       "Tenancy",
       "Tenancy #",
       "Partition Policy",
+      "Partition Type",
       "Partition",
       "Partition #",
       "Owner",
@@ -59,9 +60,9 @@ test("report views show compact sizes, percentages and a configurable grid with 
     await expect(table.getByRole("button", { name: "Go to next page", exact: true })).toHaveCount(
       0
     );
-    await expect(table.getByText("9007199254740993", { exact: true }).first()).toBeVisible();
+    await expect(table.getByText("9.01PB", { exact: true }).first()).toBeVisible();
     await expect(table.locator("tbody")).not.toContainText("Nonempty tables: review at");
-    const help = table.getByRole("button", { name: "Help for Frag Factor [ratio]", exact: true });
+    const help = table.getByRole("button", { name: "Help for Frag Factor", exact: true });
     await help.scrollIntoViewIfNeeded();
     await help.hover();
     await expect(page.getByRole("tooltip")).toContainText("Nonempty tables: review at 1.5");
@@ -78,17 +79,15 @@ test("report views show compact sizes, percentages and a configurable grid with 
     await expect(table.getByRole("columnheader", { name: /^DBUID/ })).toBeVisible();
     await expect(table.getByRole("button", { name: "Move", exact: true }).first()).toBeVisible();
     await table.getByRole("button", { name: "Show/Hide filters", exact: true }).click();
-    const sizeFilter = table.getByRole("textbox", { name: "Filter by Size [bytes]", exact: true });
+    const sizeFilter = table.getByRole("textbox", { name: "Filter by Size", exact: true });
     await sizeFilter.scrollIntoViewIfNeeded();
     await sizeFilter.fill("9007199254740992");
     await expect(table.getByText(/showing 0 of 0 matching/)).toBeVisible();
     await sizeFilter.fill("9007199254740993");
     await expect(table.getByText(/showing 1 of 1 matching/)).toBeVisible();
     await sizeFilter.fill("");
-    await table
-      .getByRole("button", { name: "Sort by Size [bytes] ascending", exact: true })
-      .click();
-    await expect(table.getByRole("columnheader", { name: /^Size \[bytes\]/ })).toHaveAttribute(
+    await table.getByRole("button", { name: "Sort by Size ascending", exact: true }).click();
+    await expect(table.getByRole("columnheader", { name: /^Size/ })).toHaveAttribute(
       "aria-sort",
       "ascending"
     );

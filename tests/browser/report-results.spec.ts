@@ -10,7 +10,11 @@ test("real retained results show exact values and textual concerns with whole-re
     await expect(page.getByRole("heading", { name: "Full report overview" })).toBeVisible();
     await page.getByLabel("Report view", { exact: true }).selectOption("table");
     const table = page.locator("#dataset-table");
-    await expect(table.getByText("9007199254740993", { exact: true }).first()).toBeVisible();
+    await expect(table.getByText("9.01PB", { exact: true }).first()).toBeVisible();
+    await expect(table.getByText("9.01PB", { exact: true }).first()).toHaveAttribute(
+      "title",
+      "9007199254740993 bytes"
+    );
     await expect(
       table.locator("tbody").getByText("Higher concern", { exact: false }).first()
     ).toBeVisible();
@@ -21,7 +25,7 @@ test("real retained results show exact values and textual concerns with whole-re
     await page.getByLabel("Report view", { exact: true }).selectOption("table");
     await table.getByLabel("Search table names").fill("Customer");
     await expect(table.getByText(/showing 1 of 1 matching/)).toBeVisible();
-    await table.getByRole("button", { name: "Help for Frag Factor [ratio]", exact: true }).focus();
+    await table.getByRole("button", { name: "Help for Frag Factor", exact: true }).focus();
     await expect(page.getByRole("tooltip")).toContainText("fragmentation");
     await page.screenshot({ path: "/tmp/parkbench-report-results.png", fullPage: true });
   } finally {

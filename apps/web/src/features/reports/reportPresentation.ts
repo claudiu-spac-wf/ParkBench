@@ -1,3 +1,7 @@
+import {
+  ReportCell,
+  ReportColumn
+} from "../../../../../packages/contracts/src/database-analysis-report";
 /** Decimal SI units; preserve authoritative bytes as strings outside these display labels. */
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 function hundredths(value: bigint) {
@@ -7,8 +11,12 @@ function hundredths(value: bigint) {
 }
 export function formatContentSize(value: string): string {
   if (!/^\d+$/.test(value)) return "Unavailable";
-  const bytes = BigInt(value);
-  let divisor = 1n,
+  return sizedBytes(value, "B");
+}
+function sizedBytes(value: string, byteUnit: string): string {
+  const [whole, fraction = ""] = value.split(".");
+  const bytes = BigInt(whole + fraction);
+  let divisor = 10n ** BigInt(fraction.length),
     unit = 0;
   while (bytes >= divisor * 1000n && unit < UNITS.length - 1) {
     divisor *= 1000n;
@@ -20,7 +28,18 @@ export function formatContentSize(value: string): string {
     unit++;
     rounded = (bytes * 100n + divisor / 2n) / divisor;
   }
-  return hundredths(rounded) + UNITS[unit];
+  return hundredths(rounded) + (unit === 0 ? byteUnit : UNITS[unit]);
+}
+export function reportColumnLabel(column: ReportColumn): string {
+  return column.sourceHeader;
+}
+export function formatReportCell(cell: ReportCell, column: ReportColumn): string {
+  const raw = column.type === "text" ? cell.sourceText : cell.sourceText.trim();
+  if (!raw) return "Missing";
+  if (cell.availability !== "AVAILABLE" || cell.exact === null) return raw;
+  if (column.unit === "%") return raw + "%";
+  if (column.unit === "bytes") return sizedBytes(cell.exact, "b");
+  return raw;
 }
 export function formatDistribution(value: string, total: bigint): string {
   if (!/^\d+$/.test(value) || total <= 0n) return "0%";

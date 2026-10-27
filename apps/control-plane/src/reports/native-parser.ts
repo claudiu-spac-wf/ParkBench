@@ -9,6 +9,12 @@ import {
 import { nativeColumns } from "../../../../packages/contracts/src/database-analysis-definitions";
 import { canonical } from "./exact-numeric";
 import { csvRecord, csvRecords } from "./csv";
+/** Native numeric fields may be fixed-width even in comma-delimited output. */
+export function exactNativeNumber(source: string, type: ReportColumn["type"]): string | null {
+  const value = source.trim();
+  if (type === "text" || (type === "integer" && !/^\d+$/.test(value))) return null;
+  return canonical(value);
+}
 export function projectedRow(
   columns: ReportColumn[],
   values: string[],
@@ -49,18 +55,14 @@ export function projectedRow(
     concern: "none",
     cells: values.map((sourceText, i) => {
       const col = columns[i],
-        exact =
-          col.type === "text"
-            ? null
-            : col.type === "integer" && !/^\d+$/.test(sourceText)
-              ? null
-              : canonical(sourceText);
+        value = col.type === "text" ? sourceText : sourceText.trim(),
+        exact = exactNativeNumber(sourceText, col.type);
       return {
         columnId: i,
         originalHeader: col.sourceHeader,
         semanticType: col.type,
         availabilityReason:
-          sourceText === "" || sourceText === "?"
+          value === "" || value === "?"
             ? "Native missing/unknown marker"
             : col.type !== "text" && exact === null
               ? "Invalid nonnegative measurement"
@@ -69,7 +71,7 @@ export function projectedRow(
         exact,
         unit: col.unit,
         availability:
-          sourceText === "" || sourceText === "?"
+          value === "" || value === "?"
             ? "MISSING"
             : col.type !== "text" && exact === null
               ? "INVALID"
