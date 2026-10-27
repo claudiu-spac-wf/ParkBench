@@ -1,0 +1,2 @@
+Time Stamp,DBUID,DB name,Area,Area #,Partition Type,Tenancy,Tenancy #,Partition Policy,Partition,Partition #,Owner,Table,Table #,Records,Size,Min,Max,Mean,Frag Count,Frag Factor,Scatter Factor
+2026/10/19 12:00:00,9007199254740993,fixture,Data,7,1,1,1,1,1,1,PUB,Customer,1,1000,9007199254740993,1,100,10,1,2.000,1.500

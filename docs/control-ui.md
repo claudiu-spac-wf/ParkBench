@@ -92,3 +92,7 @@ summaries and history remain the source of retained evidence.
 
 The current UI scope is English-only. Formal WCAG conformance and additional
 localization are outside this feature.
+
+## Database analysis reports
+
+Open **Reports** to run DBANALYS, IDXANALYS or TABANALYS against a temporary database copied from a ready offline seed, inspect results and download full unit-bearing CSV. Reports take priority over waiting experiments; active work finishes uninterrupted. There is no automatic analysis time limit. Cleanup uncertainty reserves capacity and retries automatically every five seconds after a failed attempt finishes. See [Database analysis reports](database-analysis-reports.md) for metric meanings, concern rules, read-only seed inputs, temporary database startup and recovery.

@@ -1,3 +1,6 @@
+import { ReportsPage } from "./features/reports/ReportsPage";
+import { ReportDetailPage } from "./features/reports/ReportDetailPage";
+import { ReportsGuidePage } from "./features/reports/ReportsGuidePage";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ActiveRunPage } from "./features/monitoring/ActiveRunPage";
@@ -28,6 +31,12 @@ function App() {
   const page =
     (route === "" || route === "overview") && !id ? (
       <OverviewPage />
+    ) : route === "reports" && id === "help" && !extra ? (
+      <ReportsGuidePage query={query} />
+    ) : route === "reports" && id && !extra ? (
+      <ReportDetailPage key={id} reportId={id} query={query} />
+    ) : route === "reports" && !id ? (
+      <ReportsPage />
     ) : route === "catalog" && !id ? (
       <CatalogPage />
     ) : route === "experiments" && !id ? (
@@ -91,6 +100,7 @@ function App() {
           >
             Comparisons
           </a>
+          <a href="#reports" aria-current={route === "reports" ? "page" : undefined}>Reports</a>
           <a href="#history" aria-current={route === "history" && !id ? "page" : undefined}>
             History
           </a>

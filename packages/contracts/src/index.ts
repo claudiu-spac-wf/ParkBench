@@ -36,3 +36,6 @@ export * from "./run-summary";
 export * from "./comparison";
 
 export * from "./comparison-metric-selection";
+
+export * from "./database-analysis-report";
+export * from "./database-analysis-definitions";

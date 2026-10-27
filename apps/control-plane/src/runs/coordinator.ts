@@ -1,3 +1,4 @@
+import { HostDispatcher } from "../execution/host-dispatcher";
 import { resolveFreshStartupFiles } from "../../../../packages/compose-runner/src/input-checks";
 import { canonicalParameterValues } from "../../../../packages/contracts/src/matrix-expansion";
 import { validateScenarioParameterValues } from "../../../../packages/contracts/src/scenario-parameter-validation";
@@ -151,6 +152,8 @@ export interface RunCoordinatorOptions {
 
 export class RunCoordinator {
   private activeExperiment?: string;
+  hostDispatcher?: HostDispatcher;
+  private hostClaimToken?: string;
   private readonly experimentFinishedListeners = new Set<() => void>();
   private readonly cancellationRequests = new Set<string>();
   private readonly activeRuns = new Map<string, ComposeBundle>();
@@ -516,6 +519,7 @@ export class RunCoordinator {
     const experiment = this.repositories.getExperiment(experimentId);
     if (!experiment) throw new Error("experiment_not_found");
     if (experiment.status === "FAILED") throw new Error("experiment_preflight_failed");
+    this.hostClaimToken = this.hostDispatcher?.claimExperiment(experimentId);
     this.repositories.updateExperimentStatus(
       experimentId,
       "RUNNING",
@@ -549,6 +553,11 @@ export class RunCoordinator {
       this.repositories.updateExperimentStatus(experiment.id, status, new Date().toISOString());
     } finally {
       this.activeExperiment = undefined;
+      if (this.hostClaimToken) {
+        const resources = this.repositories.listRuns(experiment.id).flatMap(run=>this.repositories.listResources(run.id));
+        if (resources.every(resource=>resource.cleanupResult === "deleted")) this.hostDispatcher?.release(this.hostClaimToken);
+      }
+      this.hostClaimToken = undefined;
       // Wake dispatch only after the next experiment can acquire the serial slot.
       for (const listener of this.experimentFinishedListeners) listener();
     }

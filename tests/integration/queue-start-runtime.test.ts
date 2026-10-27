@@ -179,8 +179,8 @@ test("unexpected finalizer failure is contained and reports outstanding cleanup 
     assert.match(run.failureReason ?? "", /\[REDACTED\]/);
     assert.doesNotMatch(run.failureReason ?? "", /queue-private-value/);
     const next = f.create();
-    f.platform.coordinator.startExperiment(next.id);
-    await finished(() => f.platform.repositories.getExperiment(next.id)?.status === "FAILED");
+    assert.throws(() => f.platform.coordinator.startExperiment(next.id), /host_execution_busy/);
+    assert.equal(f.platform.hostDispatcher.repository.currentClaim()?.owner_id, experiment.id);
   } finally {
     if (oldSecret === undefined) delete process.env.PARKBENCH_TEST_SECRET;
     else process.env.PARKBENCH_TEST_SECRET = oldSecret;

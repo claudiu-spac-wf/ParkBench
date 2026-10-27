@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "parkbench/database-analysis-report.v1/create",
+  "title": "Create a database analysis report",
+  "type": "object",
+  "required": ["contractVersion", "family", "seedAssetId", "type"],
+  "properties": {
+    "contractVersion": { "const": "database-analysis-report.v1" },
+    "family": { "const": "database-analysis" },
+    "seedAssetId": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "type": { "enum": ["DBANALYS", "IDXANALYS", "TABANALYS"] }
+  },
+  "additionalProperties": false
+}

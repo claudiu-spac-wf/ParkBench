@@ -1,3 +1,4 @@
+import {registerReportRoutes} from "../api/report-routes";
 import { ParameterSnapshotQueries } from "../grafana/parameter-snapshots";
 import { SavedSummaryQueries } from "../grafana/summary-results";
 import fs from "node:fs";
@@ -17,6 +18,7 @@ import { checkImageReference } from "../../../../packages/compose-runner/src/inp
 import { registerControlUiRoutes } from "../api/control-ui-routes";
 import { registerGrafanaRoutes, repositoryTimelineSource } from "../grafana";
 export function registerRoutes(app: any, platform: Platform): void {
+  registerReportRoutes(app,platform);
   app.get("/internal/cadvisor/metrics", async (request: any, reply: any) => {
     try {
       const response = await fetch(

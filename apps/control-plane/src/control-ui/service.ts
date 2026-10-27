@@ -786,6 +786,8 @@ export class ControlUiService {
     }
   }
 
+  wakeExecutionQueue(): void { if (this.queueEnabled && !this.closed) void this.continueQueue(); }
+
   private async startQueueInternal(): Promise<{
     activeExperiment?: string;
     queued: ControlRunView[];
@@ -796,6 +798,7 @@ export class ControlUiService {
       ["RUNNING"].includes(this.syncExperimentStatus(experiment.id))
     );
     if (active) return { activeExperiment: active.id, queued: this.listQueue() };
+    if (this.runtime.coordinator.hostDispatcher?.busy()) return { queued: this.listQueue() };
     for (const candidate of experiments) {
       if (this.syncExperimentStatus(candidate.id) !== "QUEUED") continue;
       const candidateRuns = this.runtime.controlRepository.listRunMetadata(candidate.id);
@@ -892,6 +895,7 @@ export class ControlUiService {
           updatedAt: now()
         });
       }
+      if (this.runtime.coordinator.hostDispatcher?.busy()) return { queued: this.listQueue() };
       this.runtime.coordinator.startExperiment(next.id);
       this.runtime.controlRepository.updateControlExperiment(next.id, { status: "RUNNING" });
       return { activeExperiment: next.id, started: next.id, queued: this.listQueue() };

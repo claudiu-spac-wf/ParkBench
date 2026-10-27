@@ -1,3 +1,10 @@
+import {ReportService} from "./reports/service";
+import {ReportRepository} from "./reports/repository";
+import {ReportArtifacts} from "./reports/artifacts";
+import {HostDispatcher} from "./execution/host-dispatcher";
+import {DockerAnalysisRunner,AnalysisRunner} from "../../../packages/compose-runner/src/report-runner";
+import {resolveManagedInputPath} from "./catalog/managed-input-path";
+import {validateSeedDirectory} from "../../../packages/contracts/src/seed";
 import { ComparisonSummaryService } from "./runs/comparison-summary-service";
 import { HistoricalSummaryWorker } from "./runs/historical-summary-worker";
 import fs from "node:fs";
@@ -55,6 +62,8 @@ import { CatalogBulkActions } from "./catalog/bulk-actions";
 import { requirePlatformEnvironment } from "../../../packages/contracts/src/local-env";
 import { RunMetricsAvailability } from "./runs/metrics-availability";
 export interface Platform {
+  reports: ReportService;
+  hostDispatcher: HostDispatcher;
   config: ParkBenchConfig;
   inputRoot: string;
   database: DatabaseClient;
@@ -85,6 +94,7 @@ export interface Platform {
   close(): void;
 }
 export interface PlatformOptions {
+  reportRunner?: AnalysisRunner;
   testMode?: boolean;
   inputRoot?: string;
   prometheus?: PrometheusClient;
@@ -126,12 +136,15 @@ export function createTargetDiscovery(
 
 export function createPlatform(config = loadConfig(), options: PlatformOptions = {}): Platform {
   const testMode = options.testMode === true;
+  let platformClosed = false;
   if (!testMode) requirePlatformEnvironment();
   const migrationCandidates = [
     path.join(__dirname, "db/migrations/001_foundation.sql"),
     path.join(process.cwd(), "apps/control-plane/src/db/migrations/001_foundation.sql")
   ];
   const migrationFiles = [
+    path.join(__dirname, "db/migrations/008_database_reports.sql"),
+    path.join(process.cwd(), "apps/control-plane/src/db/migrations/008_database_reports.sql"),
     ...migrationCandidates,
     path.join(__dirname, "db/migrations/003_control_ui.sql"),
     path.join(process.cwd(), "apps/control-plane/src/db/migrations/003_control_ui.sql"),
@@ -360,6 +373,24 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
         { testMode, managedRoot: managedInputRoot }
       )
   });
+  const reportRepository = new ReportRepository(database);
+  const hostDispatcher = new HostDispatcher(reportRepository);
+  const startupHostClaim = reportRepository.currentClaim();
+  if (!testMode || startupHostClaim || reportRepository.list("RUNNING").length) hostDispatcher.pause();
+  coordinator.hostDispatcher = hostDispatcher;
+  const reports = new ReportService(reportRepository, new ReportArtifacts(config.artifactRoot,reportRepository), options.reportRunner ?? new DockerAnalysisRunner(), hostDispatcher, {
+    image:config.openedge.dbImage ?? "",licensePath:config.openedge.licensePath,version:config.openedge.version,
+    resolveSeed(id) {
+      const asset=controlUi.getAsset(id);
+      if(!asset)throw new Error("report_seed_unavailable");
+      let seedPath:string;
+      try { seedPath=resolveManagedInputPath(asset,asset.immutableRef,"seed",config.discoveryRoots??{}); }
+      catch {throw new Error("report_seed_invalid");}
+      const seed=validateSeedDirectory(seedPath);
+      return {assetId:asset.id,name:seed.name,path:seedPath,databaseName:seed.databaseName,managedRoot:fs.realpathSync(config.discoveryRoots!.seeds)};
+    }
+  });
+  hostDispatcher.onAvailable(()=>controlUi.wakeExecutionQueue());
   const discovery = new CatalogDiscoveryService(controlRepository, discoveryProviders);
   const catalogActions = new CatalogBulkActions(
     controlRepository,
@@ -412,11 +443,22 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     },
     () => bootstrap.retryPendingCleanup()
   );
-  const startupRecovery = reconciler.run().then((count) => {
+  const startupRecovery = reconciler.run().then(async (count) => {
+    if(platformClosed)return count;
+    const oldClaim=startupHostClaim;
+    if(oldClaim?.kind==="EXPERIMENT"){
+      const resources=repositories.listRuns(oldClaim.owner_id).flatMap(run=>repositories.listResources(run.id));
+      if(resources.every(resource=>resource.cleanupResult === "deleted"))reportRepository.release(oldClaim.token);
+    }
+    await reports.recover();
+    if(platformClosed)return count;
+    hostDispatcher.resume();
     summaryWorker.recover();
     return count;
   });
   return {
+    reports,
+    hostDispatcher,
     config,
     metricsAvailability,
     inputRoot: managedInputRoot,
@@ -445,6 +487,9 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     startupRecovery,
     summaryWorker,
     close: () => {
+      platformClosed = true;
+      reports.close();
+      hostDispatcher.pause();
       controlUi.close();
       summaryWorker.stop();
       database.close();

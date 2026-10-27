@@ -248,3 +248,7 @@ verification commands, see the sibling planning repository's
 Licensed verification requires final protocol-3 observer images and a ready
 seed containing more than 64 supported tables. The three matched Docker/cgroup
 windows are test attachments; inspect them to establish a live memory cause.
+
+## Database analysis reports
+
+Open **Reports** to run DBANALYS, IDXANALYS or TABANALYS against a temporary database copied from a ready offline seed, inspect results and download full unit-bearing CSV. Reports take priority over waiting experiments; active work finishes uninterrupted. There is no automatic analysis time limit. Cleanup uncertainty reserves capacity and retries automatically every five seconds after a failed attempt finishes. See [Database analysis reports](database-analysis-reports.md) for metric meanings, concern rules, read-only seed inputs, temporary database startup and recovery.
