@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 
-type HelpContextValue = { openId: string | undefined; setOpenId: (id?: string) => void };
+type HelpContextValue = {
+  openId: string | undefined;
+  setOpenId: React.Dispatch<React.SetStateAction<string | undefined>>;
+};
 const HelpContext = React.createContext(undefined as HelpContextValue | undefined);
 
 export function FieldHelpProvider({ children }: { children: React.ReactNode }) {
@@ -79,7 +82,10 @@ export function FieldHelp({ label, children }: { label: string; children: React.
   };
   const hide = () => {
     if (focused.current) return;
-    closeTimer.current = window.setTimeout(() => setOpenId(undefined), 120);
+    closeTimer.current = window.setTimeout(
+      () => setOpenId((current) => (current === tooltipId ? undefined : current)),
+      120
+    );
   };
 
   const focus = () => {

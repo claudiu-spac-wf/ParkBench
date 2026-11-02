@@ -1,7 +1,19 @@
 import { Platform } from "../platform";
-import { queryString } from "./control-ui-errors";
+import { sendControlUiError, queryString } from "./control-ui-errors";
 
 export function registerHistoryRoutes(app: any, platform: Platform): void {
+  app.post(
+    "/api/v1/history/runs/:runId/diagnostics/reconcile-budget",
+    async (request: any, reply: any) => {
+      if (request.body && Object.keys(request.body).length)
+        return reply.code(400).send({ error: { code: "measurement_recovery_body_invalid" } });
+      try {
+        return await platform.coordinator.reconcileMeasurementBudget(request.params.runId);
+      } catch (error) {
+        return sendControlUiError(reply, error, (error as Error).message, 400);
+      }
+    }
+  );
   app.get("/api/v1/history/runs", async (request: any) => {
     const filters = {
       experiment: queryString(request, "experiment"),
@@ -27,7 +39,16 @@ export function registerHistoryRoutes(app: any, platform: Platform): void {
   });
   app.get("/api/v1/history/runs/:runId", async (request: any, reply: any) => {
     const detail = platform.controlUi.historyDetail(request.params.runId);
-    if (detail) return detail;
+    if (detail) {
+      const artifacts = await platform.measurementRetention.projectArtifacts(
+        detail.artifacts as any[]
+      );
+      return {
+        ...detail,
+        artifacts,
+        diagnostics: artifacts.filter((a) => a.kind === "diagnostics")
+      };
+    }
     reply.code(404);
     return {
       error: {

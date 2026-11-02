@@ -311,6 +311,9 @@ export function createContexts(options, staged, archive) {
     "packages/test-support/package.json"
   ])
     copy(path.join(repoRoot, manifest), path.join(observer, manifest));
+  fs.cpSync(path.join(repoRoot, "docker/openedge-db/setup"), path.join(db, "setup"), {
+    recursive: true
+  });
   copy(path.join(repoRoot, "docker/openedge-db/Dockerfile"), path.join(db, "Dockerfile"));
   copy(path.join(repoRoot, "docker/openedge-db/entrypoint.sh"), path.join(db, "entrypoint.sh"));
   copy(path.join(repoRoot, "docker/openedge-db/copy-seed.sh"), path.join(db, "copy-seed.sh"));

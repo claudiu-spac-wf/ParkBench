@@ -1,3 +1,12 @@
+import { validateDatabaseIopsCondition } from "../../../../packages/contracts/src/database-iops";
+import {
+  DIAGNOSTIC_DEFAULTS,
+  DiagnosticsOperatorSettings,
+  FrozenDiagnosticsConfig,
+  freezeDiagnosticsConfig,
+  normalizeMeasurementDiagnostics
+} from "../../../../packages/contracts/src/measurement-diagnostics";
+import { resolveSetupScript } from "../database-setup/scripts";
 import { validateParameterConfiguration } from "../../../../packages/contracts/src/matrix-expansion";
 import { createMetricSelectionService } from "../comparisons/metric-selection-service";
 import { createNamedLatchProjection } from "../comparisons/named-latch-projection";
@@ -115,6 +124,7 @@ function sanitizeMatrixInputs(inputs: Record<string, unknown> | undefined): Reco
 }
 
 export interface ControlUiRuntime {
+  measurementDiagnostics?: DiagnosticsOperatorSettings;
   prometheusUrl?: string;
   summaryReader?: SummaryReader;
   summaryScheduler?: SummaryScheduler;
@@ -132,7 +142,7 @@ export interface ControlUiRuntime {
   inputRoot?: string;
   inputRefs?: InputReferences;
   discoveryRoots?: Partial<
-    Record<"scenarios" | "workloads" | "observers" | "seeds" | "archives", string>
+    Record<"scenarios" | "workloads" | "observers" | "seeds" | "archives" | "scripts", string>
   >;
   supportImages?: { loadgen: string; observer: string };
   databaseCapabilities?: { version?: string; features?: string[] };
@@ -453,6 +463,9 @@ export class ControlUiService {
       scenarioSourceId: sourceId,
       inputs: sanitizeMatrixInputs(request.inputs)
     });
+    for (const step of normalizedRequest.databaseSetup?.steps ?? [])
+      if (step.definitionId === "custom")
+        resolveSetupScript(this.runtime.discoveryRoots?.scripts, step.scriptRef);
     if (!this.runtime.testMode) {
       const archive =
         normalizedRequest.inputs?.applicationArchive ?? this.inputRefs().applicationArchive;
@@ -613,6 +626,8 @@ export class ControlUiService {
       );
       if (existing) return existing.response as ControlExperimentView;
     }
+    if (Object.hasOwn(request, "measurementDiagnostics"))
+      throw new Error("preview_configuration_frozen:measurementDiagnostics");
     if (!request.confirm) throw new Error("matrix_confirmation_required");
     const preview = this.runtime.controlRepository.getPreview(request.previewId);
     if (!preview) throw new Error("preview_not_found");
@@ -656,14 +671,25 @@ export class ControlUiService {
         inputs.applicationArchive!,
         validateScenario(scenario.document)
       );
+    const resolvedMeasurementDiagnostics = freezeDiagnosticsConfig(
+      preview.request.measurementDiagnostics,
+      this.runtime.measurementDiagnostics ?? DIAGNOSTIC_DEFAULTS,
+      Date.now()
+    );
     const variants = preview.cells.map((cell) => ({
       id: `cell-${cell.ordinal}-r${cell.repetition}`,
       name: cell.runName!,
       parameters: cell.effectiveConfiguration,
+      measurementDiagnostics: normalizeMeasurementDiagnostics(cell.measurementDiagnostics),
       databaseStartup: cell.databaseStartup,
+      ...(cell.databaseSetup ? { databaseSetup: structuredClone(cell.databaseSetup) } : {}),
+      databaseIops: validateDatabaseIopsCondition(cell.databaseIops),
       databaseRunControls: cell.databaseRunControls
     }));
     const legacyRequest: ExperimentRequest = {
+      measurementDiagnostics: normalizeMeasurementDiagnostics(
+        preview.request.measurementDiagnostics
+      ),
       scheduleName: preview.request.displayName ?? preview.request.runName,
       scenario: { id: scenario.id, version: scenario.version },
       comparisonMode: "exploratory",
@@ -683,6 +709,7 @@ export class ControlUiService {
         legacyRequest,
         validateScenario(scenario.document),
         {
+          resolvedMeasurementDiagnostics,
           base: normalizeRunName(preview.request.runName),
           names: preview.cells.map((cell) => cell.runName!)
         }
@@ -717,6 +744,8 @@ export class ControlUiService {
           ...run.environmentSnapshot,
           runName: cell.runName,
           databaseStartup: cell.databaseStartup,
+          ...(cell.databaseSetup ? { databaseSetup: structuredClone(cell.databaseSetup) } : {}),
+          databaseIops: structuredClone(cell.databaseIops),
           ...(cell.databaseRunControls
             ? { databaseRunControls: structuredClone(cell.databaseRunControls) }
             : {})
@@ -745,7 +774,11 @@ export class ControlUiService {
             requiredMeasurements: (scenario.document as any).requiredMeasurements ?? [],
             assets: inputs,
             parameters: cell.effectiveConfiguration,
+            measurementDiagnostics: normalizeMeasurementDiagnostics(cell.measurementDiagnostics),
+            resolvedMeasurementDiagnostics,
             databaseStartup: cell.databaseStartup,
+            ...(cell.databaseSetup ? { databaseSetup: structuredClone(cell.databaseSetup) } : {}),
+            databaseIops: structuredClone(cell.databaseIops),
             ...(cell.databaseRunControls
               ? { databaseRunControls: structuredClone(cell.databaseRunControls) }
               : {}),
@@ -786,7 +819,9 @@ export class ControlUiService {
     }
   }
 
-  wakeExecutionQueue(): void { if (this.queueEnabled && !this.closed) void this.continueQueue(); }
+  wakeExecutionQueue(): void {
+    if (this.queueEnabled && !this.closed) void this.continueQueue();
+  }
 
   private async startQueueInternal(): Promise<{
     activeExperiment?: string;
@@ -905,6 +940,7 @@ export class ControlUiService {
   }
 
   private async preflightExperiment(record: any): Promise<void> {
+    await this.runtime.coordinator.prepareMeasurementBatch(record.id);
     const scenario = record.scenarioSnapshot as Scenario;
     const firstRun = this.runtime.controlRepository.listRunMetadata(record.id)[0];
     const inputs = this.runtime.repositories.getExperiment(record.id)?.inputs;
@@ -976,6 +1012,13 @@ export class ControlUiService {
         .listControlExperiments()
         .map((experiment) => [experiment.id, experiment.queueOrdinal])
     );
+    return this.sortLifecycleRuns(runs, submissionOrder);
+  }
+
+  private sortLifecycleRuns(
+    runs: ControlRunView[],
+    submissionOrder: Map<string, number>
+  ): ControlRunView[] {
     return runs
       .map((run) => this.syncRunStatus(run))
       .sort((a, b) => {
@@ -992,8 +1035,23 @@ export class ControlUiService {
       });
   }
 
+  runningExperimentId(): string | undefined {
+    const id = this.runtime.controlRepository.runningExperimentId();
+    if (id) this.syncExperimentStatus(id);
+    return id;
+  }
+
   listQueue(): ControlRunView[] {
-    return this.listLifecycleRuns().filter((run) => !this.isTerminal(run.queueState));
+    const runs = this.runtime.controlRepository.listQueueRunMetadata();
+    const submissionOrder = new Map(
+      [...new Set(runs.map((run) => run.experimentId))].map((id) => [
+        id,
+        this.runtime.controlRepository.getControlExperiment(id)?.queueOrdinal ?? 0
+      ])
+    );
+    return this.sortLifecycleRuns(runs, submissionOrder).filter(
+      (run) => !this.isTerminal(run.queueState)
+    );
   }
 
   private assignRunNames(cells: MatrixCell[], base: string): MatrixCell[] {
@@ -1007,7 +1065,14 @@ export class ControlUiService {
     const run = this.runtime.repositories.getRun(runId);
     if (run && this.isTerminal(run.state) && run.state !== "CANCELLED")
       throw new Error("run_already_terminal");
-    if (run && !this.isTerminal(run.state)) this.runtime.coordinator.cancel(runId);
+    if (run && !this.isTerminal(run.state)) {
+      const decision = this.runtime.coordinator.cancel(runId);
+      if (
+        (decision.environmentSnapshot as any)?.databaseIopsEvidence?.terminationDecision?.cause ===
+        "POLICY_DRIFT"
+      )
+        throw new Error("run_failure_already_accepted");
+    }
     metadata.queueState = "CANCELLED";
     metadata.state = "CANCELLED";
     metadata.nextRetryAt = undefined;
@@ -1572,7 +1637,8 @@ export class ControlUiService {
       stored?.status === "BLOCKED" && experiment?.status === "QUEUED"
         ? "BLOCKED"
         : (experiment?.status ?? stored?.status ?? "QUEUED");
-    this.runtime.controlRepository.updateControlExperiment(experimentId, { status });
+    if (stored && stored.status !== status)
+      this.runtime.controlRepository.updateControlExperiment(experimentId, { status });
     return status;
   }
 
@@ -1588,11 +1654,17 @@ export class ControlUiService {
       state,
       queueState: state,
       startedAt: run.startedAt,
+      databaseIops: run.environmentSnapshot?.databaseIops as any,
+      databaseIopsEvidence: run.environmentSnapshot?.databaseIopsEvidence as any,
+      databaseSetup: run.environmentSnapshot?.databaseSetupEvidence as any,
       databaseRunControlEvidence: run.environmentSnapshot?.databaseRunControlEvidence as
         Record<string, unknown> | undefined,
-      updatedAt: now()
+      updatedAt: metadata.queueState === state ? metadata.updatedAt : now()
     };
-    this.runtime.controlRepository.saveRunMetadata({ runId: updated.id, ...updated });
+    // Only queue_state is persisted here. Setup/startup detail is a projection
+    // of the canonical run, so an unchanged GET must not rewrite old metadata.
+    if (metadata.queueState !== state)
+      this.runtime.controlRepository.saveRunMetadata({ runId: updated.id, ...updated });
     return updated;
   }
 

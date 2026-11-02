@@ -1,3 +1,4 @@
+import { recordChartDecision } from "../measurement-diagnostics/chart-evidence";
 export const NATIVE_QUERY_LIMITS = Object.freeze({
   windowMs: 31 * 86400_000,
   deadlineMs: 30_000,
@@ -62,10 +63,12 @@ export class NativeQueryBudget {
     });
   }
   async fetch(url: string, params: URLSearchParams, fetcher: typeof fetch = fetch) {
+    const entered = performance.now();
     this.check();
     if (this.active >= this.limits.concurrency)
       await new Promise<void>((resolve, reject) => this.waiting.push({ resolve, reject }));
     else this.active++;
+    const dispatched = performance.now();
     try {
       this.check();
       if (this.requests >= this.limits.requests) {
@@ -81,6 +84,7 @@ export class NativeQueryBudget {
           signal: this.controller.signal
         })
       );
+      const bodyStarted = performance.now();
       const chunks: Uint8Array[] = [];
       let bytes = 0;
       if (response.body) {
@@ -109,6 +113,7 @@ export class NativeQueryBudget {
       this.check();
       if (!response.ok || body.status !== "success")
         throw new NativeBudgetError("native_query_upstream_error");
+      recordChartDecision({ stage: "UPSTREAM", outcome: "SUCCEEDED", counts: { requestCount: 1, responseBytes: bytes, queueWaitMs: dispatched - entered, requestDurationMs: performance.now() - dispatched, bodyReadMs: performance.now() - bodyStarted }, reasonCodes: ["native_bounded_upstream_response"] });
       return body;
     } catch (error) {
       this.fail(error instanceof NativeBudgetError ? error.code : "native_query_upstream_error");

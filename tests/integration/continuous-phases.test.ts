@@ -36,6 +36,14 @@ it("production coordinator completes readiness once and collects adjacent phases
   const originalAdd = FileDiscovery.prototype.add;
   let relabels = 0;
   let labels: any[] = [];
+  let runId = "",
+    actualClock: any;
+  const originalCleanup = platform.orchestrator.cleanup.bind(platform.orchestrator);
+  platform.orchestrator.cleanup = async (bundle, resources) => {
+    const file = path.join(platform.storage.root, runId, "runtime", "phase-clock.json");
+    if (fs.existsSync(file)) actualClock = JSON.parse(fs.readFileSync(file, "utf8"));
+    return originalCleanup(bundle, resources);
+  };
   FileDiscovery.prototype.updatePhase = function (...args) {
     relabels++;
     return originalUpdate.apply(this, args);
@@ -66,6 +74,7 @@ it("production coordinator completes readiness once and collects adjacent phases
       } as any,
       short as any
     );
+    runId = experiment.runIds[0];
     const run = await platform.coordinator.executeRun(
       platform.repositories.getRun(experiment.runIds[0])!
     );
@@ -84,7 +93,8 @@ it("production coordinator completes readiness once and collects adjacent phases
       600
     );
     assert.equal(
-      Date.parse(run.phaseBoundaries.cooldown!.finishedAt!) - Date.parse(run.phaseBoundaries.warmup!.startedAt!),
+      Date.parse(run.phaseBoundaries.cooldown!.finishedAt!) -
+        Date.parse(run.phaseBoundaries.warmup!.startedAt!),
       800
     );
     assert.ok(Date.parse(run.phaseBoundaries.warmup!.startedAt!) >= readyAt);
@@ -94,6 +104,19 @@ it("production coordinator completes readiness once and collects adjacent phases
     assert.ok(labels.every((label) => !Object.hasOwn(label, "phase")));
     assert.equal(run.cleanupStatus, "COMPLETE");
     assert.equal((run.environmentSnapshot as any).metricsCollectionMode, "continuous");
+    const clock = actualClock;
+    assert.ok(clock, "capture the actual clock before owned runtime cleanup");
+    assert.equal(clock.contractVersion, "run-phase-clock.v1");
+    assert.equal(clock.runId, run.id);
+    assert.ok(clock.nativeDatabaseIntervalMs > 0);
+    assert.deepEqual(
+      clock.nativePhases,
+      ["warmup", "measurement", "cooldown"].map((phase) => ({
+        phase,
+        startMs: Date.parse(run.phaseBoundaries[phase].startedAt),
+        endMs: Date.parse(run.phaseBoundaries[phase].finishedAt)
+      }))
+    );
   } finally {
     FileDiscovery.prototype.updatePhase = originalUpdate;
     FileDiscovery.prototype.add = originalAdd;

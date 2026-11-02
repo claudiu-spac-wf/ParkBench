@@ -1,14 +1,16 @@
+import { emitMeasurementEvidence } from "./measurement-evidence";
 import { validateOpenEdgeDbLatchInventory } from "../../contracts/src/openedge";
 import { MetricSample, MetricType } from "../../contracts/src/metrics";
 import { ObserverAdapter, ObserverContext, observerLabels } from "./adapter";
 
 export class HttpMetricsObserver implements ObserverAdapter {
+  private readonly seenNativeCollections = new Set<string>();
   constructor(
     public readonly id: string,
     public readonly kind: string,
     private readonly baseUrl: string,
     private readonly metricsPath = "/metrics",
-    private readonly timeoutMs = 3000,
+    private readonly timeoutMs = kind === "openedge_db_v1" ? 6000 : 3000,
     private readonly declaredMetrics: string[] = []
   ) {}
 
@@ -50,21 +52,165 @@ export class HttpMetricsObserver implements ObserverAdapter {
   }
 
   async latchInventory(context: ObserverContext) {
-    const response = await requestWithRetry(`${this.baseUrl}/latch-inventory`, this.timeoutMs);
+    const response = await requestWithRetry(
+      `${this.baseUrl}/latch-inventory`,
+      this.timeoutMs,
+      3,
+      context,
+      this.id
+    );
     if (!response.ok)
       throw new Error(`named_latch_evidence_missing:inventory_http:${response.status}`);
     const result = (await response.json()) as any;
     if (result.protocolVersion !== 4)
       throw new Error("named_latch_evidence_missing:collector_protocol");
+    if (result.measurementInventory && context.measurementEvidence?.recordInventory) {
+      try {
+        context.measurementEvidence.recordInventory(result.measurementInventory);
+      } catch {
+        emitMeasurementEvidence(context, "DIAGNOSTIC_WRITE", "REJECTED", {
+          reasonCodes: ["native_inventory_evidence_failed"]
+        });
+      }
+    }
     return validateOpenEdgeDbLatchInventory(result.latchInventory, context.runId);
   }
   async sample(context: ObserverContext): Promise<MetricSample[]> {
-    const response = await requestWithRetry(`${this.baseUrl}${this.metricsPath}`, this.timeoutMs);
+    const response = await requestWithRetry(
+      `${this.baseUrl}${this.metricsPath}`,
+      this.timeoutMs,
+      3,
+      context,
+      this.id
+    );
     if (!response.ok) throw new Error(`observer_metrics_failed:${response.status}`);
-    const parsed = parsePrometheusTextWithDiagnostics(await response.text(), context, this.id);
+    if (this.kind === "file_sampler_v1" && context.measurementEvidence?.recordInventory) {
+      const pathKind = response.headers.get("x-parkbench-path-kind"),
+        captured = response.headers.get("x-parkbench-path-captured-at-ms");
+      if (
+        ["file", "directory", "other"].includes(pathKind ?? "") &&
+        captured !== null &&
+        Number.isFinite(Number(captured))
+      ) {
+        try {
+          context.measurementEvidence.recordInventory({
+            contractVersion: "measurement-path-inventory.v1",
+            runId: context.runId,
+            observerId: this.id,
+            pathRef: "file-sampler-path",
+            kind: pathKind,
+            capturedAtMs: Number(captured)
+          });
+        } catch {
+          emitMeasurementEvidence(context, "DIAGNOSTIC_WRITE", "REJECTED", {
+            reasonCodes: ["path_inventory_evidence_failed"]
+          });
+        }
+      }
+    }
+    if (this.kind === "openedge_db_v1" && context.measurementEvidence) {
+      const collectionId = response.headers.get("x-parkbench-collection-id"),
+        generation = Number(response.headers.get("x-parkbench-collection-generation")),
+        capturedAt = Number(response.headers.get("x-parkbench-source-captured-at-ms"));
+      const identity = collectionId?.match(/^([a-f0-9-]{36}):(\d+)$/);
+      if (
+        identity &&
+        Number.isSafeInteger(generation) &&
+        generation > 0 &&
+        generation === Number(identity[2]) &&
+        response.headers.has("x-parkbench-source-captured-at-ms") &&
+        Number.isFinite(capturedAt) &&
+        capturedAt >= 0
+      ) {
+        const shared = this.seenNativeCollections.has(collectionId!);
+        emitMeasurementEvidence(context, "NATIVE_CAPTURE", shared ? "SHARED" : "SUCCEEDED", {
+          observerId: this.id,
+          sourceKey: identity[1],
+          collectionGeneration: generation,
+          ...(shared ? { sharedWithCollectionId: collectionId! } : {}),
+          sourceCapturedAtMs: capturedAt,
+          timestampOrigin: "SOURCE",
+          reasonCodes: ["owned_endpoint_capture_metadata", "remote_duration_unknown"]
+        });
+        if (this.seenNativeCollections.size >= 128)
+          this.seenNativeCollections.delete(this.seenNativeCollections.values().next().value!);
+        this.seenNativeCollections.add(collectionId!);
+      } else
+        emitMeasurementEvidence(context, "NATIVE_CAPTURE", "UNCONFIRMED", {
+          observerId: this.id,
+          reasonCodes: ["remote_collection_evidence_unavailable"]
+        });
+    }
+    const bodyStarted = performance.now(),
+      bodyStartedAtMs = Date.now();
+    const request = responseEvidence.get(response);
+    let body: string;
+    try {
+      body = await response.text();
+    } catch (error) {
+      emitMeasurementEvidence(
+        context,
+        "HTTP",
+        request?.signal.aborted && request.signal.reason?.name === "TimeoutError"
+          ? "TIMED_OUT"
+          : "FAILED",
+        {
+          observerId: this.id,
+          startedAtMs: bodyStartedAtMs,
+          finishedAtMs: Date.now(),
+          durationMs: performance.now() - bodyStarted,
+          bodyReadMs: performance.now() - bodyStarted,
+          httpAttempt: request?.httpAttempt,
+          reasonCodes: ["body_read_failed"]
+        }
+      );
+      throw error;
+    }
+    emitMeasurementEvidence(context, "HTTP", "SUCCEEDED", {
+      observerId: this.id,
+      startedAtMs: bodyStartedAtMs,
+      finishedAtMs: Date.now(),
+      durationMs: performance.now() - bodyStarted,
+      bodyReadMs: performance.now() - bodyStarted,
+      httpAttempt: request?.httpAttempt,
+      counts: { responseBytes: Buffer.byteLength(body) },
+      reasonCodes: ["body_read_complete"]
+    });
+    const parseStarted = performance.now(),
+      parseStartedAtMs = Date.now();
+    const parsed = parsePrometheusTextWithDiagnostics(body, context, this.id);
+    emitMeasurementEvidence(context, "PARSE", "SUCCEEDED", {
+      observerId: this.id,
+      startedAtMs: parseStartedAtMs,
+      finishedAtMs: Date.now(),
+      durationMs: performance.now() - parseStarted,
+      timestampOrigin:
+        parsed.explicitTimestampSamples === parsed.samples.length && parsed.samples.length
+          ? "SOURCE"
+          : parsed.explicitTimestampSamples === 0
+            ? "PARSER_ASSIGNED"
+            : "UNKNOWN",
+      counts: {
+        returnedSamples: parsed.samples.length,
+        rejectedSamples: parsed.diagnostics.length,
+        explicitTimestampSamples: parsed.explicitTimestampSamples,
+        parserTimestampSamples: parsed.parserTimestampSamples
+      },
+      sourceTimestampMinMs: parsed.sourceTimestampMinMs,
+      sourceTimestampMaxMs: parsed.sourceTimestampMaxMs
+    });
     const samples = parsed.samples.filter(
       (sample) => sample.labels.phase === context.phase
     ) as MetricSample[] & { diagnostics?: PrometheusParseDiagnostic[] };
+    emitMeasurementEvidence(context, "PHASE_FILTER", "SUCCEEDED", {
+      observerId: this.id,
+      counts: {
+        returnedSamples: parsed.samples.length,
+        validSamples: samples.length,
+        rejectedSamples: parsed.samples.length - samples.length
+      },
+      reasonCodes: ["http_phase_filter"]
+    });
     samples.diagnostics = parsed.diagnostics;
     return samples;
   }
@@ -105,8 +251,19 @@ export function parsePrometheusTextWithDiagnostics(
   body: string,
   context: ObserverContext,
   service: string
-): { samples: MetricSample[]; diagnostics: PrometheusParseDiagnostic[] } {
+): {
+  samples: MetricSample[];
+  diagnostics: PrometheusParseDiagnostic[];
+  explicitTimestampSamples: number;
+  parserTimestampSamples: number;
+  sourceTimestampMinMs: number | null;
+  sourceTimestampMaxMs: number | null;
+} {
   const samples: MetricSample[] = [];
+  let explicitTimestampSamples = 0,
+    parserTimestampSamples = 0,
+    sourceTimestampMinMs: number | null = null,
+    sourceTimestampMaxMs: number | null = null;
   const diagnostics: PrometheusParseDiagnostic[] = [];
   const types = new Map<string, MetricType>();
   for (const line of body.split(/\r?\n/)) {
@@ -147,6 +304,11 @@ export function parsePrometheusTextWithDiagnostics(
       );
       continue;
     }
+    if (match[4]) {
+      explicitTimestampSamples++;
+      sourceTimestampMinMs = Math.min(sourceTimestampMinMs ?? Infinity, timestamp * 1000);
+      sourceTimestampMaxMs = Math.max(sourceTimestampMaxMs ?? -Infinity, timestamp * 1000);
+    } else parserTimestampSamples++;
     const labels = {
       ...observerLabels(context, "observer", service),
       ...parsedLabels
@@ -166,7 +328,14 @@ export function parsePrometheusTextWithDiagnostics(
       source: `observer:${service}`
     });
   }
-  return { samples, diagnostics };
+  return {
+    samples,
+    diagnostics,
+    explicitTimestampSamples,
+    parserTimestampSamples,
+    sourceTimestampMinMs,
+    sourceTimestampMaxMs
+  };
 }
 
 function parseMetricLine(line: string): [string, string, string, string, string?] | null {
@@ -194,13 +363,64 @@ function parseMetricLine(line: string): [string, string, string, string, string?
   return value ? [line, name[1], labelText, value[1], value[2]] : null;
 }
 
-async function requestWithRetry(url: string, timeoutMs: number, attempts = 3): Promise<Response> {
+const responseEvidence = new WeakMap<
+  Response,
+  { eventId?: string; httpAttempt: number; signal: AbortSignal }
+>();
+async function requestWithRetry(
+  url: string,
+  timeoutMs: number,
+  attempts = 3,
+  context?: ObserverContext,
+  observerId?: string
+): Promise<Response> {
   let lastError: unknown;
   for (let attempt = 0; attempt < attempts; attempt++) {
+    const startedAtMs = Date.now(),
+      monotonicStart = performance.now();
+    const eventId = context
+      ? emitMeasurementEvidence(context, "HTTP", "STARTED", {
+          observerId,
+          httpAttempt: attempt + 1,
+          startedAtMs
+        })
+      : undefined;
     try {
-      return await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+      const headers: Record<string, string> = {};
+      if (eventId && /^[a-zA-Z0-9_:-]{1,160}$/.test(eventId)) {
+        headers["x-parkbench-diagnostic-request-id"] = eventId;
+        headers["x-parkbench-diagnostic-caller"] = "controller";
+      }
+      const signal = AbortSignal.timeout(timeoutMs);
+      const response = await fetch(url, { signal, headers });
+      responseEvidence.set(response, { eventId, httpAttempt: attempt + 1, signal });
+      if (context)
+        emitMeasurementEvidence(context, "HTTP", response.ok ? "SUCCEEDED" : "FAILED", {
+          observerId,
+          httpAttempt: attempt + 1,
+          startedAtMs,
+          finishedAtMs: Date.now(),
+          durationMs: performance.now() - monotonicStart,
+          counts: { httpStatus: response.status },
+          reasonCodes: ["headers_received"]
+        });
+      return response;
     } catch (error) {
       lastError = error;
+      if (context)
+        emitMeasurementEvidence(
+          context,
+          "HTTP",
+          (error as Error)?.name === "TimeoutError" ? "TIMED_OUT" : "FAILED",
+          {
+            observerId,
+            httpAttempt: attempt + 1,
+            startedAtMs,
+            finishedAtMs: Date.now(),
+            durationMs: performance.now() - monotonicStart,
+            reasonCodes: ["request_failed"]
+          }
+        );
       if (attempt + 1 < attempts)
         await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
     }

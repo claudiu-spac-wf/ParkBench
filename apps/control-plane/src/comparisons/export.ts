@@ -58,7 +58,11 @@ export const CSV_COLUMNS = [
   "observed_seconds",
   "estimated_edge_seconds",
   "missing_seconds",
-  "observation_step_seconds"
+  "observation_step_seconds",
+  "definition_id",
+  "operation",
+  "file",
+  "scope"
 ] as const;
 export function csvValue(value: unknown): string {
   if (typeof value === "number" && !Number.isFinite(value)) throw new Error("summary_non_finite");
@@ -92,6 +96,7 @@ export function csvSummaryRow(
     measurement_duration_seconds: h?.windows.measurement.durationSeconds,
     group: row?.group,
     metric: row?.displayName,
+    definition_id: row?.definitionId,
     coverage_scope: row?.coverageScope,
     ...row?.dimensions,
     rate_or_level_unit: row?.rateOrLevelUnit,

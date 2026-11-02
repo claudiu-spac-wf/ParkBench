@@ -1,3 +1,15 @@
+import {
+  accountCadvisorDiskSnapshots,
+  cadvisorDiskSnapshotAcquisitionCounts,
+  usesCadvisorDiskSnapshots,
+  CADVISOR_DISK_SNAPSHOT_PROFILE
+} from "./cadvisor-disk-snapshots";
+import { cadvisorSourceAgeSeconds } from "./cadvisor-source-age";
+import {
+  recordProjectionMetadata,
+  currentQueryEvidence,
+  withQueryEvidenceOverrides
+} from "./query-evidence";
 import { normalizeHistoricalPasAliases } from "./historical-summary-input";
 import { Run } from "../../contracts/src/run";
 import {
@@ -98,13 +110,19 @@ export function unavailableSummaryRow(
   };
   row.rowKey = semanticRowKey(row);
   validateSummaryRow(row);
+  recordProjectionMetadata(row);
   return row;
 }
 export function calculateSummaryRow(
   definition: MetricDefinition,
   dimensions: Record<string, string>,
   series: MeasurementSeries[],
-  window: { start: number; end: number }
+  window: { start: number; end: number },
+  sourceEvidence: {
+    reasons?: SummaryReason[];
+    references?: SummaryRow["sourceReferences"];
+    acquisitions?: { expected: number; observed: number };
+  } = {}
 ): SummaryRow {
   const result = measurementStatistics(series, window, {
     type: definition.type,
@@ -120,12 +138,37 @@ export function calculateSummaryRow(
       dimensions
     }
   });
-  return summaryRowFromStatistics(definition, dimensions, result);
+  const sourceReasons = sourceEvidence.reasons ?? [];
+  if (sourceEvidence.acquisitions) {
+    result.coverage.expectedAcquisitions = sourceEvidence.acquisitions.expected;
+    result.coverage.observedAcquisitions = sourceEvidence.acquisitions.observed;
+    for (const statistic of Object.values(result.statistics))
+      if (statistic)
+        statistic.coverage = {
+          ...statistic.coverage,
+          expectedAcquisitions: sourceEvidence.acquisitions.expected,
+          observedAcquisitions: sourceEvidence.acquisitions.observed
+        };
+  }
+  if (sourceReasons.length) {
+    result.coverage.reasons = [...new Set([...result.coverage.reasons, ...sourceReasons])];
+    for (const statistic of Object.values(result.statistics))
+      if (statistic) {
+        if (statistic.value !== null) statistic.status = "partial";
+        statistic.reasons = [...new Set([...statistic.reasons, ...sourceReasons])];
+        statistic.coverage = {
+          ...statistic.coverage,
+          reasons: [...new Set([...statistic.coverage.reasons, ...sourceReasons])]
+        };
+      }
+  }
+  return summaryRowFromStatistics(definition, dimensions, result, sourceEvidence.references);
 }
 export function summaryRowFromStatistics(
   definition: MetricDefinition,
   dimensions: Record<string, string>,
-  result: StatisticsResult
+  result: StatisticsResult,
+  additionalSourceReferences: SummaryRow["sourceReferences"] = []
 ): SummaryRow {
   const row: SummaryRow = {
     rowKey: "",
@@ -138,17 +181,59 @@ export function summaryRowFromStatistics(
     totalUnit: definition.totalUnit,
     statistics: result.statistics,
     coverage: result.coverage,
-    sourceReferences: definition.sourceMetricNames.map((metric) => ({
-      metric,
-      contractVersion: definition.sourceContractVersion
-    })),
+    sourceReferences: [
+      ...definition.sourceMetricNames.map((metric) => ({
+        metric,
+        contractVersion: definition.sourceContractVersion
+      })),
+      ...additionalSourceReferences
+    ],
     catalogOrder: definition.catalogOrder ?? 0
   };
   row.rowKey = semanticRowKey(row);
   validateSummaryRow(row);
+  recordProjectionMetadata(row);
   return row;
 }
 export async function acquireMetric(
+  client: PrometheusClient,
+  selector: string,
+  options: MeasurementBuildOptions,
+  cadence: number,
+  includeExactEnd: boolean,
+  identity?: { definition: MetricDefinition; dimensions: Record<string, string> }
+): Promise<MetricSample[]> {
+  const parent = currentQueryEvidence();
+  if (!parent) return acquireMetricScoped(client, selector, options, cadence, includeExactEnd);
+  const source = selector.match(/(?:\{|,)job="([a-zA-Z0-9_-]+)"/)?.[1] ?? "parkbench-runs";
+  const definition = identity?.definition;
+  const expectedMemberIds =
+    parent.resolveExpectedMembers?.(source, definition?.group ?? "database") ??
+    (source === "cadvisor" || source === "parkbench-run-owned-cadvisor"
+      ? (options.expectedMembers
+          ?.filter((m) => !definition || m.group === definition.group)
+          .map((m) => m.service) ?? [])
+      : definition?.authoritativePublisher === "file_sampler"
+        ? ["file-sampler"]
+        : ["db-observer"]);
+  return withQueryEvidenceOverrides(
+    {
+      source,
+      expectedMemberIds,
+      modeOverride: undefined,
+      definitionId: definition?.definitionId ?? "native.table.batch",
+      semanticVersion: definition?.sourceContractVersion ?? "measurement-summary.v1",
+      dimensions: identity?.dimensions ?? {},
+      requestedStartMs: Date.parse(options.window.start!),
+      requestedEndMs: Date.parse(options.window.end!),
+      nativeCadenceMs:
+        source === "cadvisor" || source === "parkbench-run-owned-cadvisor" ? null : cadence * 1000,
+      scrapeCadenceMs: options.sourceStepSeconds * 1000
+    },
+    () => acquireMetricScoped(client, selector, options, cadence, includeExactEnd)
+  );
+}
+async function acquireMetricScoped(
   client: PrometheusClient,
   selector: string,
   options: MeasurementBuildOptions,
@@ -225,6 +310,7 @@ export async function* buildResourceSummaryRows(
   client: PrometheusClient,
   options: MeasurementBuildOptions
 ): AsyncGenerator<SummaryRow> {
+  const diskInventory = new Map<string, MetricSample[]>();
   const duration = options.window.durationSeconds,
     cadence = options.sourceStepSeconds,
     start = Date.parse(options.window.start ?? "") / 1000,
@@ -271,7 +357,8 @@ export async function* buildResourceSummaryRows(
         `${definition.sourceMetricNames[0]}{${scope}}`,
         options,
         cadence,
-        definition.type === "counter"
+        definition.type === "counter",
+        { definition, dimensions }
       );
       if (options.historical && definition.group !== "platform") {
         const service = definition.group === "database" ? '="database"' : '=~"pas-[0-9]+"';
@@ -280,7 +367,8 @@ export async function* buildResourceSummaryRows(
           `${definition.sourceMetricNames[0]}{job="cadvisor",container_label_parkbench_run_id=${quotePromLabel(options.run.id)},container_label_com_docker_compose_service${service}}`,
           options,
           cadence,
-          definition.type === "counter"
+          definition.type === "counter",
+          { definition, dimensions }
         );
         input.push(...secondary);
         if (input.length > RAW_RESPONSE_SAMPLES)
@@ -315,6 +403,73 @@ export async function* buildResourceSummaryRows(
           )
         : input;
     const accounted = accountResourceSamples(owned, { cadenceSeconds: cadence });
+    let snapshot: ReturnType<typeof accountCadvisorDiskSnapshots> | undefined;
+    if (
+      usesCadvisorDiskSnapshots(options.run) &&
+      /^container_fs_(reads|writes)(_bytes)?_total$/.test(definition.sourceMetricNames[0])
+    ) {
+      let inventory = diskInventory.get(scope);
+      if (!inventory) {
+        try {
+          inventory = await acquireMetric(
+            client,
+            `container_blkio_device_usage_total{${scope}}`,
+            options,
+            cadence,
+            true,
+            { definition, dimensions }
+          );
+          if (options.historical && definition.group !== "platform") {
+            const service = definition.group === "database" ? '="database"' : '=~"pas-[0-9]+"';
+            inventory.push(
+              ...(await acquireMetric(
+                client,
+                `container_blkio_device_usage_total{job="cadvisor",container_label_parkbench_run_id=${quotePromLabel(options.run.id)},container_label_com_docker_compose_service${service}}`,
+                options,
+                cadence,
+                true,
+                { definition, dimensions }
+              ))
+            );
+            if (inventory.length > RAW_RESPONSE_SAMPLES)
+              throw new Error("summary_limit_exceeded:calculation_samples");
+          }
+        } catch {
+          inventory = [];
+        }
+        diskInventory.set(scope, inventory);
+      }
+      snapshot = accountCadvisorDiskSnapshots(accounted.samples, inventory);
+    }
+    const accountingSamples = snapshot?.samples ?? accounted.samples;
+    const accountingGaps = [...accounted.gaps, ...(snapshot?.gaps ?? [])];
+    const sourceReasons = (requiredMembers: ResourceMembership[]): SummaryReason[] =>
+      snapshot?.gaps.some((g) => requiredMembers.some((m) => m.physicalId === g.physicalId))
+        ? ["source_unavailable"]
+        : [];
+    const sourceReferences = snapshot
+      ? [
+          {
+            metric: "container_blkio_device_usage_total",
+            contractVersion: CADVISOR_DISK_SNAPSHOT_PROFILE
+          }
+        ]
+      : [];
+    const sourceEvidence = (requiredMembers: ResourceMembership[]) => ({
+      reasons: sourceReasons(requiredMembers),
+      references: sourceReferences,
+      ...(snapshot && !sourceReasons(requiredMembers).length
+        ? {
+            acquisitions: cadvisorDiskSnapshotAcquisitionCounts(
+              diskInventory.get(scope) ?? [],
+              accounted.samples,
+              requiredMembers,
+              { start, end },
+              cadence
+            )
+          }
+        : {})
+    });
     const make = (
       samples: MetricSample[],
       requiredMembers: ResourceMembership[],
@@ -343,7 +498,9 @@ export async function* buildResourceSummaryRows(
           });
       // Replacements of a physical ID are distinct accounting epochs even if counters rise.
       for (const source of series) {
-        source.acquisitionLagSeconds = options.cadvisorHousekeepingSeconds ?? 0;
+        source.acquisitionLagSeconds = cadvisorSourceAgeSeconds(
+          options.cadvisorHousekeepingSeconds ?? 0
+        );
         const observedMember = requiredMembers.filter((m) => m.physicalId === source.physicalId);
         if (observedMember.length)
           source.activeIntervals = observedMember
@@ -367,17 +524,23 @@ export async function* buildResourceSummaryRows(
         }
       }
       for (const s of series)
-        s.gapTimes = accounted.gaps
+        s.gapTimes = accountingGaps
           .filter((g) => g.physicalId === s.physicalId)
           .map((g) => g.timestamp);
       return series;
     };
-    yield calculateSummaryRow(definition, dimensions, make(accounted.samples, members), {
-      start,
-      end
-    });
+    yield calculateSummaryRow(
+      definition,
+      dimensions,
+      make(accountingSamples, members),
+      {
+        start,
+        end
+      },
+      sourceEvidence(members)
+    );
     for (const replica of replicas) {
-      const samples = accounted.samples.filter(
+      const samples = accountingSamples.filter(
         (s) => (s.labels.service ?? s.labels.container_label_com_docker_compose_service) === replica
       );
       yield calculateSummaryRow(
@@ -388,7 +551,8 @@ export async function* buildResourceSummaryRows(
           members.filter((m) => m.replica === replica),
           expected.filter((m) => m.replica === replica)
         ),
-        { start, end }
+        { start, end },
+        sourceEvidence(members.filter((m) => m.replica === replica))
       );
     }
   }
@@ -419,7 +583,8 @@ export async function* buildResourceSummaryRows(
         `${definition.sourceMetricNames[0]}{run_id=${quotePromLabel(options.run.id)}}`,
         options,
         cadence,
-        false
+        false,
+        { definition, dimensions: { scope: definition.coverageScope } }
       );
     } catch {
       yield unavailableSummaryRow(

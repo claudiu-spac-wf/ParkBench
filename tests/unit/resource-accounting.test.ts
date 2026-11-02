@@ -63,6 +63,51 @@ describe("physical resource accounting", () => {
     ]);
     assert.equal(r.samples.length, 2);
   });
+  it("never treats an unresolved disk device as an aggregate that removes healthy named devices", () => {
+    for (const metric of [
+      "container_fs_reads_bytes_total",
+      "container_fs_writes_bytes_total",
+      "container_fs_reads_total",
+      "container_fs_writes_total"
+    ]) {
+      const named = s(metric, 123, { device: "/dev/sdd" });
+      const unresolved = s(metric, 7);
+      const result = accountResourceSamples([named, unresolved]);
+      assert.equal(
+        result.samples.length,
+        2,
+        `${metric}: source gives two device counters, not a total plus a leaf`
+      );
+      assert.deepEqual(
+        result.samples.map((point) => point.value).sort((a, b) => a - b),
+        [7, 123]
+      );
+      assert.ok(result.samples.some((point) => point.labels.device === "/dev/sdd"));
+      assert.equal(result.gaps.length, 0);
+    }
+    const metric = "container_fs_reads_bytes_total";
+    const many = Array.from({ length: 70 }, (_, i) => s(metric, i, { device: `disk-${i}` }));
+    assert.equal(accountResourceSamples([...many, s(metric, 71)]).samples.length, 71);
+  });
+  it("normalizes empty and omitted device label copies while keeping unknown-device conflicts local", () => {
+    const metric = "container_fs_reads_bytes_total";
+    const equal = accountResourceSamples([
+      s(metric, 7),
+      s(metric, 7, { device: "" }),
+      s(metric, 123, { device: "/dev/sdd" })
+    ]);
+    assert.equal(equal.samples.length, 2);
+    const conflict = accountResourceSamples([
+      s(metric, 7),
+      s(metric, 8, { device: "" }),
+      s(metric, 123, { device: "/dev/sdd" })
+    ]);
+    assert.equal(conflict.gaps.length, 1);
+    assert.deepEqual(
+      conflict.samples.map((point) => point.value),
+      [123]
+    );
+  });
   it("keeps epochs and never interleaves secondary cumulative streams into authoritative intervals", () => {
     const cpu = "container_cpu_usage_seconds_total";
     const r = accountResourceSamples([
@@ -89,6 +134,112 @@ import {
 import { buildResourceSummaryRows } from "../../packages/metrics/src/measurement-summary";
 import { MemoryPrometheusClient } from "../../packages/metrics/src/prometheus-client";
 import { summaryRun } from "../helpers/summary";
+
+it("uses the pinned cAdvisor jitter age at edges while preserving observed counts and real gaps", async () => {
+  // v0.55.1 schedules a 1s base interval with up to another 1s of jitter.
+  // The real control's 6.334s tail is within 5s scrape + 2s source age.
+  const times = Array.from({ length: 35 }, (_, i) => 3.666 + 5 * i);
+  const points = times.flatMap((t) => [
+    s("container_cpu_usage_seconds_total", 2 * t, { cpu: "total" }, t),
+    s("container_memory_working_set_bytes", 64, {}, t),
+    s("container_fs_reads_bytes_total", 3 * t, { device: "/dev/sdd" }, t)
+  ]);
+  const rows = async (samples: any[], end = 180, missingMember = false) => {
+    const values = [];
+    for await (const row of buildResourceSummaryRows(new MemoryPrometheusClient(samples), {
+      run: summaryRun("r"),
+      memberships: ["abc", ...(missingMember ? ["missing"] : [])].map((id) => ({
+        group: "database",
+        service: "database",
+        physicalId: "/docker/" + id,
+        epoch: "birth",
+        activeIntervals: [{ start: 0, end }],
+        sourceJob: "parkbench-run-owned-cadvisor",
+        sourceStepSeconds: 5
+      })),
+      expectedMembers: [{ group: "database", service: "database" }],
+      queries: [],
+      sourceStepSeconds: 5,
+      cadvisorHousekeepingSeconds: 1,
+      window: {
+        start: new Date(0).toISOString(),
+        end: new Date(end * 1000).toISOString(),
+        durationSeconds: end,
+        state: "completed"
+      }
+    }))
+      if (
+        row.group === "database" &&
+        ["cpu.usage", "memory.used", "disk.read.bytes"].includes(row.definitionId)
+      )
+        values.push(row);
+    return values;
+  };
+  const complete = await rows(points);
+  assert.equal(complete.length, 3);
+  for (const row of complete) {
+    assert.equal(row.coverage.missingSeconds, 0);
+    assert.equal(row.coverage.expectedAcquisitions, 36);
+    assert.equal(row.coverage.observedAcquisitions, 35);
+    assert.ok(Math.abs(row.coverage.observedSeconds - 170) < 1e-8);
+    assert.ok(Math.abs(row.coverage.estimatedEdgeSeconds - 10) < 1e-8);
+  }
+  assert.ok(
+    Math.abs(
+      complete.find((r) => r.definitionId === "cpu.usage")!.statistics.average.value! - 200
+    ) < 1e-8
+  );
+  assert.ok(
+    Math.abs(
+      complete.find((r) => r.definitionId === "disk.read.bytes")!.statistics.total!.value! - 540
+    ) < 1e-8
+  );
+  assert.equal(
+    complete.find((r) => r.definitionId === "memory.used")!.statistics.average.value,
+    64
+  );
+  for (const row of await rows(points.filter((p) => p.timestamp !== times[15])))
+    assert.ok(row.coverage.missingSeconds >= 9.999);
+  for (const row of await rows(points, 181)) assert.ok(row.coverage.missingSeconds > 7);
+  for (const row of await rows(points, 180, true)) assert.equal(row.coverage.missingSeconds, 180);
+});
+
+it("saved disk totals retain the complete named device alongside a late unresolved device without filling its gap", async () => {
+  const metric = "container_fs_reads_bytes_total";
+  const points = [0, 5, 10, 15, 20].map((t) => s(metric, 2 * t, { device: "/dev/sdd" }, t));
+  points.push(...[10, 15, 20].map((t) => s(metric, 100 + t - 10, {}, t)));
+  const rows = [];
+  for await (const row of buildResourceSummaryRows(new MemoryPrometheusClient(points), {
+    run: summaryRun("r"),
+    memberships: [
+      {
+        group: "database",
+        service: "database",
+        physicalId: "/docker/abc",
+        epoch: "birth",
+        activeIntervals: [{ start: 0, end: 20 }],
+        sourceJob: "parkbench-run-owned-cadvisor",
+        sourceStepSeconds: 5
+      }
+    ],
+    expectedMembers: [{ group: "database", service: "database" }],
+    queries: [],
+    sourceStepSeconds: 5,
+    window: {
+      start: new Date(0).toISOString(),
+      end: new Date(20000).toISOString(),
+      durationSeconds: 20,
+      state: "completed"
+    }
+  }))
+    if (row.group === "database" && row.definitionId === "disk.read.bytes") rows.push(row);
+  assert.equal(rows.length, 1);
+  // Forty actual bytes from the complete device plus ten observed bytes from
+  // the late device; its initial counter value100 is not a measured delta.
+  assert.equal(rows[0].statistics.total?.value, 50);
+  assert.equal(rows[0].statistics.total?.status, "partial");
+  assert.ok(rows[0].coverage.missingSeconds > 0);
+});
 
 it("retains an unresolved configured replica as missing even when its CPU samples exist", async () => {
   const run = {

@@ -1,3 +1,10 @@
+import { runtimeSecretValues } from "../../../../packages/contracts/src/redaction";
+import {
+  captureChartEvidence,
+  boundedChartHeader,
+  ChartQueryEvidence,
+  recordChartDecision
+} from "../measurement-diagnostics/chart-evidence";
 import { sumRunTotals } from "./run-totals";
 import type { ParameterSnapshotQueries } from "./parameter-snapshots";
 import type { SavedSummaryQueries } from "./summary-results";
@@ -25,6 +32,7 @@ export interface GrafanaDatasourceDeps {
   parameterSnapshots?: ParameterSnapshotQueries;
   savedSummaries?: SavedSummaryQueries;
   nativeDiagnosticsLimits?: Partial<NativeLimits>;
+  measurementEvidence?: (evidence: ChartQueryEvidence) => void;
   prometheusUrl: string;
   timelines: RunTimelineSource;
   fetch?: typeof fetch;
@@ -47,6 +55,7 @@ interface Outcome {
   body: unknown;
   mode?: Mode;
   runs?: string[];
+  evidence?: ChartQueryEvidence;
   errorClass?: ErrorClass;
 }
 
@@ -130,6 +139,7 @@ function requestParams(request: any): URLSearchParams {
 }
 
 export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
+  const diagnosticHeaderSecrets = runtimeSecretValues();
   const nativeDiagnostic = createNativeDiagnostics({
     prometheusUrl: deps.prometheusUrl,
     fetch: deps.fetch,
@@ -141,6 +151,7 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
   const log = deps.log ?? ((line: string) => console.log(line));
 
   async function upstream(path: string, params: URLSearchParams, method: "GET" | "POST" = "POST") {
+    const requestMonotonicStart = performance.now();
     const url = `${deps.prometheusUrl.replace(/\/$/, "")}/api/v1/${path}`;
     let response: Response;
     try {
@@ -163,6 +174,7 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
         timeout ? "upstream_timeout" : "upstream_error"
       );
     }
+    const bodyMonotonicStart = performance.now();
     const chunks: Uint8Array[] = [];
     let bytes = 0;
     if (response.body)
@@ -184,6 +196,17 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
       body = { status: "error", errorType: "internal", error: text.slice(0, 500) };
     }
     if (!response.ok) throw new UpstreamError(response.status, body, "upstream_error");
+    recordChartDecision({
+      stage: "UPSTREAM",
+      outcome: "SUCCEEDED",
+      counts: {
+        requestCount: 1,
+        responseBytes: bytes,
+        requestDurationMs: performance.now() - requestMonotonicStart,
+        bodyReadMs: performance.now() - bodyMonotonicStart
+      },
+      reasonCodes: ["bounded_upstream_response"]
+    });
     return body as any;
   }
 
@@ -200,8 +223,54 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
   }
 
   async function dataQuery(params: URLSearchParams, instant: boolean): Promise<Outcome> {
-    const expr = params.get("query") ?? "";
     const current = now();
+    const captured = await captureChartEvidence(() => dataQueryScoped(params, instant, current));
+    const outcome = captured.result;
+    const start = instant
+      ? toMs(params.get("time"), current)
+      : toMs(params.get("start"), current - 3600000);
+    const end = instant ? start : toMs(params.get("end"), current);
+    const scope = analyzeRunScope(params.get("query") ?? "");
+    let evaluationPointCount = 0;
+    const data = (outcome.body as any)?.data?.result;
+    if (Array.isArray(data))
+      for (const series of data)
+        evaluationPointCount += series.values?.length ?? (series.value ? 1 : 0);
+    const evidence: ChartQueryEvidence = {
+      contractVersion: "measurement-chart-query.v1",
+      queryId: captured.queryId,
+      runIds: outcome.runs ?? [],
+      mode: outcome.mode ?? "unscoped",
+      queryMode:
+        scope.kind === "synthetic" && scope.metric === "parkbench_saved_summary"
+          ? "SAVED_SUMMARY"
+          : scope.kind === "synthetic" &&
+              ["parkbench_db_diagnostic", "parkbench_table_rank"].includes(scope.metric)
+            ? "NATIVE_COUNTER_WINDOW"
+            : "EVALUATION_GRID",
+      requestedStartMs: start,
+      requestedEndMs: end,
+      stepMs: instant ? null : stepMs(params.get("step")),
+      durationMs: captured.durationMs,
+      seriesCount: Array.isArray(data) ? data.length : 0,
+      evaluationPointCount,
+      decisions: captured.decisions,
+      incomplete: captured.incomplete,
+      droppedDecisionKinds: captured.droppedDecisionKinds
+    };
+    try {
+      deps.measurementEvidence?.(evidence);
+    } catch {
+      evidence.incomplete = true;
+    }
+    return { ...outcome, evidence };
+  }
+  async function dataQueryScoped(
+    params: URLSearchParams,
+    instant: boolean,
+    current: number
+  ): Promise<Outcome> {
+    const expr = params.get("query") ?? "";
     const start = instant
       ? toMs(params.get("time"), current)
       : toMs(params.get("start"), current - 3600000);
@@ -237,7 +306,8 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
       }
       const totalDeadline = Date.now() + (deps.nativeDiagnosticsLimits?.deadlineMs ?? 30000);
       const checkTotal = () => {
-        if (Date.now() >= totalDeadline) throw new NativeBudgetError("native_query_deadline_exceeded");
+        if (Date.now() >= totalDeadline)
+          throw new NativeBudgetError("native_query_deadline_exceeded");
       };
       const runIds = scope.runIds;
       const timelines = runIds === undefined ? deps.timelines.list() : timelinesFor(runIds);
@@ -516,6 +586,18 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
       };
     if (mode === "clock") {
       const timeline = timelinesFor(scope.runIds)[0];
+      recordChartDecision({
+        stage: "ALIGNMENT",
+        outcome: "SUCCEEDED",
+        runId: timeline?.runId,
+        requestedStartMs: start,
+        requestedEndMs: end,
+        effectiveStartMs: start,
+        effectiveEndMs: end,
+        stepMs: step,
+        shiftMs: 0,
+        reasonCodes: ["clock_axis"]
+      });
       const phaseQuery = timeline ? continuousPhaseQuery(expr, timeline) : undefined;
       const request = new URLSearchParams(params);
       if (phaseQuery) request.set("query", phaseQuery.expression);
@@ -532,6 +614,18 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
     for (const timeline of timelinesFor(scope.runIds)) {
       if (timeline.measurementStart === undefined) continue;
       const shift = timeline.measurementStart - ALIGNED_ANCHOR_MS;
+      recordChartDecision({
+        stage: "ALIGNMENT",
+        outcome: "SUCCEEDED",
+        runId: timeline.runId,
+        requestedStartMs: start,
+        requestedEndMs: end,
+        effectiveStartMs: start + shift,
+        effectiveEndMs: end + shift,
+        stepMs: step,
+        shiftMs: shift,
+        reasonCodes: ["measurement_start_alignment"]
+      });
       const narrowed = new URLSearchParams(params);
       const phaseQuery = continuousPhaseQuery(
         narrowToRun(expr, scope.runMatchers, timeline.runId),
@@ -694,6 +788,11 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
         }
       )
     );
+    if (outcome.evidence)
+      reply.header(
+        "x-parkbench-query-evidence",
+        boundedChartHeader(outcome.evidence, diagnosticHeaderSecrets)
+      );
     reply.code(outcome.status);
     reply.header("content-type", "application/json");
     return outcome.body;

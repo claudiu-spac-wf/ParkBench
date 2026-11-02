@@ -9,6 +9,7 @@ export const ALLOWED_PARAMETERS: Record<
   "workload.seed": { type: "number", min: 0, max: 4294967295 },
   "database.cpuLimit": { type: "number", min: 0.1, max: 64 },
   "pas.cpuLimit": { type: "number", min: 0.1, max: 64 },
+  "storage.databaseIopsPreset": { type: "string" },
   "network.databaseLatencyMs": { type: "number", min: 0, max: 1000 }
 };
 

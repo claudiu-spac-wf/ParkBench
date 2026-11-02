@@ -52,6 +52,10 @@ class SmokePrometheusClient implements PrometheusClient {
     this.remote = new HttpPrometheusClient(baseUrl);
   }
 
+  nativeScrapeTiming(...args: Parameters<HttpPrometheusClient["nativeScrapeTiming"]>) {
+    return this.remote.nativeScrapeTiming(...args);
+  }
+
   waitForRunTargets(...args: Parameters<HttpPrometheusClient["waitForRunTargets"]>) {
     return this.remote.waitForRunTargets(...args);
   }
@@ -142,7 +146,6 @@ const smokePrometheus = fake
   : args.openedge && smokeObserverMetrics
     ? new SmokePrometheusClient(config.prometheusUrl, smokeObserverMetrics)
     : undefined;
-let smokeMetricsTarget: string;
 const platform = createPlatform(
   smokeConfig,
   fake
@@ -162,7 +165,6 @@ const platform = createPlatform(
     : {
         ...(smokePrometheus ? { prometheus: smokePrometheus } : {}),
         ...(smokeObserverMetrics ? { observerMetrics: smokeObserverMetrics } : {}),
-        runCAdvisorTarget: () => smokeMetricsTarget,
         targetDiscoveryFileName: `standalone-smoke-${process.pid}-${Date.now()}.json`,
         ...(process.env.PARKBENCH_SMOKE_SKIP_DISK_IO === "1" ? { requiredDiskIo: false } : {})
       }
@@ -215,21 +217,7 @@ async function main() {
     if (args.openedge) validateLiveManifest(config.openedge.imageManifestPath);
     await platform.startupRecovery;
     if (args.openedge) {
-      const address = await app.listen({ host: "0.0.0.0", port: 0 });
-      const port = new URL(address).port;
-      const hostAddresses = Object.values(
-        os.networkInterfaces() as Record<
-          string,
-          Array<{ family: string; internal: boolean; address: string }>
-        >
-      )
-        .flat()
-        .filter((address) => address?.family === "IPv4" && !address.internal)
-        .map((address) => address!.address);
-      const host =
-        process.env.PARKBENCH_SMOKE_METRICS_HOST ??
-        (hostAddresses.length === 1 ? hostAddresses[0] : "host.docker.internal");
-      smokeMetricsTarget = `${host}:${port}`;
+      await app.listen({ host: "0.0.0.0", port: 0 });
     }
     // Standalone smoke owns its isolated coordinator. Use its validated command
     // interface; the interactive HTTP API accepts reviewed disk-scenario matrices.

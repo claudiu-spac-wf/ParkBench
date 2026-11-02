@@ -19,6 +19,8 @@ export interface CredentialReferenceOption {
 }
 
 export interface UiOptionsV1 {
+  databaseIopsCatalog?: typeof import("./database-iops").DATABASE_IOPS_CATALOG;
+  databaseSetup?: typeof import("./database-setup").DATABASE_SETUP_DEFINITIONS;
   contractVersion: typeof UI_OPTIONS_CONTRACT_VERSION;
   databaseParameters?: import("./database-parameter-options").DatabaseParameterCapabilities;
   /** Platform run parameters such as Database Latency (feature 016). */
@@ -163,6 +165,8 @@ export interface MatrixDimension {
 }
 
 export interface MatrixPreviewRequest {
+  measurementDiagnostics?: import("./measurement-diagnostics").MeasurementDiagnosticsConfig;
+  databaseSetup?: import("./database-setup").DatabaseSetup;
   runName: string;
   displayName?: string;
   scenario: { id: string; version: string };
@@ -174,6 +178,8 @@ export interface MatrixPreviewRequest {
 }
 
 export interface MatrixPreviewRequestV2 {
+  measurementDiagnostics?: import("./measurement-diagnostics").MeasurementDiagnosticsConfig;
+  databaseSetup?: import("./database-setup").DatabaseSetup;
   contractVersion: typeof EXPERIMENT_SCHEDULE_CONTRACT_VERSION;
   runName: string;
   scenarioSourceId: string;
@@ -184,6 +190,9 @@ export interface MatrixPreviewRequestV2 {
 }
 
 export interface MatrixCell {
+  databaseIops?: import("./database-iops").DatabaseIopsCondition;
+  measurementDiagnostics?: import("./measurement-diagnostics").MeasurementDiagnosticsConfig;
+  databaseSetup?: import("./database-setup").DatabaseSetup;
   runName?: string;
   ordinal: number;
   values: Record<string, string | number | boolean>;
@@ -218,6 +227,9 @@ export type QueueState =
   | "INTERRUPTED";
 
 export interface ControlRunView {
+  databaseIops?: import("./database-iops").DatabaseIopsCondition;
+  databaseIopsEvidence?: ReturnType<typeof import("./database-iops").databaseIopsSummary>;
+  databaseSetup?: import("./database-setup").DatabaseSetupEvidence;
   databaseRunControlEvidence?: Record<string, unknown>;
   id: string;
   name?: string;

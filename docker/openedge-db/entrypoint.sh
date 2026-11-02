@@ -18,6 +18,10 @@ case "${PARKBENCH_DATABASE_READ_ONLY:-false}" in
 esac
 
 database_dir="$PARKBENCH_DB_WORKDIR/$DB_NAME"
+# A setup attempt is single-use, including failed preparation. Claim before any DB mutation.
+if [ -n "${PARKBENCH_SETUP_ATTEMPT_ID:-}" ]; then
+  /usr/local/lib/parkbench/setup/run-setup.sh claim
+fi
 mkdir -p "$database_dir"
 supervisor_pid=
 broker_started=false
@@ -51,6 +55,14 @@ if [ -n "${PARKBENCH_DATABASE_RUN_CONTROLS:-}" ]; then
   /usr/local/bin/parkbench-db-prepare-controls.sh "$database_dir" "$DB_NAME"
 fi
 
+if [ -n "${PARKBENCH_SETUP_ATTEMPT_ID:-}" ]; then
+  cd "$database_dir"
+  # Native modifying utilities count as broker use for BI preparation safeguards.
+  printf '%s\n' "${PARKBENCH_RUN_ID:-legacy-owned}" > .parkbench-broker-used
+  /usr/local/lib/parkbench/setup/run-setup.sh execute
+  /usr/local/lib/parkbench/setup/run-setup.sh wait
+fi
+
 # The upstream init.sh recreates a sample database and its startup script only
 # consumes /deploy/scripts/config/startup.pf. Start the run database directly so
 # the reviewed run settings reach the primary broker.
@@ -78,6 +90,9 @@ rm -f .parkbench-controls-ready
 if [ -n "${PARKBENCH_DATABASE_RUN_CONTROLS:-}" ]; then printf '%s\n' "${PARKBENCH_RUN_ID:-legacy-owned}" > .parkbench-broker-used; fi
 broker_started=true
 proserve "$@"
+if [ -n "${PARKBENCH_SETUP_ATTEMPT_ID:-}" ]; then
+  printf '%s:%s\n' "$PARKBENCH_RUN_ID" "$PARKBENCH_SETUP_ATTEMPT_ID" > "${PARKBENCH_SETUP_OUTPUT:-/run/parkbench/setup-output}/normal-started"
+fi
 attempt=0
 until pgrep -x _mprosrv >/dev/null 2>&1; do
   attempt=$((attempt + 1))

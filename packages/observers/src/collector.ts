@@ -1,3 +1,5 @@
+import { measurementSlotId } from "../../contracts/src/measurement-diagnostics";
+import { emitMeasurementEvidence } from "./measurement-evidence";
 import { MetricSample } from "../../contracts/src/metrics";
 import { ObserverDeclaration } from "../../contracts/src/scenario";
 import { ObserverAdapter, ObserverContext, observerLabels } from "./adapter";
@@ -38,6 +40,9 @@ export class ObserverCollector {
       return new ObserverRuntime(declaration, adapter);
     });
   }
+
+  /** Bounded aggregate progress remains available when a phase throws. No raw samples. */
+  progress(): ObserverCollectionResult[] { return structuredClone([...this.counts.values()]); }
 
   async latchInventory(context: ObserverContext) {
     const databases = this.runtimes.filter((r) => r.declaration.kind === "openedge_db_v1");
@@ -106,6 +111,7 @@ export class ObserverCollector {
   ): Promise<ObserverCollectionResult[]> {
     // No upper clamp: the coordinator and the load generator's phase clock follow the
     // scenario's full phase lengths (up to the schema's 86400 s), so the collector must too.
+    const phaseMonotonicStart = performance.now();
     const durationMs = Math.max(0, durationSeconds * 1000 * scale);
     // Retain the historical grace period for callers without a shared schedule.
     // Scheduled runs use the exact adjacent deadline and stable scrape targets.
@@ -115,6 +121,18 @@ export class ObserverCollector {
     const startMs = timing?.startMs ?? Date.now();
     const phaseStartedAt = startMs / 1000;
     for (const runtime of this.runtimes) {
+      emitMeasurementEvidence(context, "SCHEDULE", "SUCCEEDED", {
+        observerId: runtime.declaration.id,
+        scheduledAtMs: startMs,
+        counts: {
+          expectedSlots: expectedIntervals(
+            durationSeconds,
+            runtime.declaration.samplingIntervalSeconds,
+            scale
+          )
+        },
+        reasonCodes: ["phase_schedule"]
+      });
       const key = `${runtime.declaration.id}:${context.phase}`;
       if (!this.counts.has(key))
         this.counts.set(key, {
@@ -139,23 +157,110 @@ export class ObserverCollector {
       )
     );
     let nextSampleAt = startMs;
+    const skipElapsedSlots = (now: number) => {
+      // A late fresh capture can still serve the active slot. Skip only slots
+      // whose entire interval elapsed; never manufacture captures for those slots.
+      if (nextSampleAt + intervalMs <= now) {
+        const missedIntervals = Math.floor((now - nextSampleAt) / intervalMs);
+        const skippedStartMs = nextSampleAt;
+        nextSampleAt += missedIntervals * intervalMs;
+        for (const runtime of this.runtimes) {
+          const cadenceMs = runtime.declaration.samplingIntervalSeconds * 1000;
+          const firstOrdinal = Math.max(0, Math.ceil((skippedStartMs - startMs) / cadenceMs));
+          const lastOrdinal =
+            Math.ceil((Math.min(nextSampleAt, deadline) - startMs) / cadenceMs) - 1;
+          if (lastOrdinal >= firstOrdinal)
+            emitMeasurementEvidence(context, "SCHEDULE", "SKIPPED", {
+              observerId: runtime.declaration.id,
+              slotId: context.measurementEvidence
+                ? measurementSlotId({
+                    runId: context.runId,
+                    diagnosticAttemptId: context.measurementEvidence.diagnosticAttemptId,
+                    phase: context.phase,
+                    observerId: runtime.declaration.id,
+                    slotRuleVersion: "phase-start.v1",
+                    cadenceMs,
+                    ordinal: firstOrdinal
+                  })
+                : undefined,
+              scheduledAtMs: startMs + firstOrdinal * cadenceMs,
+              skippedOrdinalStart: firstOrdinal,
+              skippedOrdinalEnd: lastOrdinal,
+              counts: { skippedSlots: lastOrdinal - firstOrdinal + 1 },
+              reasonCodes: ["collection_overran_schedule"]
+            });
+        }
+      }
+    };
     let first = true;
     do {
       if (shouldStop()) break;
       if (timing && Date.now() >= deadline) break;
-      await checkInfrastructure?.();
+      skipElapsedSlots(Date.now());
+      if (checkInfrastructure) {
+        const infrastructureStart = Date.now(),
+          monotonicStart = performance.now();
+        emitMeasurementEvidence(context, "INFRASTRUCTURE", "STARTED", {
+          startedAtMs: infrastructureStart,
+          scheduledAtMs: nextSampleAt
+        });
+        try {
+          await checkInfrastructure();
+          emitMeasurementEvidence(context, "INFRASTRUCTURE", "SUCCEEDED", {
+            startedAtMs: infrastructureStart,
+            finishedAtMs: Date.now(),
+            scheduledAtMs: nextSampleAt,
+            durationMs: performance.now() - monotonicStart
+          });
+        } catch (error) {
+          emitMeasurementEvidence(context, "INFRASTRUCTURE", "FAILED", {
+            startedAtMs: infrastructureStart,
+            finishedAtMs: Date.now(),
+            scheduledAtMs: nextSampleAt,
+            durationMs: performance.now() - monotonicStart,
+            reasonCodes: ["infrastructure_check_failed"]
+          });
+          throw error;
+        }
+      }
+      // Infrastructure may itself cross a slot or phase boundary.
+      skipElapsedSlots(Date.now());
+      if (timing && Date.now() >= deadline) break;
       await Promise.all(
-        this.runtimes.map((runtime) => this.sample(runtime, context, skipRequired, phaseStartedAt))
+        this.runtimes.map((runtime) => {
+          const cadenceMs = runtime.declaration.samplingIntervalSeconds * 1000;
+          const ordinal = (nextSampleAt - startMs) / cadenceMs;
+          const slotId =
+            context.measurementEvidence && Number.isSafeInteger(ordinal)
+              ? measurementSlotId({
+                  runId: context.runId,
+                  diagnosticAttemptId: context.measurementEvidence.diagnosticAttemptId,
+                  phase: context.phase,
+                  observerId: runtime.declaration.id,
+                  slotRuleVersion: "phase-start.v1",
+                  cadenceMs,
+                  ordinal
+                })
+              : undefined;
+          const sampledContext = context.measurementEvidence
+            ? {
+                ...context,
+                measurementEvidence: {
+                  ...context.measurementEvidence,
+                  slotId,
+                  scheduledAtMs: nextSampleAt
+                }
+              }
+            : context;
+          return this.sample(runtime, sampledContext, skipRequired, phaseStartedAt);
+        })
       );
       first = false;
       if (shouldStop()) break;
       if (durationMs === 0) break;
       nextSampleAt += intervalMs;
       const now = Date.now();
-      if (nextSampleAt < now) {
-        const missedIntervals = Math.floor((now - nextSampleAt) / intervalMs) + 1;
-        nextSampleAt += missedIntervals * intervalMs;
-      }
+      skipElapsedSlots(now);
       // Schedule sample starts against the phase clock. Scrape work itself
       // must not add extra delay to every configured sampling interval.
       const wait = Math.min(Math.max(0, nextSampleAt - now), Math.max(0, deadline - now));
@@ -174,6 +279,13 @@ export class ObserverCollector {
           Date.now() / 1000 - count.gapStartedAt
         );
     }
+    emitMeasurementEvidence(context, "SCHEDULE", shouldStop() ? "CANCELLED" : "SUCCEEDED", {
+      scheduledAtMs: startMs,
+      finishedAtMs: Date.now(),
+      durationMs: performance.now() - phaseMonotonicStart,
+      counts: { plannedPhaseDurationMs: Math.max(0, deadline - startMs) },
+      reasonCodes: ["phase_collection_finished"]
+    });
     return [...this.counts.values()].filter((value) => value.phase === context.phase);
   }
 
@@ -201,12 +313,58 @@ export class ObserverCollector {
     count.attempts += 1;
     const skipped = skipRequired.has(runtime.declaration.id) && runtime.declaration.required;
     let observed = false;
+    const dispatchStart = Date.now(),
+      monotonicDispatchStart = performance.now();
+    const parentEventId = emitMeasurementEvidence(
+      context,
+      "DISPATCH",
+      skipped ? "SKIPPED" : "STARTED",
+      { observerId: runtime.declaration.id, startedAtMs: dispatchStart }
+    );
+    const sampledContext = context.measurementEvidence
+      ? { ...context, measurementEvidence: { ...context.measurementEvidence, parentEventId } }
+      : context;
     if (!skipped) {
       try {
-        const samples = await sampleWithRetry(runtime, context);
+        const samples = await sampleWithRetry(runtime, sampledContext);
         if (!Array.isArray(samples)) throw new Error("observer_sample_batch_must_be_array");
         const valid = samples.filter((sample) => validSample(sample, context));
         const invalid = samples.filter((sample) => !validSample(sample, context));
+        if (context.measurementEvidence) {
+          // Metric-family counts supplement batch health; they never assert that
+          // every dimension/statistic in the independent inventory is present.
+          let omittedDiagnosticKeys = 0;
+          const families = new Map<string, { validSamples: number; rejectedSamples: number }>();
+          for (const sample of samples) {
+            const metricName = sample?.metricName;
+            if (typeof metricName !== "string" || metricName.length > 256) continue;
+            if (!families.has(metricName) && families.size >= 128) {
+              omittedDiagnosticKeys++;
+              continue;
+            }
+            const family = families.get(metricName) ?? { validSamples: 0, rejectedSamples: 0 };
+            if (validSample(sample, context)) family.validSamples++;
+            else family.rejectedSamples++;
+            families.set(metricName, family);
+          }
+          if (omittedDiagnosticKeys)
+            emitMeasurementEvidence(sampledContext, "DIAGNOSTIC_WRITE", "REJECTED", {
+              counts: { droppedDiagnosticKeys: omittedDiagnosticKeys },
+              reasonCodes: ["diagnostic_family_cardinality_exceeded"]
+            });
+          for (const [sourceKey, counts] of families)
+            emitMeasurementEvidence(
+              sampledContext,
+              "PHASE_FILTER",
+              counts.validSamples ? "SUCCEEDED" : "REJECTED",
+              {
+                observerId: runtime.declaration.id,
+                sourceKey,
+                counts,
+                reasonCodes: ["metric_family_validation"]
+              }
+            );
+        }
         const parseDiagnostics =
           (samples as typeof samples & { diagnostics?: unknown[] }).diagnostics ?? [];
         if (invalid.length || parseDiagnostics.length) {
@@ -226,12 +384,37 @@ export class ObserverCollector {
             }))
           });
         }
+        emitMeasurementEvidence(sampledContext, "PHASE_FILTER", "SUCCEEDED", {
+          observerId: runtime.declaration.id,
+          counts: {
+            returnedSamples: samples.length,
+            validSamples: valid.length,
+            rejectedSamples: invalid.length
+          },
+          reasonCodes: ["collector_validation"]
+        });
         observed = valid.length > 0;
         if (
           valid.length &&
           runtime.declaration.configuration?.authoritativePublisher !== "endpoint"
-        )
+        ) {
           this.sink?.append(valid);
+          emitMeasurementEvidence(
+            sampledContext,
+            "BUFFER_APPEND",
+            this.sink ? "SUCCEEDED" : "SKIPPED",
+            {
+              observerId: runtime.declaration.id,
+              counts: { validSamples: valid.length },
+              reasonCodes: [this.sink ? "controller_publisher" : "buffer_sink_unavailable"]
+            }
+          );
+        } else if (valid.length)
+          emitMeasurementEvidence(sampledContext, "BUFFER_APPEND", "SKIPPED", {
+            observerId: runtime.declaration.id,
+            counts: { validSamples: valid.length },
+            reasonCodes: ["authoritative_endpoint_publisher"]
+          });
         if (observed) count.observed += 1;
         for (const diagnostic of runtime.diagnostics.splice(0)) addDiagnostic(count, diagnostic);
       } catch (error) {
@@ -245,6 +428,19 @@ export class ObserverCollector {
         });
       }
     }
+    emitMeasurementEvidence(
+      sampledContext,
+      "DISPATCH",
+      skipped ? "SKIPPED" : observed ? "SUCCEEDED" : "FAILED",
+      {
+        observerId: runtime.declaration.id,
+        startedAtMs: dispatchStart,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - monotonicDispatchStart,
+        counts: { observedBatches: observed ? 1 : 0 },
+        reasonCodes: observed ? ["batch_has_valid_samples"] : ["no_valid_samples"]
+      }
+    );
     const now = Date.now() / 1000;
     if (observed) {
       const nowIso = new Date(now * 1000).toISOString();
@@ -333,10 +529,44 @@ export class ObserverCollector {
 async function sampleWithRetry(runtime: ObserverRuntime, context: ObserverContext) {
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
+    let attemptContext = context.measurementEvidence
+      ? {
+          ...context,
+          measurementEvidence: { ...context.measurementEvidence, controllerAttempt: attempt + 1 }
+        }
+      : context;
+    const startedAtMs = Date.now(),
+      monotonicStart = performance.now();
+    const attemptId = emitMeasurementEvidence(attemptContext, "DISPATCH", "STARTED", {
+      observerId: runtime.declaration.id,
+      controllerAttempt: attempt + 1,
+      startedAtMs,
+      reasonCodes: ["controller_attempt"]
+    });
+    if (attemptContext.measurementEvidence)
+      attemptContext = {
+        ...attemptContext,
+        measurementEvidence: { ...attemptContext.measurementEvidence, parentEventId: attemptId }
+      };
     try {
-      return await runtime.sample(context);
+      const result = await runtime.sample(attemptContext);
+      emitMeasurementEvidence(attemptContext, "DISPATCH", "SUCCEEDED", {
+        observerId: runtime.declaration.id,
+        startedAtMs,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - monotonicStart,
+        reasonCodes: ["controller_attempt"]
+      });
+      return result;
     } catch (error) {
       lastError = error;
+      emitMeasurementEvidence(attemptContext, "DISPATCH", "FAILED", {
+        observerId: runtime.declaration.id,
+        startedAtMs,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - monotonicStart,
+        reasonCodes: ["controller_attempt"]
+      });
       if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }

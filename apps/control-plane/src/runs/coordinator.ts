@@ -1,3 +1,38 @@
+import {
+  DatabaseIopsEvidence,
+  validateDatabaseIopsEvidence,
+  databaseIopsSummary,
+  acceptIopsTermination
+} from "../../../../packages/contracts/src/database-iops";
+import { artifactRecord } from "../artifacts/manifest";
+import {
+  DatabaseIopsError,
+  pendingDatabaseIops,
+  resolveDatabaseIops,
+  validateDatabaseIopsCondition,
+  DATABASE_IOPS_PARAMETER
+} from "../../../../packages/contracts/src/database-iops";
+import {
+  accountCadvisorDiskSnapshots,
+  usesCadvisorDiskSnapshots
+} from "../../../../packages/metrics/src/cadvisor-disk-snapshots";
+import { accountResourceSamples } from "../../../../packages/metrics/src/resource-accounting";
+import { cadvisorSourceAgeSeconds } from "../../../../packages/metrics/src/cadvisor-source-age";
+import {
+  MeasurementDiagnosticsService,
+  RunMeasurementDiagnostics
+} from "../measurement-diagnostics/evidence";
+import { withQueryEvidence } from "../../../../packages/metrics/src/query-evidence";
+import {
+  DIAGNOSTIC_DEFAULTS,
+  DiagnosticsOperatorSettings,
+  FrozenDiagnosticsConfig,
+  freezeDiagnosticsConfig,
+  normalizeMeasurementDiagnostics
+} from "../../../../packages/contracts/src/measurement-diagnostics";
+import { compileDatabaseSetup } from "../database-setup/compile-plan";
+import { persistSetupEvidence, reconcileSetupResources } from "../database-setup/evidence";
+import { pendingSetupEvidence } from "../../../../packages/contracts/src/database-setup";
 import { HostDispatcher } from "../execution/host-dispatcher";
 import { resolveFreshStartupFiles } from "../../../../packages/compose-runner/src/input-checks";
 import { canonicalParameterValues } from "../../../../packages/contracts/src/matrix-expansion";
@@ -82,7 +117,10 @@ import {
 import { shouldStopMatrix } from "../experiments/failure-policy";
 import { aggregateExperimentStatus } from "../experiments/status";
 import { classifyLoadgenExitCode } from "./failure-classifier";
-import { composeProjectName } from "../../../../packages/compose-runner/src/project-name";
+import {
+  composeProjectName,
+  runServiceAlias
+} from "../../../../packages/compose-runner/src/project-name";
 import { MetricSample } from "../../../../packages/contracts/src/metrics";
 import type { Coverage } from "../../../../packages/contracts/src/metric-definitions";
 import { nextRunNames } from "./run-numbering";
@@ -123,17 +161,22 @@ export interface RunBehavior {
 }
 
 export interface RunCoordinatorOptions {
+  onDatabaseIopsEvidence?: (run: Run, evidence: ReturnType<typeof databaseIopsSummary>) => void;
+  measurementRetention?: (requestedBytes: number) => Promise<void>;
+  measurementDiagnostics?: DiagnosticsOperatorSettings;
+  scriptsRoot?: string;
   testMode?: boolean;
   orchestrator: RunOrchestrator;
   observerFactory: ObserverFactory;
   phaseScale: number;
   requiredDiskIo?: boolean;
   targetDiscovery?: FileDiscovery;
-  /** Reachable owner of the run-scoped cAdvisor proxy (standalone smoke). */
+  /** Reachable cAdvisor source for run-owned resource scrapes. */
   runCAdvisorTarget?: () => string;
   observerMetrics?: MetricSink;
   observerSamplingIntervalSeconds?: number;
   cadvisorHousekeepingSeconds?: number;
+  cadvisorDiskAccountingProfile?: string;
   supportImages?: { loadgen: string; observer: string };
   requirePinnedSupportImages?: boolean;
   observerSupports?: (kind: string) => boolean;
@@ -157,6 +200,127 @@ export class RunCoordinator {
   private readonly experimentFinishedListeners = new Set<() => void>();
   private readonly cancellationRequests = new Set<string>();
   private readonly activeRuns = new Map<string, ComposeBundle>();
+  private readonly diagnostics = new Map<string, RunMeasurementDiagnostics>();
+  async recoverMeasurementDiagnostics(run: Run, bundle: ComposeBundle) {
+    if (!(run.environmentSnapshot as any)?.measurementDiagnosticsEvidence?.attemptId) return;
+    try {
+      await this.diagnosticsService().recover(run, async () => {
+        if (bundle.measurementDiagnostics && !this.options.orchestrator.quiesceMeasurementProducers)
+          throw new Error("measurement_recovery_quiescence_unavailable");
+        await this.options.orchestrator.quiesceMeasurementProducers?.(bundle);
+      });
+      this.repositories.saveRun(run);
+    } catch {
+      this.diagnosticFailure(run);
+    }
+  }
+  async reconcileMeasurementBudget(runId: string) {
+    const run = this.repositories.getRun(runId);
+    if (!run) throw new Error("run_not_found");
+    if (this.activeExperiment || this.activeRuns.size || this.diagnostics.size)
+      throw new Error("measurement_diagnostics_recovery_requires_idle");
+    const mount = (run.environmentSnapshot as any)?.measurementDiagnosticsMount;
+    return this.diagnosticsService().reconcileBudget(run, async () => {
+      if (!this.options.orchestrator.quiesceMeasurementProducers)
+        throw new Error("measurement_recovery_quiescence_unavailable");
+      await this.options.orchestrator.quiesceMeasurementProducers({
+        projectName: run.composeProject,
+        resources: [{ type: "container", name: run.id, labels: run.resourceNamespace }],
+        measurementDiagnostics: mount
+      } as ComposeBundle);
+    });
+  }
+  recordMeasurementPublication(
+    event: import("../../../../packages/metrics/src/prometheus-client").MetricPublicationEvidence
+  ) {
+    const diagnostic = this.diagnostics.get(event.runId);
+    if (!diagnostic) return;
+    const { runId, ...fields } = event;
+    diagnostic.controller.record({
+      ...fields,
+      scheduledAtMs: null,
+      sourceCapturedAtMs: null,
+      availableAtMs: fields.finishedAtMs,
+      timestampOrigin: "UNKNOWN",
+      queueWaitMs: 0,
+      bodyReadMs: 0,
+      callerRole: "UNKNOWN"
+    });
+  }
+  recordMeasurementChart(
+    event: import("../measurement-diagnostics/chart-evidence").ChartQueryEvidence
+  ) {
+    for (const runId of event.runIds) this.diagnostics.get(runId)?.recordMetadata(event);
+  }
+  private diagnosticsService() {
+    return new MeasurementDiagnosticsService({
+      artifactRoot: this.artifacts.storage.root,
+      registerArtifact: (artifact) => this.repositories.saveArtifact(artifact),
+      listArtifacts: (runId) => this.repositories.listArtifacts(runId),
+      secrets: runtimeSecretValues()
+    });
+  }
+  private diagnosticFailure(run: Run) {
+    this.diagnostics.get(run.id)?.markIncomplete();
+    run.environmentSnapshot = {
+      ...run.environmentSnapshot,
+      measurementDiagnosticsEvidence: {
+        ...(run.environmentSnapshot as any)?.measurementDiagnosticsEvidence,
+        recordingState: "UNAVAILABLE"
+      }
+    };
+    this.repositories.saveRun(run);
+  }
+  private async sealDiagnostics(
+    run: Run,
+    bundle: ComposeBundle | undefined,
+    terminalState: string
+  ) {
+    const diagnostic = this.diagnostics.get(run.id);
+    if (!diagnostic) return;
+    // Disconnect live read/publication callbacks before quiescent sealing.
+    this.diagnostics.delete(run.id);
+    try {
+      let nativeQuiescence = !bundle?.measurementDiagnostics;
+      if (bundle?.measurementDiagnostics) {
+        try {
+          if (!this.options.orchestrator.quiesceMeasurementProducers) diagnostic.markIncomplete();
+          else {
+            await this.options.orchestrator.quiesceMeasurementProducers(bundle);
+            nativeQuiescence = true;
+          }
+        } catch {
+          diagnostic.markIncomplete();
+          await diagnostic.store.markUnconfirmed();
+        }
+      }
+      const boundary = run.phaseBoundaries?.measurement;
+      if (boundary?.startedAt && boundary.finishedAt) {
+        try {
+          await diagnostic.prepareInventory(
+            { startMs: Date.parse(boundary.startedAt), endMs: Date.parse(boundary.finishedAt) },
+            {
+              controllerCadenceMs: (this.options.observerSamplingIntervalSeconds ?? 5) * 1000,
+              scrapeCadenceMs: (this.options.observerSamplingIntervalSeconds ?? 5) * 1000
+            }
+          );
+        } catch {
+          diagnostic.markIncomplete();
+        }
+      }
+      await diagnostic.seal({
+        terminalState,
+        nativeQuiescence,
+        phaseRefs: Object.keys(run.phaseBoundaries ?? {}),
+        deployedRefs: diagnostic.deployedRefs
+      });
+      this.repositories.saveRun(run);
+    } catch {
+      this.diagnosticFailure(run);
+    } finally {
+      this.diagnostics.delete(run.id);
+    }
+  }
 
   constructor(
     private readonly repositories: Repositories,
@@ -179,7 +343,11 @@ export class RunCoordinator {
   createExperiment(
     request: ExperimentRequest,
     scenario: Scenario,
-    reviewed?: { base: string; names: string[] }
+    reviewed?: {
+      base: string;
+      names: string[];
+      resolvedMeasurementDiagnostics?: FrozenDiagnosticsConfig;
+    }
   ): Experiment {
     let staticObserverFailure: ReturnType<typeof classifyRunError> = undefined;
     const machine = new RunStateMachine(this.repositories);
@@ -279,6 +447,16 @@ export class RunCoordinator {
         features: this.options.openedge?.databaseFeatures
       });
       // createExperiment creates new records; replay executes already frozen runs separately.
+      const databaseIops = variant.databaseIops
+        ? validateDatabaseIopsCondition(variant.databaseIops)
+        : resolveDatabaseIops(
+            variant.parameters[DATABASE_IOPS_PARAMETER] ?? scenarioDefaults[DATABASE_IOPS_PARAMETER]
+          );
+      if (
+        variant.parameters[DATABASE_IOPS_PARAMETER] !== undefined &&
+        variant.parameters[DATABASE_IOPS_PARAMETER] !== databaseIops.presetId
+      )
+        throw new Error("database_iops_invalid:snapshot_parameter_conflict");
       const databaseRunControls = {
         ...(variant.databaseRunControls
           ? validateDatabaseRunControls(variant.databaseRunControls)
@@ -293,7 +471,15 @@ export class RunCoordinator {
         throw new Error("database_run_control_invalid:snapshot_parameter_conflict");
       return {
         ...variant,
-        parameters: { ...scenarioDefaults, ...variant.parameters },
+        measurementDiagnostics: normalizeMeasurementDiagnostics(
+          variant.measurementDiagnostics ?? request.measurementDiagnostics
+        ),
+        parameters: {
+          ...scenarioDefaults,
+          ...variant.parameters,
+          [DATABASE_IOPS_PARAMETER]: databaseIops.presetId
+        },
+        databaseIops,
         ...(databaseStartup ? { databaseStartup } : {}),
         databaseRunControls
       };
@@ -344,6 +530,13 @@ export class RunCoordinator {
             { scenario: scenario.id, scenarioVersion: scenario.version },
             variant
           );
+          const resolvedMeasurementDiagnostics =
+            reviewed?.resolvedMeasurementDiagnostics ??
+            freezeDiagnosticsConfig(
+              variant.measurementDiagnostics,
+              this.options.measurementDiagnostics ?? DIAGNOSTIC_DEFAULTS,
+              Date.now()
+            );
           const run: Run = {
             id,
             name: identity.name,
@@ -359,10 +552,19 @@ export class RunCoordinator {
               runNumber: identity.number,
               runNameBase: identity.base,
               scenario,
+              measurementDiagnostics: normalizeMeasurementDiagnostics(
+                variant.measurementDiagnostics
+              ),
+              resolvedMeasurementDiagnostics,
               requestedConfiguration: {
                 scenario: { id: scenario.id, version: scenario.version },
+                measurementDiagnostics: normalizeMeasurementDiagnostics(
+                  variant.measurementDiagnostics
+                ),
                 parameters: variant.parameters ?? {},
                 databaseStartup: variant.databaseStartup ?? {},
+                databaseIops: structuredClone(variant.databaseIops),
+                databaseSetup: structuredClone(variant.databaseSetup),
                 databaseRunControls: structuredClone(variant.databaseRunControls),
                 inputs: redactSecrets(request.inputs)
               },
@@ -372,6 +574,8 @@ export class RunCoordinator {
               openedgeImageManifestPath: this.options.openedge?.imageManifestPath,
               variant,
               databaseStartup: variant.databaseStartup,
+              databaseIops: structuredClone(variant.databaseIops),
+              databaseSetup: structuredClone(variant.databaseSetup),
               databaseRunControls: structuredClone(variant.databaseRunControls),
               effectiveConfiguration: effective.values,
               parameterAdapterVersion: effective.adapterVersion,
@@ -386,6 +590,7 @@ export class RunCoordinator {
               sourceCadences: {
                 prometheusScrapeSeconds: this.options.observerSamplingIntervalSeconds ?? 5,
                 cadvisorHousekeepingSeconds: this.options.cadvisorHousekeepingSeconds ?? 1,
+                cadvisorDiskAccountingProfile: this.options.cadvisorDiskAccountingProfile,
                 nativeDatabaseRefreshSeconds: Math.max(
                   1,
                   Number(process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_REFRESH_MS ?? 5000) / 1000
@@ -512,6 +717,15 @@ export class RunCoordinator {
     );
   }
 
+  async prepareMeasurementBatch(experimentId: string) {
+    const runs = this.repositories.listRuns(experimentId).filter((run) => !isTerminal(run.state));
+    const requestedBytes = runs.reduce((bytes, run) => {
+      const config = (run.environmentSnapshot as any)?.resolvedMeasurementDiagnostics;
+      return bytes + (config?.mode === "trace" ? config.traceLimitBytes : 0);
+    }, 0);
+    await this.options.measurementRetention?.(requestedBytes);
+  }
+
   startExperiment(experimentId: string): void {
     if (this.activeExperiment && this.activeExperiment !== experimentId)
       throw new Error("one_active_experiment_limit");
@@ -554,8 +768,20 @@ export class RunCoordinator {
     } finally {
       this.activeExperiment = undefined;
       if (this.hostClaimToken) {
-        const resources = this.repositories.listRuns(experiment.id).flatMap(run=>this.repositories.listResources(run.id));
-        if (resources.every(resource=>resource.cleanupResult === "deleted")) this.hostDispatcher?.release(this.hostClaimToken);
+        const resources = this.repositories
+          .listRuns(experiment.id)
+          .flatMap((run) => this.repositories.listResources(run.id));
+        if (
+          resources.every((resource) => resource.cleanupResult === "deleted") &&
+          this.repositories
+            .listRuns(experiment.id)
+            .every(
+              (run) =>
+                !run.environmentSnapshot?.databaseSetupResourceIntents ||
+                run.cleanupStatus === "COMPLETE"
+            )
+        )
+          this.hostDispatcher?.release(this.hostClaimToken);
       }
       this.hostClaimToken = undefined;
       // Wake dispatch only after the next experiment can acquire the serial slot.
@@ -564,6 +790,28 @@ export class RunCoordinator {
   }
 
   async executeRun(run: Run, behavior: RunBehavior = {}): Promise<Run> {
+    if (isTerminal(run.state)) return run;
+    if ((run.environmentSnapshot as any)?.resolvedMeasurementDiagnostics) {
+      try {
+        const diagnostic = await this.diagnosticsService().begin(run);
+        this.diagnostics.set(run.id, diagnostic);
+        const accepted = this.repositories.getRun(run.id);
+        if (accepted?.state === "CANCELLED") Object.assign(run, accepted);
+        // Freeze attempt/budget/mount metadata durably before any native creation.
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          measurementDiagnosticsMount: diagnostic.nativeMount
+        };
+        this.repositories.saveRun(run);
+      } catch {
+        this.diagnosticFailure(run);
+      }
+    }
+    if (run.state === "CANCELLED") {
+      await this.sealDiagnostics(run, undefined, "CANCELLED");
+      this.cancellationRequests.delete(run.id);
+      return run;
+    }
     try {
       return await this.executeRunInternal(run, behavior);
     } catch (error) {
@@ -571,12 +819,39 @@ export class RunCoordinator {
       const inputs = ((run.environmentSnapshot as any)?.inputs ?? {}) as Record<string, unknown>;
       const secrets = [...runtimeSecretValues(), ...privateInputValues(Object.values(inputs))];
       const classified = classifyRunError(error);
+      if (
+        (run.environmentSnapshot as any)?.databaseSetup &&
+        !(run.environmentSnapshot as any)?.databaseSetupEvidence
+      ) {
+        const setup = (run.environmentSnapshot as any).databaseSetup;
+        const evidence = pendingSetupEvidence(run.id, "not-provisioned", setup);
+        evidence.state = "FAILED";
+        evidence.finishedAt = new Date().toISOString();
+        evidence.failure = {
+          code: classified?.failureCode ?? "database_setup_failed",
+          message: String(error)
+        };
+        const step =
+          setup.steps.find(
+            (item: any) => item.definitionId === "custom" && String(error).includes(item.scriptRef)
+          ) ?? setup.steps[0];
+        if (step) {
+          evidence.activeStepId = step.id;
+          evidence.failure.stepId = step.id;
+        }
+        for (const outcome of evidence.steps) {
+          outcome.state = outcome.id === step?.id ? "FAILED" : "NOT_EXECUTED";
+          for (const set of outcome.optionSets) set.state = "NOT_EXECUTED";
+        }
+        run.environmentSnapshot = { ...run.environmentSnapshot, databaseSetupEvidence: evidence };
+      }
       run.failureKind = classified?.failureKind ?? run.failureKind ?? "infrastructure";
       run.failureCode = classified?.failureCode ?? run.failureCode;
       run.failureReason = String(
         redactSecrets(classified?.failureReason ?? String(error), secrets)
       ).slice(0, 512);
       const bundle = this.activeRuns.get(run.id);
+      await this.sealDiagnostics(run, bundle, "FAILED");
       const resources = this.repositories.listResources(run.id);
       if (isTerminal(run.state)) {
         this.repositories.saveRun(run);
@@ -624,12 +899,37 @@ export class RunCoordinator {
       !inputs.applicationArchive.startsWith("input:")
     )
       assertScenarioArchiveCompatible(inputs.applicationArchive, scenario);
+    const frozenIops = (run.environmentSnapshot as any)?.databaseIops;
+    if (
+      frozenIops?.presetId !== undefined &&
+      frozenIops.presetId !== "unlimited" &&
+      (!this.options.orchestrator.applyDatabaseIops || !this.options.orchestrator.checkDatabaseIops)
+    )
+      throw new DatabaseIopsError(
+        "database_iops_unsupported",
+        pendingDatabaseIops(frozenIops),
+        "verified_adapter_required"
+      );
+    const setup = (run.environmentSnapshot as any)?.databaseSetup;
+    const setupPlan = setup?.steps?.length
+      ? compileDatabaseSetup({
+          runId: run.id,
+          attemptId: crypto.randomUUID(),
+          setup,
+          runtimeDirectory: path.join(this.artifacts.storage.root, run.id, "runtime"),
+          databaseName: inputs.databaseName ?? "parkbench",
+          image: inputs.databaseImage,
+          scriptsRoot: this.options.scriptsRoot
+        })
+      : undefined;
     const bundle = generateRunCompose(
       run.id,
       run.experimentId,
       scenario,
       { db: inputs.databaseImage, pas: inputs.pasImage },
       {
+        measurementDiagnostics: this.diagnostics.get(run.id)?.nativeMount,
+        databaseSetup: setupPlan?.manifest,
         seed: inputs.seed,
         databaseName: inputs.databaseName,
         schemaReadinessProcedures: this.schemaReadinessProcedures(scenario),
@@ -642,6 +942,7 @@ export class RunCoordinator {
           string,
           string | number | boolean
         >,
+        databaseIops: (run.environmentSnapshot as any)?.databaseIops,
         databaseStartup: (run.environmentSnapshot as any)?.databaseStartup,
         databaseRunControls: (run.environmentSnapshot as any)?.databaseRunControls,
         dbObserverProcedure: this.options.openedge?.dbObserverProcedure,
@@ -668,8 +969,24 @@ export class RunCoordinator {
         )
       }
     );
+    if (setupPlan) {
+      run.environmentSnapshot = {
+        ...run.environmentSnapshot,
+        databaseSetupManifest: setupPlan.manifest,
+        databaseSetupBundle: structuredClone(bundle),
+        databaseSetupEvidence: pendingSetupEvidence(run.id, setupPlan.manifest.attemptId, setup),
+        databaseSetupResourceIntents: bundle.resources.map((resource) => ({
+          ...resource,
+          registeredAt: new Date().toISOString()
+        }))
+      };
+      this.repositories.saveRun(run);
+    }
     this.activeRuns.set(run.id, bundle);
-    let resources: Awaited<ReturnType<RunOrchestrator["provision"]>> = [];
+    let collector: ObserverCollector | undefined;
+    let resources: Awaited<ReturnType<RunOrchestrator["provision"]>> = setupPlan
+      ? reconcileSetupResources(run, [])
+      : [];
     run.startedAt = new Date().toISOString();
     this.repositories.saveRun(run);
     try {
@@ -686,10 +1003,62 @@ export class RunCoordinator {
     }
 
     try {
-      resources = await this.options.orchestrator.provision(bundle, () =>
+      const provisioned = await this.options.orchestrator.provision(bundle, () =>
         this.cancellationRequests.has(run.id)
       );
-      resources.forEach((resource) => this.repositories.saveResource(run.id, resource));
+      provisioned.forEach((resource) => this.repositories.saveResource(run.id, resource));
+      resources = setupPlan ? reconcileSetupResources(run, provisioned) : provisioned;
+      if (setupPlan) {
+        const orchestrator = this.options.orchestrator;
+        if (!orchestrator.waitForDatabaseSetup || !orchestrator.startRemainingServices)
+          throw new Error("database_setup_unavailable:runner_capability");
+        await orchestrator.waitForDatabaseSetup(
+          bundle,
+          () => this.cancellationRequests.has(run.id),
+          (evidence) => {
+            run.environmentSnapshot = {
+              ...run.environmentSnapshot,
+              databaseSetupEvidence: evidence
+            };
+            this.repositories.saveRun(run);
+          }
+        );
+        const setupEvidence = persistSetupEvidence(
+          run,
+          setupPlan.manifest,
+          this.artifacts.storage,
+          this.repositories
+        );
+        if (setupEvidence.state !== "SUCCEEDED")
+          throw new Error(setupEvidence.failure?.code ?? "database_setup_evidence_invalid");
+        // No await between the durable cancellation read and release publication.
+        const durableRun = this.repositories.getRun(run.id);
+        if (this.cancellationRequests.has(run.id) || durableRun?.failureKind === "cancellation")
+          return this.finalizeCancelled(run, bundle, resources);
+        const release = path.join(setupPlan.manifest.paths.control, "normal-start-release");
+        fs.writeFileSync(release + ".tmp", `${run.id}:${setupPlan.manifest.attemptId}\n`);
+        fs.renameSync(release + ".tmp", release);
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          databaseSetupEvidence: {
+            ...(run.environmentSnapshot as any).databaseSetupEvidence,
+            normalStart: "AUTHORIZED"
+          }
+        };
+        this.repositories.saveRun(run);
+        await orchestrator.startRemainingServices(bundle, () =>
+          this.cancellationRequests.has(run.id)
+        );
+        for (const resource of resources) {
+          if (
+            !resource.createdAt &&
+            !(resource.resourceType === "container" && resource.resourceId === "loadgen")
+          ) {
+            resource.createdAt = new Date().toISOString();
+            this.repositories.saveResource(run.id, resource);
+          }
+        }
+      }
       if (this.cancellationRequests.has(run.id)) {
         return this.finalizeCancelled(run, bundle, resources);
       }
@@ -715,7 +1084,7 @@ export class RunCoordinator {
           }
         },
         {
-          targets: [this.options.runCAdvisorTarget?.() ?? "control-plane:3000"],
+          targets: [this.options.runCAdvisorTarget?.() ?? "cadvisor:8080"],
           labels: targetLabels("run", "run-cadvisor")
         },
         ...bundle.resources
@@ -723,7 +1092,7 @@ export class RunCoordinator {
             ["loadgen", "db-observer", "pas-observer", "file-sampler"].includes(resource.name)
           )
           .map((resource) => ({
-            targets: [`${bundle.projectName}-${resource.name}:9100`],
+            targets: [`${runServiceAlias(bundle.projectName, resource.name)}:9100`],
             labels: targetLabels(
               resource.name === "loadgen"
                 ? "loadgen"
@@ -805,6 +1174,7 @@ export class RunCoordinator {
       );
       if (!Number.isInteger(readinessTimeoutMs) || readinessTimeoutMs < 1000)
         throw new Error("openedge_readiness_timeout_invalid");
+      const readinessDeadline = Date.now() + readinessTimeoutMs;
       await this.options.orchestrator.waitForReady(bundle, scenario, readinessTimeoutMs, () =>
         this.cancellationRequests.has(run.id)
       );
@@ -819,13 +1189,96 @@ export class RunCoordinator {
         };
         this.repositories.saveRun(run);
       }
+      if (bundle.databaseSetup)
+        persistSetupEvidence(
+          run,
+          bundle.databaseSetup.manifest,
+          this.artifacts.storage,
+          this.repositories
+        );
       machine.transition(run, "DB_READY", "database readiness probe passed");
       machine.transition(run, "PAS_READY", "PAS readiness probe passed");
       await this.captureStartupParameters(run, bundle);
       await this.applyDatabaseLatency(run, bundle, scenario);
+      if (bundle.databaseIops) {
+        bundle.databaseIopsDeadline = readinessDeadline;
+        const cancelled = () => this.cancellationRequests.has(run.id);
+        if (
+          bundle.databaseIops.presetId !== "unlimited" &&
+          (!this.options.orchestrator.applyDatabaseIops ||
+            !this.options.orchestrator.checkDatabaseIops)
+        )
+          throw new DatabaseIopsError(
+            "database_iops_unsupported",
+            pendingDatabaseIops(bundle.databaseIops),
+            "verified_adapter_required"
+          );
+        this.persistDatabaseIops(run, bundle, {
+          ...pendingDatabaseIops(bundle.databaseIops),
+          stage: bundle.databaseIops.presetId === "unlimited" ? "VERIFYING" : "DISCOVERING"
+        });
+        const evidence = this.options.orchestrator.applyDatabaseIops
+          ? await this.options.orchestrator.applyDatabaseIops(
+              bundle,
+              bundle.databaseIops,
+              cancelled,
+              async (intent) => {
+                if (
+                  intent.runId !== run.id ||
+                  intent.experimentId !== run.experimentId ||
+                  intent.variantId !== run.variantId
+                )
+                  throw new DatabaseIopsError(
+                    "database_iops_apply_failed",
+                    undefined,
+                    "intent_run_attribution_mismatch"
+                  );
+                if (cancelled()) throw Error("run_cancelled");
+                if (Date.now() >= readinessDeadline)
+                  throw new DatabaseIopsError(
+                    "database_iops_apply_failed",
+                    undefined,
+                    "startup_deadline"
+                  );
+                const pending = {
+                  ...pendingDatabaseIops(intent.condition),
+                  stage: "PERSISTING_INTENT" as const,
+                  applicationOutcome: "PENDING" as const,
+                  owner: intent.owner,
+                  coverage: intent.coverage,
+                  applicationIntent: intent
+                };
+                this.persistDatabaseIops(run, bundle, pending);
+              }
+            )
+          : {
+              ...pendingDatabaseIops(bundle.databaseIops),
+              stage: "VERIFIED" as const,
+              mode: "none" as const,
+              verification: { status: "NO_ADDED_CAP" as const, checks: 0 }
+            };
+        if (
+          bundle.databaseIops.presetId !== "unlimited" &&
+          (evidence.verification.status !== "MATCHED" ||
+            (!this.options.testMode && evidence.mode !== "native"))
+        )
+          throw new DatabaseIopsError(
+            "database_iops_unconfirmed",
+            evidence,
+            "finite_policy_not_verified"
+          );
+        this.persistDatabaseIops(run, bundle, evidence);
+        if (bundle.databaseIops.presetId !== "unlimited") {
+          const remaining = readinessDeadline - Date.now();
+          if (remaining <= 0) throw Error("run_readiness_timeout:database_iops");
+          await this.options.orchestrator.waitForReady(bundle, scenario, remaining, cancelled);
+        }
+      }
+
       if (this.cancellationRequests.has(run.id))
         return this.finalizeCancelled(run, bundle, resources);
       const context = {
+        ...this.diagnostics.get(run.id)?.context("warmup"),
         runId: run.id,
         experimentId: run.experimentId,
         variantId: run.variantId,
@@ -835,6 +1288,23 @@ export class RunCoordinator {
       const sink =
         this.options.observerMetrics ??
         (isMetricSink(this.prometheus) ? this.prometheus : undefined);
+      const diagnostics = this.diagnostics.get(run.id);
+      if (diagnostics) {
+        try {
+          if (this.options.orchestrator.inspectMeasurementTopology)
+            diagnostics.setTopology(
+              await this.options.orchestrator.inspectMeasurementTopology(bundle)
+            );
+          else diagnostics.markIncomplete();
+          if (this.options.orchestrator.inspectMeasurementProducerRefs)
+            Object.assign(
+              diagnostics.deployedRefs,
+              await this.options.orchestrator.inspectMeasurementProducerRefs(bundle)
+            );
+        } catch {
+          diagnostics.markIncomplete();
+        }
+      }
       const phaseClockStart = Date.now();
       // The clock file is created after target readiness, so the loadgen and
       // coordinator use the same boundary instead of measuring from startup.
@@ -850,6 +1320,15 @@ export class RunCoordinator {
         JSON.stringify({ startedAt: new Date(phaseClockStart).toISOString(), phase: "pending" })
       );
       await this.options.orchestrator.startWorkload(bundle);
+      if (bundle.databaseSetup) {
+        const resource = resources.find(
+          (item) => item.resourceType === "container" && item.resourceId === "loadgen"
+        );
+        if (resource && !resource.createdAt) {
+          resource.createdAt = new Date().toISOString();
+          this.repositories.saveResource(run.id, resource);
+        }
+      }
       if (this.cancellationRequests.has(run.id))
         return this.finalizeCancelled(run, bundle, resources);
       const dbMetricsEnabled =
@@ -864,7 +1343,10 @@ export class RunCoordinator {
             : {}),
           configuration: {
             ...(declaration.configuration ?? {}),
-            ...(["openedge_pas_v1", "openedge_db_v1"].includes(declaration.kind)
+            ...(["openedge_pas_v1", "openedge_db_v1"].includes(declaration.kind) ||
+            (declaration.kind === "file_sampler_v1" &&
+              typeof declaration.configuration?.metricsUrl === "string" &&
+              new URL(declaration.configuration.metricsUrl).hostname === "file-sampler")
               ? { authoritativePublisher: "endpoint" }
               : {}),
             ...(declaration.kind === "openedge_pas_v1"
@@ -886,7 +1368,7 @@ export class RunCoordinator {
               : {})
           }
         }));
-      const collector = new ObserverCollector(
+      collector = new ObserverCollector(
         observerDeclarations,
         context,
         this.options.observerFactory,
@@ -897,7 +1379,10 @@ export class RunCoordinator {
       );
       if (this.cancellationRequests.has(run.id))
         return this.finalizeCancelled(run, bundle, resources);
-      if ((run.environmentSnapshot as any)?.databaseRunControls?.requirements?.namedLatchRequired) {
+      if (
+        (run.environmentSnapshot as any)?.databaseRunControls?.requirements?.namedLatchRequired ||
+        (diagnostics && dbMetricsEnabled)
+      ) {
         try {
           const inventory = await collector.latchInventory(context);
           run.environmentSnapshot = {
@@ -906,7 +1391,11 @@ export class RunCoordinator {
           };
           this.repositories.saveRun(run);
         } catch (error) {
-          throw new Error(`named_latch_evidence_missing:${String(error)}`);
+          if (
+            (run.environmentSnapshot as any)?.databaseRunControls?.requirements?.namedLatchRequired
+          )
+            throw new Error(`named_latch_evidence_missing:${String(error)}`);
+          diagnostics?.markIncomplete();
         }
       }
       // Target readiness is a one-time startup gate. Target labels remain stable
@@ -920,11 +1409,41 @@ export class RunCoordinator {
         );
       if (this.cancellationRequests.has(run.id))
         return this.finalizeCancelled(run, bundle, resources);
-      const schedule = phaseSchedule(scenario.phases, Date.now(), this.options.phaseScale);
+      if (diagnostics)
+        await diagnostics.flushStartupInventory().catch(() => diagnostics.markIncomplete());
+      const nativeScrapeTiming =
+        dbMetricsEnabled &&
+        this.options.phaseScale === 1 &&
+        observerDeclarations.some((d) => d.kind === "openedge_db_v1") &&
+        this.prometheus.nativeScrapeTiming
+          ? await this.prometheus.nativeScrapeTiming(
+              run.id,
+              Math.max(10000, (this.options.observerSamplingIntervalSeconds ?? 5) * 3000 + 5000)
+            )
+          : undefined;
+      await this.verifyDatabaseIops(run, bundle, "prewarmup", true);
+      const schedule = phaseSchedule(
+        scenario.phases,
+        Date.now(),
+        this.options.phaseScale,
+        nativeScrapeTiming
+      );
       run.environmentSnapshot = {
         ...run.environmentSnapshot,
         metricsCollectionMode: "continuous",
-        phaseSchedule: schedule
+        phaseSchedule: schedule,
+        ...(nativeScrapeTiming
+          ? {
+              nativeScrapeAlignment: {
+                contractVersion: "native-scrape-alignment.v1",
+                timestampOrigin: "SCRAPE_ASSIGNED",
+                lastScrapeAtMs: nativeScrapeTiming.lastScrapeAtMs,
+                cadenceMs: nativeScrapeTiming.cadenceMs,
+                measurementStartMs: schedule[1].startMs,
+                expectedScrapeOffsetMs: Math.min(250, nativeScrapeTiming.cadenceMs / 20)
+              }
+            }
+          : {})
       };
       const counts: any[] = [];
       for (const timing of schedule) {
@@ -933,6 +1452,7 @@ export class RunCoordinator {
         await waitUntil(startMs);
         if (this.cancellationRequests.has(run.id)) break;
         const startedAt = new Date(startMs).toISOString();
+        if (phase !== "warmup") await this.verifyDatabaseIops(run, bundle, phase, true);
         if (phase === "warmup") machine.transition(run, "WARMING_UP", "warmup started");
         if (phase === "measurement") machine.transition(run, "MEASURING", "measurement started");
         if (phase === "cooldown") machine.transition(run, "COOLDOWN", "measurement ended");
@@ -942,9 +1462,15 @@ export class RunCoordinator {
         fs.writeFileSync(
           clockPath,
           JSON.stringify({
+            contractVersion: "run-phase-clock.v1",
+            runId: run.id,
             startedAt: new Date(schedule[0].startMs).toISOString(),
             phase,
-            continuous: true
+            continuous: true,
+            nativeDatabaseIntervalMs:
+              (observerDeclarations.find((d) => d.kind === "openedge_db_v1")
+                ?.samplingIntervalSeconds ?? 5) * 1000,
+            nativePhases: schedule.map(({ phase, startMs, endMs }) => ({ phase, startMs, endMs }))
           })
         );
         if (phase === "warmup" && bundle.workloadStartPath)
@@ -963,6 +1489,7 @@ export class RunCoordinator {
             this.options.testMode && this.options.phaseScale === 0 ? undefined : timing,
             async () => {
               if (this.cancellationRequests.has(run.id)) return;
+              await this.verifyDatabaseIops(run, bundle, phase);
               const evidence = await this.options.orchestrator.checkDatabaseRunControls?.(bundle);
               if (evidence)
                 run.environmentSnapshot = {
@@ -972,6 +1499,7 @@ export class RunCoordinator {
             }
           ))
         );
+        await this.verifyDatabaseIops(run, bundle, phase, true);
         const boundary = run.phaseBoundaries[phase]!;
         boundary.finishedAt = new Date(
           this.cancellationRequests.has(run.id) ? Math.min(endMs, Date.now()) : endMs
@@ -1059,14 +1587,69 @@ export class RunCoordinator {
       this.repositories.saveRun(run);
       machine.transition(run, "FINALIZING", "finalization started");
     } catch (error) {
+      const iopsError = error instanceof DatabaseIopsError;
+      let partialIops = (error as any)?.evidence as DatabaseIopsEvidence | undefined;
+      if (iopsError && !partialIops && bundle.databaseIops)
+        partialIops = bundle.databaseIopsEvidence ?? pendingDatabaseIops(bundle.databaseIops);
+      if (partialIops?.contractVersion === "database-iops-evidence.v1") {
+        if (iopsError) {
+          partialIops.failure ??= {
+            code: error.code,
+            stage: partialIops.stage,
+            phase: run.phase,
+            reason: error.message.slice(0, 1024)
+          };
+          partialIops.verification.status =
+            error.code === "database_iops_policy_drift" ? "MISMATCH" : "UNAVAILABLE";
+          partialIops.stage = "FAILED";
+        }
+        const chosen = bundle.databaseIopsEvidence?.terminationDecision;
+        if (chosen) partialIops.terminationDecision = chosen;
+        try {
+          this.persistDatabaseIops(run, bundle, partialIops);
+        } catch {
+          run.failureReason = "IOPS evidence persistence failed";
+        }
+      }
+      if (iopsError || bundle.databaseIopsEvidence?.terminationDecision?.cause === "POLICY_DRIFT") {
+        const partial = collector?.progress() ?? [];
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          observerCollection: { counts: partial, health: run.observerHealth }
+        };
+        const phase = (error as DatabaseIopsError).evidence?.failure?.phase ?? run.phase;
+        const boundary = run.phaseBoundaries?.[phase];
+        if (boundary && !boundary.finishedAt) boundary.finishedAt = new Date().toISOString();
+        this.repositories.saveRun(run);
+      }
       if (error instanceof DatabaseRunControlsError && error.evidence)
         run.environmentSnapshot = {
           ...run.environmentSnapshot,
           databaseRunControlEvidence: structuredClone(error.evidence)
         };
-      if (this.cancellationRequests.has(run.id))
+      if (
+        this.cancellationRequests.has(run.id) &&
+        bundle.databaseIopsEvidence?.terminationDecision?.cause !== "POLICY_DRIFT"
+      )
         return this.finalizeCancelled(run, bundle, resources);
       const classifiedError = classifyRunError(error);
+      if (
+        bundle.databaseSetup &&
+        (run.environmentSnapshot as any)?.databaseSetupEvidence?.state !== "SUCCEEDED"
+      ) {
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          databaseSetupEvidence: {
+            ...(run.environmentSnapshot as any)?.databaseSetupEvidence,
+            state: "FAILED",
+            finishedAt: new Date().toISOString(),
+            failure: {
+              code: classifiedError?.failureCode ?? "database_setup_failed",
+              message: String(error)
+            }
+          }
+        };
+      }
       if (classifiedError) {
         run.failureKind = classifiedError.failureKind;
         run.failureCode = classifiedError.failureCode;
@@ -1139,6 +1722,7 @@ export class RunCoordinator {
     )
       throw new Error("run_already_terminal");
     if (run.state === "QUEUED") {
+      this.cancellationRequests.add(runId);
       run.failureKind = "cancellation";
       run.failureReason = "operator requested cancellation";
       run.measurementValidity = "UNAVAILABLE";
@@ -1150,6 +1734,13 @@ export class RunCoordinator {
         "operator",
         { cancellationRequestedAt: new Date().toISOString() }
       );
+    }
+    const activeBundle = this.activeRuns.get(runId);
+    if (activeBundle?.databaseIopsEvidence) {
+      const evidence = activeBundle.databaseIopsEvidence;
+      if (evidence.terminationDecision?.cause === "POLICY_DRIFT") return run;
+      acceptIopsTermination(evidence, "CANCELLED", run.phase ?? "preparation");
+      this.persistDatabaseIops(run, activeBundle, evidence);
     }
     this.cancellationRequests.add(runId);
     run.failureKind = "cancellation";
@@ -1165,6 +1756,8 @@ export class RunCoordinator {
       details: { cancellationRequestedAt: new Date().toISOString() }
     });
     const bundle = this.activeRuns.get(runId);
+    if (bundle?.databaseSetup)
+      signalCancellation(path.join(bundle.databaseSetup.manifest.paths.control, "cancel"));
     if (bundle?.shutdownPath) signalCancellation(bundle.shutdownPath);
     return run;
   }
@@ -1434,58 +2027,243 @@ export class RunCoordinator {
     const start = run.startedAt ? Date.parse(run.startedAt) / 1000 : now - 60;
     const end = now + 1;
     try {
-      return await this.finalizer.finalize(run, {
-        terminalState,
-        start,
-        end,
-        measurementState: !measurementStart
-          ? "not_started"
-          : measurementEnd
-            ? "completed"
-            : "interrupted",
-        measurementStart: measurementStart ? Date.parse(measurementStart) / 1000 : null,
-        measurementEnd: measurementStart
-          ? measurementEnd
-            ? Date.parse(measurementEnd) / 1000
-            : now
-          : null,
-        beforeMetrics: async () => {
-          try {
-            await this.options.orchestrator.stopWorkload(bundle);
-          } catch (error) {
-            saveDiagnostics(this.artifacts.storage, this.repositories, run.id, {
-              code: "workload_stop_failed",
-              error: String(error)
-            });
-          }
-          this.registerLoadgenSummary(run, bundle);
-        },
-        cleanup: async () => {
-          try {
-            this.options.targetDiscovery?.remove(run.id);
-          } catch (error) {
-            const targetFile = resources.find(
-              (resource) => resource.resourceType === "target_file"
-            );
-            if (targetFile)
-              this.repositories.saveResource(run.id, {
-                ...targetFile,
-                deletedAt: undefined,
-                cleanupResult: `target_file_cleanup_failed:${String(error)}`
+      const finalize = () =>
+        this.finalizer.finalize(run, {
+          terminalState,
+          start,
+          end,
+          measurementState: !measurementStart
+            ? "not_started"
+            : measurementEnd
+              ? "completed"
+              : "interrupted",
+          measurementStart: measurementStart ? Date.parse(measurementStart) / 1000 : null,
+          measurementEnd: measurementStart
+            ? measurementEnd
+              ? Date.parse(measurementEnd) / 1000
+              : now
+            : null,
+          beforeMetrics: async () => {
+            if (bundle.databaseSetup) {
+              const snapshot = run.environmentSnapshot as any;
+              persistSetupEvidence(
+                run,
+                bundle.databaseSetup.manifest,
+                this.artifacts.storage,
+                this.repositories,
+                terminalState === "CANCELLED" &&
+                  snapshot.databaseSetupEvidence?.state !== "SUCCEEDED"
+                  ? { state: "CANCELLED", finishedAt: new Date().toISOString() }
+                  : undefined
+              );
+            }
+            try {
+              await this.options.orchestrator.stopWorkload(bundle);
+            } catch (error) {
+              saveDiagnostics(this.artifacts.storage, this.repositories, run.id, {
+                code: "workload_stop_failed",
+                error: String(error)
               });
-            throw error;
-          }
-          const cleaned = await this.options.orchestrator.cleanup(bundle, resources);
-          cleaned.forEach((resource) => this.repositories.saveResource(run.id, resource));
-          if (cleaned.some((resource) => resource.cleanupResult !== "deleted"))
-            throw new Error("owned_resource_cleanup_incomplete");
-        },
-        collectLogs: this.options.orchestrator.collectLogs
-          ? () => this.options.orchestrator.collectLogs!(bundle)
-          : undefined
-      });
+            }
+            this.registerLoadgenSummary(run, bundle);
+          },
+          cleanup: async () => {
+            await this.sealDiagnostics(run, bundle, terminalState);
+            try {
+              this.options.targetDiscovery?.remove(run.id);
+            } catch (error) {
+              const targetFile = resources.find(
+                (resource) => resource.resourceType === "target_file"
+              );
+              if (targetFile)
+                this.repositories.saveResource(run.id, {
+                  ...targetFile,
+                  deletedAt: undefined,
+                  cleanupResult: `target_file_cleanup_failed:${String(error)}`
+                });
+              throw error;
+            }
+            const cleaned = await this.options.orchestrator.cleanup(bundle, resources);
+            cleaned.forEach((resource) => {
+              if (resource.createdAt) this.repositories.saveResource(run.id, resource);
+            });
+            if (bundle.databaseSetup) {
+              run.environmentSnapshot = {
+                ...run.environmentSnapshot,
+                databaseSetupIntentCleanup: cleaned.map((resource) => ({
+                  type: resource.resourceType,
+                  name: resource.resourceId,
+                  result: resource.cleanupResult
+                }))
+              };
+              this.repositories.saveRun(run);
+              const prior = (run.environmentSnapshot as any).databaseSetupEvidence;
+              persistSetupEvidence(
+                run,
+                bundle.databaseSetup.manifest,
+                this.artifacts.storage,
+                this.repositories,
+                {
+                  ...(terminalState === "CANCELLED" && prior?.state !== "SUCCEEDED"
+                    ? { state: "CANCELLED" as const, finishedAt: new Date().toISOString() }
+                    : {}),
+                  cleanup: cleaned.every((resource) => resource.cleanupResult === "deleted")
+                    ? "CONFIRMED"
+                    : "UNCERTAIN"
+                }
+              );
+            }
+            if (bundle.databaseIopsEvidence) {
+              const evidence = bundle.databaseIopsEvidence;
+              evidence.cleanup = {
+                completed: cleaned.every((resource) => resource.cleanupResult === "deleted"),
+                at: new Date().toISOString()
+              };
+              evidence.stage =
+                evidence.terminationDecision?.cause === "CANCELLED"
+                  ? "CANCELLED"
+                  : evidence.failure
+                    ? "FAILED"
+                    : "COMPLETED";
+              this.persistDatabaseIops(run, bundle, evidence);
+            }
+            if (cleaned.some((resource) => resource.cleanupResult !== "deleted"))
+              throw new Error("owned_resource_cleanup_incomplete");
+          },
+          collectLogs: this.options.orchestrator.collectLogs
+            ? () => this.options.orchestrator.collectLogs!(bundle)
+            : undefined
+        });
+      const diagnostics = this.diagnostics.get(run.id);
+      return await (diagnostics
+        ? withQueryEvidence(diagnostics.queryContext(start * 1000, end * 1000), finalize)
+        : finalize());
     } finally {
+      await this.sealDiagnostics(run, bundle, terminalState);
       this.activeRuns.delete(run.id);
+    }
+  }
+
+  async recoverDatabaseIops(run: Run, bundle: ComposeBundle): Promise<void> {
+    const summary = (run.environmentSnapshot as any)?.databaseIopsEvidence;
+    if (!summary?.artifactId) return;
+    const artifact = this.repositories
+      .listArtifacts(run.id)
+      .find(
+        (a) =>
+          a.id === summary.artifactId &&
+          a.sourceMetadata?.contractVersion === "database-iops-evidence.v1"
+      );
+    if (!artifact)
+      throw new DatabaseIopsError(
+        "database_iops_unconfirmed",
+        undefined,
+        "retained_policy_artifact_missing"
+      );
+    const file = this.artifacts.storage.safePath(artifact.path);
+    if (fs.statSync(file).size > 8388608)
+      throw new DatabaseIopsError(
+        "database_iops_unconfirmed",
+        undefined,
+        "retained_policy_artifact_capacity"
+      );
+    const evidence = validateDatabaseIopsEvidence(JSON.parse(fs.readFileSync(file, "utf8")));
+    if (summary.terminationDecision) evidence.terminationDecision = summary.terminationDecision;
+    if (
+      evidence.applicationIntent &&
+      !evidence.verifiedAt &&
+      evidence.applicationOutcome !== "NOT_SENT"
+    ) {
+      evidence.applicationOutcome = "POSSIBLY_APPLIED";
+      evidence.recoveryObservation = (await this.options.orchestrator.inspectDatabaseIopsRecovery?.(
+        bundle,
+        evidence
+      )) ?? {
+        status: "UNAVAILABLE",
+        checkedAt: new Date().toISOString(),
+        reason: "readonly_recovery_adapter_unavailable"
+      };
+    }
+    this.persistDatabaseIops(run, bundle, evidence);
+  }
+
+  private persistDatabaseIops(
+    run: Run,
+    bundle: ComposeBundle,
+    evidence: DatabaseIopsEvidence
+  ): void {
+    const accepted = bundle.databaseIopsEvidence?.terminationDecision;
+    if (accepted) evidence.terminationDecision = accepted;
+    validateDatabaseIopsEvidence(evidence);
+    const prior = this.repositories
+      .listArtifacts(run.id)
+      .find((a) => a.sourceMetadata?.contractVersion === "database-iops-evidence.v1");
+    evidence.artifactId = prior?.id ?? `artifact_${crypto.randomUUID()}`;
+    const file = this.artifacts.storage.writeAtomic(
+      `${run.id}/database-iops-evidence.v1.json`,
+      JSON.stringify(evidence)
+    );
+    this.repositories.saveArtifact({
+      ...artifactRecord(run.id, "diagnostics", file, "json", {
+        contractVersion: evidence.contractVersion
+      }),
+      id: evidence.artifactId
+    });
+    const summary = databaseIopsSummary(evidence);
+    run.environmentSnapshot = { ...run.environmentSnapshot, databaseIopsEvidence: summary };
+    this.repositories.saveRun(run);
+    this.options.onDatabaseIopsEvidence?.(run, summary);
+    bundle.databaseIopsEvidence = evidence;
+  }
+  private async verifyDatabaseIops(
+    run: Run,
+    bundle: ComposeBundle,
+    phase: string,
+    persist = false
+  ): Promise<void> {
+    const evidence = bundle.databaseIopsEvidence;
+    if (
+      !evidence ||
+      evidence.condition.presetId === "unlimited" ||
+      this.cancellationRequests.has(run.id)
+    )
+      return;
+    try {
+      if (!this.options.orchestrator.checkDatabaseIops)
+        throw new DatabaseIopsError(
+          "database_iops_unconfirmed",
+          evidence,
+          "policy_checker_missing"
+        );
+      const checked = await this.options.orchestrator.checkDatabaseIops(
+        bundle,
+        evidence,
+        phase,
+        () => this.cancellationRequests.has(run.id)
+      );
+      if (persist && !this.cancellationRequests.has(run.id))
+        this.persistDatabaseIops(run, bundle, checked);
+    } catch (error) {
+      if (
+        this.cancellationRequests.has(run.id) ||
+        evidence.terminationDecision?.cause === "CANCELLED"
+      )
+        return;
+      if (error instanceof DatabaseIopsError && error.code === "database_iops_policy_drift") {
+        const detail = error.evidence ?? evidence;
+        acceptIopsTermination(detail, "POLICY_DRIFT", phase);
+        bundle.databaseIopsEvidence = detail;
+        run.failureKind = "infrastructure";
+        run.failureCode = "database_iops_policy_drift";
+        run.failureReason = "Database IOPS policy changed during the workload.";
+        const stopping = this.options.orchestrator.stopWorkload(bundle);
+        try {
+          this.persistDatabaseIops(run, bundle, detail);
+        } finally {
+          await stopping.catch(() => undefined);
+        }
+      }
+      throw error;
     }
   }
 
@@ -1574,89 +2352,156 @@ export class RunCoordinator {
       coverages: Map<string, Coverage>;
       error?: string;
     }> = [];
+    let nativeDiskInventory: MetricSample[] | undefined;
     for (const definition of definitions) {
-      const counts = new Map<string, { observed: number; last: number }>();
-      const samples = new Map<string, MetricSample[]>();
-      let sampleCount = 0;
-      const selector =
-        definition.type === "container"
-          ? `{job="parkbench-run-owned-cadvisor",run_id=${JSON.stringify(run.id)}}`
-          : `{run_id=${JSON.stringify(run.id)}${(run.environmentSnapshot as any)?.metricsCollectionMode === "continuous" ? "" : ',phase="measurement"'}}`;
-      let error: string | undefined;
-      try {
-        for await (const chunk of readRawChunks(
-          this.prometheus,
-          definition.query + selector,
-          start,
-          end,
-          scrapeIntervalSeconds,
-          options
-        )) {
-          const ticks = new Map<string, Set<number>>();
-          for (const sample of chunk.samples) {
-            const key =
-              definition.type === "container"
-                ? diskIoService(sample.labels)
-                : (sample.labels.device ?? sample.labels.disk ?? "host");
-            const times = ticks.get(key) ?? new Set<number>();
-            times.add(Math.floor(sample.timestamp));
-            ticks.set(key, times);
-            if (definition.type === "container") {
-              const values = samples.get(key) ?? [];
-              values.push(sample);
-              samples.set(key, values);
-              if (++sampleCount > 100000) throw new Error("summary_limit_exceeded:disk_samples");
+      const collect = async () => {
+        const counts = new Map<string, { observed: number; last: number }>();
+        const samples = new Map<string, MetricSample[]>();
+        let sampleCount = 0;
+        const selector =
+          definition.type === "container"
+            ? `{job="parkbench-run-owned-cadvisor",run_id=${JSON.stringify(run.id)}}`
+            : `{run_id=${JSON.stringify(run.id)}${(run.environmentSnapshot as any)?.metricsCollectionMode === "continuous" ? "" : ',phase="measurement"'}}`;
+        let error: string | undefined;
+        try {
+          for await (const chunk of readRawChunks(
+            this.prometheus,
+            definition.query + selector,
+            start,
+            end,
+            scrapeIntervalSeconds,
+            options
+          )) {
+            const ticks = new Map<string, Set<number>>();
+            for (const sample of chunk.samples) {
+              const key =
+                definition.type === "container"
+                  ? diskIoService(sample.labels)
+                  : (sample.labels.device ?? sample.labels.disk ?? "host");
+              const times = ticks.get(key) ?? new Set<number>();
+              times.add(Math.floor(sample.timestamp));
+              ticks.set(key, times);
+              if (definition.type === "container") {
+                const values = samples.get(key) ?? [];
+                values.push(sample);
+                samples.set(key, values);
+                if (++sampleCount > 100000) throw new Error("summary_limit_exceeded:disk_samples");
+              }
             }
+            for (const [key, times] of ticks) {
+              const count = counts.get(key) ?? { observed: 0, last: -Infinity };
+              for (const time of [...times].sort((a, b) => a - b))
+                if (time > count.last) {
+                  count.observed++;
+                  count.last = time;
+                }
+              counts.set(key, count);
+            }
+            recordVerificationQuery(run, {
+              selector: chunk.query,
+              start: chunk.start,
+              end: chunk.end,
+              purpose: "disk_io_verification",
+              observed: chunk.samples.length > 0
+            });
+            if (counts.size > 100000) throw new Error("summary_limit_exceeded:disk_series");
           }
-          for (const [key, times] of ticks) {
-            const count = counts.get(key) ?? { observed: 0, last: -Infinity };
-            for (const time of [...times].sort((a, b) => a - b))
-              if (time > count.last) {
-                count.observed++;
-                count.last = time;
-              }
-            counts.set(key, count);
-          }
+        } catch (failure) {
+          error = String(failure);
           recordVerificationQuery(run, {
-            selector: chunk.query,
-            start: chunk.start,
-            end: chunk.end,
+            selector: definition.query + selector,
+            start,
+            end,
             purpose: "disk_io_verification",
-            observed: chunk.samples.length > 0
+            reason: error.slice(0, 300),
+            observed: false
           });
-          if (counts.size > 100000) throw new Error("summary_limit_exceeded:disk_series");
         }
-      } catch (failure) {
-        error = String(failure);
-        recordVerificationQuery(run, {
-          selector: definition.query + selector,
-          start,
-          end,
-          purpose: "disk_io_verification",
-          reason: error.slice(0, 300),
-          observed: false
-        });
-      }
-      const coverages = new Map<string, Coverage>();
-      if (definition.type === "container" && !error && end > start)
-        for (const [key, values] of samples)
-          coverages.set(
-            key,
-            measurementStatistics(
-              metricSeries(values, scrapeIntervalSeconds).map((series) => ({
-                ...series,
-                acquisitionLagSeconds: this.options.cadvisorHousekeepingSeconds ?? 1
-              })),
-              { start, end },
-              {
-                type: "counter",
-                unit: "activity_per_second",
-                totalUnit: "activity",
-                allowExactEnd: true
-              }
-            ).coverage
-          );
-      results.push({ ...definition, counts, coverages, error });
+        const coverages = new Map<string, Coverage>();
+        if (
+          definition.type === "container" &&
+          usesCadvisorDiskSnapshots(run) &&
+          nativeDiskInventory === undefined
+        ) {
+          nativeDiskInventory = [];
+          try {
+            for await (const chunk of readRawChunks(
+              this.prometheus,
+              "container_blkio_device_usage_total" + selector,
+              start,
+              end,
+              scrapeIntervalSeconds,
+              options
+            )) {
+              nativeDiskInventory.push(...chunk.samples);
+              if (nativeDiskInventory.length > 100000)
+                throw new Error("summary_limit_exceeded:disk_inventory");
+              recordVerificationQuery(run, {
+                selector: chunk.query,
+                start: chunk.start,
+                end: chunk.end,
+                purpose: "disk_io_native_frame_inventory",
+                observed: chunk.samples.length > 0
+              });
+            }
+          } catch {
+            nativeDiskInventory = [];
+          }
+        }
+        if (definition.type === "container" && !error && end > start)
+          for (const [key, values] of samples) {
+            const accounted = usesCadvisorDiskSnapshots(run)
+              ? accountResourceSamples(values, { cadenceSeconds: scrapeIntervalSeconds })
+              : undefined;
+            const snapshot = accounted
+              ? accountCadvisorDiskSnapshots(accounted.samples, nativeDiskInventory ?? [])
+              : undefined;
+            coverages.set(
+              key,
+              measurementStatistics(
+                metricSeries(snapshot?.samples ?? values, scrapeIntervalSeconds).map((series) => ({
+                  ...series,
+                  gapTimes: [...(accounted?.gaps ?? []), ...(snapshot?.gaps ?? [])]
+                    .filter((g) => g.physicalId === series.physicalId)
+                    .map((g) => g.timestamp),
+                  acquisitionLagSeconds: cadvisorSourceAgeSeconds(
+                    this.options.cadvisorHousekeepingSeconds ?? 1
+                  )
+                })),
+                { start, end },
+                {
+                  type: "counter",
+                  unit: "activity_per_second",
+                  totalUnit: "activity",
+                  allowExactEnd: true
+                }
+              ).coverage
+            );
+            if (snapshot?.gaps.length) coverages.get(key)!.reasons.push("source_unavailable");
+          }
+        results.push({ ...definition, counts, coverages, error });
+      };
+      const diagnostic = this.diagnostics.get(run.id);
+      if (diagnostic) {
+        const context = diagnostic.queryContext(start * 1000, end * 1000);
+        await withQueryEvidence(
+          {
+            ...context,
+            source: definition.type === "container" ? "cadvisor" : "node-exporter",
+            definitionId: definition.observerId,
+            semanticVersion: "unversioned",
+            dimensions: { sourceFamily: "required_disk_io" },
+            expectedMemberIds:
+              definition.type === "container"
+                ? [
+                    ...context.resolveExpectedMembers("cadvisor", "database"),
+                    ...context.resolveExpectedMembers("cadvisor", "pas")
+                  ]
+                : []
+          },
+          collect
+        );
+      } else await collect();
     }
     const configuredDevices = (process.env.PARKBENCH_REQUIRED_DISK_DEVICES ?? "")
       .split(",")
@@ -1686,7 +2531,9 @@ export class RunCoordinator {
         // and require the same bounded in-phase counter coverage as the summary.
         const coverage = coverages.get(key);
         const complete = coverage
-          ? observed > 0 && coverage.missingSeconds <= 1e-8
+          ? observed > 0 &&
+            coverage.missingSeconds <= 1e-8 &&
+            !coverage.reasons.includes("source_unavailable")
           : observed >= expected;
         return {
           observerId: `${observerId}:${key}`,
@@ -2077,7 +2924,7 @@ export function qualifyRunServiceUrl(
       parsed.hostname
     );
     if (runObserverService && environment.PARKBENCH_CONTAINER_PATH_ROOT) {
-      parsed.hostname = `${bundle.projectName}-${parsed.hostname}`;
+      parsed.hostname = runServiceAlias(bundle.projectName, parsed.hostname);
     } else if (hostPort !== undefined) {
       parsed.hostname = "127.0.0.1";
       parsed.port = String(hostPort);

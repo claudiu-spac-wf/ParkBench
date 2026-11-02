@@ -19,6 +19,13 @@ export type MeasurementValidity = "PENDING" | "VALID" | "INCOMPLETE" | "UNAVAILA
 export type FailureKind =
   "infrastructure" | "threshold" | "cancellation" | "observer" | "export" | "interruption";
 export const RUN_FAILURE_CODES = [
+  "database_iops_unsupported",
+  "database_iops_device_unresolved",
+  "database_iops_policy_conflict",
+  "database_iops_apply_failed",
+  "database_iops_unconfirmed",
+  "database_iops_policy_drift",
+
   "observer_contract_invalid",
   "observer_image_mismatch",
   "pas_readiness_failed",
@@ -41,7 +48,15 @@ export const RUN_FAILURE_CODES = [
   "database_writer_start_failed",
   "database_run_control_unapplied",
   "database_writer_lost",
-  "named_latch_evidence_missing"
+  "named_latch_evidence_missing",
+  "database_setup_script_unavailable",
+  "database_setup_unavailable",
+  "database_setup_failed",
+  "database_setup_start_failed",
+  "database_setup_shutdown_unconfirmed",
+  "database_setup_evidence_invalid",
+  "database_setup_replay_refused",
+  "database_setup_process_unconfirmed"
 ] as const;
 export type RunFailureCode = (typeof RUN_FAILURE_CODES)[number];
 export interface CompletenessResult {

@@ -1,3 +1,4 @@
+import { COMPARISON_METRIC_HELP } from "./comparison-metric-help";
 import {
   RESOURCE_SUMMARY_CATALOG,
   DATABASE_SUMMARY_CATALOG,
@@ -6,13 +7,16 @@ import {
 import type { Coverage, StatisticStatus } from "./metric-definitions";
 import type { Difference } from "./comparison";
 export const COMPARISON_METRIC_SELECTION_VERSION = "comparison-metric-selection.v1" as const;
-export const COMPARISON_METRIC_CATALOG_VERSION = "comparison-metrics.v1" as const;
+export const COMPARISON_METRIC_CATALOG_VERSION = "comparison-metrics.v2" as const;
 export type MetricStatistic = "average" | "p90" | "p95" | "total" | "value";
 export interface ComparisonMetricDescriptor {
   metricId: string;
   version: number;
   domain: "resource" | "database" | "workload" | "native_latch";
   displayName: string;
+  description: string;
+  scopeDescription: string;
+  searchTerms?: string[];
   group: string;
   scope: string;
   definitionId?: string;
@@ -95,8 +99,18 @@ const workload: [string, string, string, MetricStatistic, "higher" | "lower"][] 
       ]
   )
 ];
-export const COMPARISON_METRIC_CATALOG: ComparisonMetricDescriptor[] = [
-  ...new Map(descriptors.map((d) => [d.metricId, d])).values(),
+function distinctDescriptors(values: ComparisonMetricDescriptor[]): ComparisonMetricDescriptor[] {
+  const byId = new Map<string, ComparisonMetricDescriptor>();
+  for (const value of values) {
+    const prior = byId.get(value.metricId);
+    if (prior && JSON.stringify(prior) !== JSON.stringify(value))
+      throw new Error(`comparison_metric_descriptor_conflict:${value.metricId}`);
+    if (!prior) byId.set(value.metricId, value);
+  }
+  return [...byId.values()];
+}
+const rawCatalog = [
+  ...distinctDescriptors(descriptors),
   ...workload.map(([id, name, unit, stat, direction]) => ({
     metricId: `workload.${id}`,
     version: 1,
@@ -124,6 +138,13 @@ export const COMPARISON_METRIC_CATALOG: ComparisonMetricDescriptor[] = [
     default: false
   }))
 ];
+export const COMPARISON_METRIC_CATALOG: ComparisonMetricDescriptor[] = rawCatalog.map(
+  (descriptor) => {
+    const help = COMPARISON_METRIC_HELP[descriptor.metricId];
+    if (!help) throw new Error(`comparison_metric_help_missing:${descriptor.metricId}`);
+    return { ...descriptor, ...help, searchTerms: [descriptor.displayName, descriptor.metricId] };
+  }
+);
 export const DEFAULT_COMPARISON_METRICS: MetricSelection[] = COMPARISON_METRIC_CATALOG.filter(
   (d) => d.default
 ).map((d) => ({ metricId: d.metricId, statistics: [...d.statistics], selectors: {} }));

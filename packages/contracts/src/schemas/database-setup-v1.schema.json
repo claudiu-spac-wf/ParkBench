@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://parkbench.local/contracts/database-setup.v1.schema.json",
+  "title": "Database setup sequence v1",
+  "description": "Ordered static setup steps. Validate structural IDs for uniqueness separately. Custom input has no content constraints.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contractVersion": {
+      "const": "database-setup.v1"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/idxbuildStep"
+          },
+          {
+            "$ref": "#/$defs/idxcompactStep"
+          },
+          {
+            "$ref": "#/$defs/tablereorgStep"
+          },
+          {
+            "$ref": "#/$defs/customStep"
+          }
+        ]
+      }
+    }
+  },
+  "required": ["contractVersion", "steps"],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "idxbuildSet": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "scope": {
+              "const": "all"
+            },
+            "additionalArguments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["id", "scope"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "scope": {
+              "const": "table"
+            },
+            "table": {
+              "type": "string",
+              "minLength": 1
+            },
+            "additionalArguments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["id", "scope", "table"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "scope": {
+              "const": "indexes"
+            },
+            "indexes": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "table": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "index": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["table", "index"]
+              }
+            },
+            "additionalArguments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["id", "scope", "indexes"]
+        }
+      ]
+    },
+    "idxcompactSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "index": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compactionPercent": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 100
+        },
+        "mode": {
+          "const": "unusedblocks"
+        },
+        "additionalArguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id", "index"],
+      "not": {
+        "required": ["compactionPercent", "mode"],
+        "properties": {
+          "compactionPercent": {},
+          "mode": {}
+        }
+      }
+    },
+    "tablereorgSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "table": {
+          "type": "string",
+          "minLength": 1
+        },
+        "useIndex": {
+          "type": "string",
+          "minLength": 1
+        },
+        "additionalArguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id", "table"]
+    },
+    "customSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "input": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "input"]
+    },
+    "idxbuildStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "definitionId": {
+          "const": "idxbuild"
+        },
+        "optionSets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/idxbuildSet"
+          }
+        }
+      },
+      "required": ["id", "definitionId", "optionSets"]
+    },
+    "idxcompactStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "definitionId": {
+          "const": "idxcompact"
+        },
+        "optionSets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/idxcompactSet"
+          }
+        }
+      },
+      "required": ["id", "definitionId", "optionSets"]
+    },
+    "tablereorgStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "definitionId": {
+          "const": "tablereorg"
+        },
+        "optionSets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/tablereorgSet"
+          }
+        }
+      },
+      "required": ["id", "definitionId", "optionSets"]
+    },
+    "customStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "definitionId": {
+          "const": "custom"
+        },
+        "optionSets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/customSet"
+          }
+        },
+        "scriptRef": {
+          "type": "string",
+          "pattern": "^input:scripts/.+\\.sh$"
+        }
+      },
+      "required": ["id", "definitionId", "optionSets", "scriptRef"]
+    }
+  }
+}

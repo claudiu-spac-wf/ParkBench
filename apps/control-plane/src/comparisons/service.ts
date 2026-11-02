@@ -201,6 +201,8 @@ export function buildComparison(
           [DATABASE_LATENCY_PARAMETER]: 0,
           ...((run.environmentSnapshot as any)?.effectiveConfiguration ?? {})
         },
+        databaseIops: (run.environmentSnapshot as any)?.databaseIops,
+        databaseIopsEvidence: (run.environmentSnapshot as any)?.databaseIopsEvidence,
         databaseRunControls: (run.environmentSnapshot as any)?.databaseRunControls,
         databaseLatency: compactLatency((run.environmentSnapshot as any)?.databaseLatency),
         phaseBoundaries: run.phaseBoundaries,

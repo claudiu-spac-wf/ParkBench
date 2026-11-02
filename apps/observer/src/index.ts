@@ -1,3 +1,15 @@
+import { NativeCaptureStatus } from "../../../packages/observers/src/openedge-db/native-capture-status";
+import { NativeCaptureClock } from "../../../packages/observers/src/native-capture-clock";
+import { createObserverHttpServer } from "../../../packages/observers/src/http-shutdown";
+import { nativeMeasurementInventory } from "../../../packages/observers/src/measurement-inventory";
+import {
+  DiagnosticBudgetStore,
+  MeasurementDiagnosticsWriter
+} from "../../../packages/observers/src/measurement-diagnostics-writer";
+import { validateMeasurementProducerConfig } from "../../../packages/contracts/src/measurement-diagnostics";
+import { runtimeSecretValues } from "../../../packages/contracts/src/redaction";
+import type { EvidenceInput } from "../../../packages/observers/src/measurement-evidence";
+import type { NativeCollectionCaller } from "../../../packages/observers/src/openedge-db/collection";
 import http from "node:http";
 import { DatabaseObserverCollection } from "../../../packages/observers/src/openedge-db/collection";
 import { selectPasReplicaTargets } from "../../../packages/observers/src/openedge-pas/metrics";
@@ -21,15 +33,93 @@ loadLocalEnvironment();
 
 const target = process.env.PARKBENCH_OBSERVER_TARGET_URL;
 const kind = process.env.PARKBENCH_OBSERVER_KIND;
+const nativeCaptureClock = new NativeCaptureClock(
+  process.env.PARKBENCH_PHASE_CLOCK_PATH,
+  process.env.PARKBENCH_RUN_ID ?? ""
+);
 const filePath = process.env.PARKBENCH_FILE_SAMPLER_PATH;
 const port = Number(process.env.PARKBENCH_METRICS_PORT ?? 9100);
 const targets = (process.env.PARKBENCH_OBSERVER_TARGET_URLS ?? target ?? "")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean);
-const collectionTelemetry = new ObserverCollectionTelemetry();
+let diagnosticsWriter: MeasurementDiagnosticsWriter | undefined;
+const diagnosticsRequested = Boolean(process.env.PARKBENCH_MEASUREMENT_DIAGNOSTICS);
+const recordEvidence = diagnosticsRequested
+  ? (event: EvidenceInput) => diagnosticsWriter?.record(event)
+  : undefined;
+const collectionTelemetry = new ObserverCollectionTelemetry(
+  recordEvidence ? { diagnosticAttemptId: "producer", record: recordEvidence } : undefined
+);
+async function initializeEvidence() {
+  if (!diagnosticsRequested) return;
+  try {
+    const config = validateMeasurementProducerConfig(
+      JSON.parse(process.env.PARKBENCH_MEASUREMENT_DIAGNOSTICS!)
+    );
+    const store = await DiagnosticBudgetStore.attach(
+      "/run/parkbench/measurement-diagnostics",
+      config.runId,
+      config.runBudgetId,
+      config.config
+    );
+    diagnosticsWriter = await MeasurementDiagnosticsWriter.create(store, {
+      ...config,
+      mode: config.config.mode,
+      eventLimitBytes: config.config.eventLimitBytes,
+      flushIntervalMs: config.config.flushIntervalMs,
+      secrets: runtimeSecretValues()
+    });
+    producerEvent("DIAGNOSTIC_WRITE", "STARTED", {
+      startedAtMs: Date.now(),
+      reasonCodes: ["producer_started"]
+    });
+    process.once("SIGTERM", () => {
+      void stopHttp().then(async () => {
+        await diagnosticsWriter?.close();
+        process.exit(0);
+      });
+    });
+  } catch {
+    console.error(
+      JSON.stringify({ code: "measurement_diagnostics_unavailable", component: kind ?? "observer" })
+    );
+  }
+}
+function requestCaller(request: http.IncomingMessage): NativeCollectionCaller {
+  const requestId = request.headers["x-parkbench-diagnostic-request-id"];
+  const floor = kind === "openedge_db_v1" ? nativeCaptureClock.minimumCapturedAtMs() : undefined;
+  const sourceInterval = floor === undefined ? {} : { minimumCapturedAtMs: floor };
+  return typeof requestId === "string" &&
+    /^[a-zA-Z0-9_:-]{1,160}$/.test(requestId) &&
+    request.headers["x-parkbench-diagnostic-caller"] === "controller"
+    ? { callerRole: "CONTROLLER", requestId, ...sourceInterval }
+    : { callerRole: "UNKNOWN", ...sourceInterval };
+}
+function producerEvent(
+  stage: EvidenceInput["stage"],
+  outcome: EvidenceInput["outcome"],
+  fields: Partial<EvidenceInput> = {}
+) {
+  recordEvidence?.({
+    stage,
+    outcome,
+    scheduledAtMs: null,
+    startedAtMs: null,
+    finishedAtMs: null,
+    sourceCapturedAtMs: null,
+    availableAtMs: null,
+    timestampOrigin: "UNKNOWN",
+    durationMs: 0,
+    queueWaitMs: 0,
+    bodyReadMs: 0,
+    callerRole: "UNKNOWN",
+    ...fields
+  });
+}
 let parameterCapturePromise: Promise<OpenEdgeDbParameterCapture> | undefined;
 let lastDatabaseCollectorError = "";
+const nativeCaptureStatus = new NativeCaptureStatus(process.env.PARKBENCH_RUN_ID || "standalone");
 
 function cachedParameterCapture(): Promise<OpenEdgeDbParameterCapture> {
   if (!parameterCapturePromise) {
@@ -60,8 +150,68 @@ function capturedParameterMetrics(capture: OpenEdgeDbParameterCapture): string {
   return formatParameterSnapshotMetrics(snapshot);
 }
 
-const server = http.createServer(async (request, response) => {
+const { server, close: stopHttp } = createObserverHttpServer(async (request, response) => {
   const requestUrl = new URL(request.url ?? "/", "http://localhost");
+  if (requestUrl.pathname === "/native-capture-status") {
+    if (kind !== "openedge_db_v1") {
+      response.statusCode = 404;
+      response.end("not_found");
+    } else {
+      response.setHeader("content-type", "application/json");
+      response.setHeader("cache-control", "no-store");
+      response.end(JSON.stringify(nativeCaptureStatus.snapshot()));
+    }
+    return;
+  }
+  if (requestUrl.pathname === "/native-capture-timing") {
+    if (kind !== "openedge_db_v1") {
+      response.statusCode = 404;
+      response.end("not_found");
+    } else {
+      response.setHeader("content-type", "application/json");
+      response.setHeader("cache-control", "no-store");
+      response.end(JSON.stringify(nativeCaptureStatus.timingSnapshot()));
+    }
+    return;
+  }
+  const caller = requestCaller(request),
+    requestStartedAtMs = Date.now(),
+    requestMonotonicStart = performance.now();
+  if (kind === "openedge_db_v1" && requestUrl.pathname === "/metrics") {
+    response.once("finish", () => {
+      const generation = response.getHeader("x-parkbench-collection-generation");
+      const capturedAt = response.getHeader("x-parkbench-source-captured-at-ms");
+      nativeCaptureStatus.exposition({
+        callerRole: caller.callerRole,
+        requestedAtMs: requestStartedAtMs,
+        finishedAtMs: Date.now(),
+        minimumCapturedAtMs: caller.minimumCapturedAtMs ?? null,
+        collectionGeneration: typeof generation === "string" ? Number(generation) : null,
+        sourceCapturedAtMs: typeof capturedAt === "string" ? Number(capturedAt) : null,
+        httpStatus: response.statusCode
+      });
+    });
+  }
+  if (diagnosticsRequested && requestUrl.pathname === "/metrics") {
+    response.once("finish", () =>
+      producerEvent("EXPOSITION", response.statusCode === 200 ? "SUCCEEDED" : "FAILED", {
+        callerRole: caller.callerRole,
+        parentEventId: caller.requestId,
+        startedAtMs: requestStartedAtMs,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - requestMonotonicStart,
+        reasonCodes: ["response_finished"]
+      })
+    );
+    response.once("close", () => {
+      if (!response.writableFinished)
+        producerEvent("EXPOSITION", "CANCELLED", {
+          callerRole: caller.callerRole,
+          parentEventId: caller.requestId,
+          reasonCodes: ["response_closed_before_finish"]
+        });
+    });
+  }
   if (requestUrl.pathname === "/latch-inventory") {
     if (kind !== "openedge_db_v1") {
       response.statusCode = 404;
@@ -69,17 +219,30 @@ const server = http.createServer(async (request, response) => {
       return;
     }
     try {
-      const payload = await databaseObserverMetrics();
+      const payload = (await databaseCollector.metricsWithEvidence(caller)).payload;
       if (
         payload.protocolVersion !== 4 ||
         payload.latchInventory.runId !== process.env.PARKBENCH_RUN_ID
       )
         throw new Error("named_latch_inventory_unavailable");
       response.setHeader("content-type", "application/json");
-      response.end(JSON.stringify({ protocolVersion: 4, latchInventory: payload.latchInventory }));
+      response.end(
+        JSON.stringify({
+          protocolVersion: 4,
+          latchInventory: payload.latchInventory,
+          ...(diagnosticsRequested
+            ? {
+                measurementInventory: nativeMeasurementInventory(
+                  payload,
+                  process.env.PARKBENCH_RUN_ID!
+                )
+              }
+            : {})
+        })
+      );
     } catch (error) {
       response.statusCode = 503;
-      response.end(String(error));
+      response.end(kind === "openedge_db_v1" ? "native_capture_unavailable" : String(error));
     }
     return;
   }
@@ -95,7 +258,7 @@ const server = http.createServer(async (request, response) => {
       response.end(JSON.stringify(capture));
     } catch (error) {
       response.statusCode = 503;
-      response.end(String(error));
+      response.end(kind === "openedge_db_v1" ? "native_capture_unavailable" : String(error));
     }
     return;
   }
@@ -126,7 +289,9 @@ const server = http.createServer(async (request, response) => {
       return;
     }
     if (kind === "file_sampler_v1") {
-      response.statusCode = filePath && samplePath(filePath).exists ? 200 : 503;
+      const pathEvidence = filePath ? samplePath(filePath) : undefined;
+      if (pathEvidence?.kind) response.setHeader("x-parkbench-path-kind", pathEvidence.kind);
+      response.statusCode = pathEvidence?.exists ? 200 : 503;
       response.end(response.statusCode === 200 ? "ok" : "file_sampler_path_unavailable");
       return;
     }
@@ -187,7 +352,7 @@ const server = http.createServer(async (request, response) => {
     if (kind === "file_sampler_v1") {
       response.statusCode = 200;
       response.setHeader("content-type", "text/plain; version=0.0.4");
-      response.end(fileMetrics(filePath));
+      response.end(fileMetrics(filePath, response));
       return;
     }
     if (!targets.length && kind !== "openedge_db_v1") {
@@ -195,24 +360,39 @@ const server = http.createServer(async (request, response) => {
       response.end("observer_target_not_configured");
       return;
     }
-    const startedAt = process.hrtime.bigint();
+    const startedAt = process.hrtime.bigint(),
+      collectionStartedAtMs = Date.now();
     try {
       const selected = selectTargets(requestUrl);
-      const body = `${await nativeMetrics(selected, requestUrl)}${
+      const body = `${await nativeMetrics(selected, requestUrl, caller, response)}${
         kind === "openedge_db_v1" && parameterCapturePromise
           ? await parameterCapturePromise.then(capturedParameterMetrics).catch(() => "")
           : ""
       }`;
       const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1_000_000_000;
-      collectionTelemetry.record(durationSeconds, "success");
+      collectionTelemetry.record(durationSeconds, "success", Date.now() / 1000, {
+        startedAtMs: collectionStartedAtMs,
+        finishedAtMs: Date.now(),
+        monotonicDurationMs: durationSeconds * 1000
+      });
+      producerEvent("EXPOSITION", "SUCCEEDED", {
+        callerRole: caller.callerRole,
+        parentEventId: caller.requestId,
+        counts: { responseBytes: Buffer.byteLength(body) },
+        reasonCodes: ["body_encoded"]
+      });
       response.statusCode = 200;
       response.setHeader("content-type", "text/plain; version=0.0.4");
       response.end(`${standardMetrics()}${body}`);
     } catch (error) {
       const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1_000_000_000;
-      collectionTelemetry.record(durationSeconds, "failure");
+      collectionTelemetry.record(durationSeconds, "failure", Date.now() / 1000, {
+        startedAtMs: collectionStartedAtMs,
+        finishedAtMs: Date.now(),
+        monotonicDurationMs: durationSeconds * 1000
+      });
       response.statusCode = 503;
-      response.end(String(error));
+      response.end(kind === "openedge_db_v1" ? "native_capture_unavailable" : String(error));
     }
     return;
   }
@@ -220,11 +400,32 @@ const server = http.createServer(async (request, response) => {
   response.end("not_found");
 });
 
-server.listen(port, "0.0.0.0");
+void initializeEvidence().then(() => server.listen(port, "0.0.0.0"));
 
-function fileMetrics(file?: string): string {
+let fileCollectionGeneration = 0;
+function fileMetrics(file?: string, response?: http.ServerResponse): string {
   if (!file) return "";
+  const monotonicStart = performance.now(),
+    startedAtMs = Date.now(),
+    generation = ++fileCollectionGeneration;
   const sample = samplePath(file);
+  const capturedAtMs = Date.now();
+  if (sample.kind) response?.setHeader("x-parkbench-path-kind", sample.kind);
+  response?.setHeader("x-parkbench-path-captured-at-ms", String(capturedAtMs));
+  producerEvent("NATIVE_CAPTURE", sample.exists ? "SUCCEEDED" : "FAILED", {
+    sourceKey: "file-sampler-path",
+    collectionGeneration: generation,
+    startedAtMs,
+    finishedAtMs: Date.now(),
+    sourceCapturedAtMs: capturedAtMs,
+    timestampOrigin: "SOURCE",
+    durationMs: performance.now() - monotonicStart,
+    counts: {
+      availableMeasurements:
+        Number(sample.sizeBytes !== undefined) + Number(sample.diskUsageBytes !== undefined)
+    },
+    reasonCodes: ["path_stat_completed"]
+  });
   if (!sample.exists) return "";
   const values = [
     sample.sizeBytes === undefined ? undefined : `parkbench_file_size_bytes ${sample.sizeBytes}`,
@@ -355,9 +556,38 @@ async function retryFetch(url: string, attempts = 3): Promise<Response> {
   throw lastError;
 }
 
-async function nativeMetrics(values: string[], requestUrl?: URL): Promise<string> {
-  if (kind === "openedge_db_v1")
-    return formatOpenEdgeDbMetrics(await databaseObserverMetrics()) + "\n";
+async function nativeMetrics(
+  values: string[],
+  requestUrl?: URL,
+  caller: NativeCollectionCaller = { callerRole: "UNKNOWN" },
+  response?: http.ServerResponse
+): Promise<string> {
+  if (kind === "openedge_db_v1") {
+    const captured = await databaseCollector.metricsWithEvidence(caller);
+    response?.setHeader("x-parkbench-collection-id", captured.collectionId);
+    response?.setHeader("x-parkbench-collection-generation", String(captured.collectionGeneration));
+    if (captured.capturedAtMs !== null)
+      response?.setHeader("x-parkbench-source-captured-at-ms", String(captured.capturedAtMs));
+    const monotonicStart = performance.now(),
+      startedAtMs = Date.now();
+    const encoded = formatOpenEdgeDbMetrics(captured.payload) + "\n";
+    producerEvent("PARSE", "SUCCEEDED", {
+      callerRole: caller.callerRole,
+      parentEventId: caller.requestId,
+      collectionGeneration: captured.collectionGeneration,
+      startedAtMs,
+      finishedAtMs: Date.now(),
+      durationMs: performance.now() - monotonicStart,
+      counts: {
+        returnedSamples: captured.payload.metrics.length,
+        responseBytes: Buffer.byteLength(encoded)
+      },
+      sourceCapturedAtMs: captured.capturedAtMs,
+      timestampOrigin: captured.capturedAtMs === null ? "UNKNOWN" : "SOURCE",
+      reasonCodes: ["native_normalized_and_encoded"]
+    });
+    return encoded;
+  }
   const requestedReplica = requestUrl?.searchParams.has("replica")
     ? Number(requestUrl.searchParams.get("replica"))
     : undefined;
@@ -456,23 +686,50 @@ function formatOpenEdgeDbMetrics(payload: OpenEdgeDbObserverPayload): string {
   ].join("\n");
 }
 
-/* Metric scrapes collect a fresh native snapshot. Replaying cached explicit timestamps
- * from an independent timer can skip observations even while every scrape succeeds.
- * Health probes reuse recent evidence, and concurrent requests share one collection. */
+/* The owned run clock groups requests by the declared source interval. A shared
+ * real capture keeps its timestamp/generation; crossing a source or phase boundary
+ * requires new evidence. Standalone scrapes retain request freshness. */
 const DB_OBSERVER_REFRESH_MS = Math.max(
   1000,
   Number(process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_REFRESH_MS ?? 5000) || 5000
 );
-const databaseCollector = new DatabaseObserverCollection<OpenEdgeDbObserverPayload>(async () => {
-  const executable = process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_EXECUTABLE;
-  const procedure = process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_PROCEDURE;
-  if (!executable || !procedure) throw new Error("openedge_db_observer_not_configured");
-  return readOpenEdgeDbObserverPayload({
-    executable,
-    procedure,
-    args: parseObserverArgs(process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_ARGS)
-  });
-}, DB_OBSERVER_REFRESH_MS * 2);
+const databaseCollector = new DatabaseObserverCollection<OpenEdgeDbObserverPayload>(
+  async (capture) => {
+    const executable = process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_EXECUTABLE;
+    const procedure = process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_PROCEDURE;
+    if (!executable || !procedure) throw new Error("openedge_db_observer_not_configured");
+    const payload = await readOpenEdgeDbObserverPayload({
+      executable,
+      procedure,
+      args: parseObserverArgs(process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_ARGS),
+      onStage: (event) => {
+        nativeCaptureStatus.observe(capture, event);
+        producerEvent(event.stage === "PROCESS" ? "NATIVE_CAPTURE" : "PARSE", event.outcome, {
+          collectionGeneration: capture.collectionGeneration,
+          sourceKey: capture.sourceKey,
+          callerRole: capture.caller.callerRole,
+          ...(capture.caller.requestId ? { parentEventId: capture.caller.requestId } : {}),
+          startedAtMs: event.startedAtMs,
+          finishedAtMs: event.finishedAtMs,
+          durationMs: event.durationMs,
+          ...(event.responseBytes === undefined
+            ? {}
+            : { counts: { responseBytes: event.responseBytes } }),
+          reasonCodes: [
+            event.stage === "PROCESS" ? "native_process" : "native_output_normalization",
+            ...(event.failure ? [event.failure.code] : [])
+          ]
+        });
+      }
+    });
+    nativeCaptureStatus.captureCompleted(capture, Date.parse(payload.collectedAt));
+    return payload;
+  },
+  DB_OBSERVER_REFRESH_MS * 2,
+  Date.now,
+  recordEvidence,
+  (payload) => Date.parse(payload.collectedAt)
+);
 
 function databaseObserverMetrics(): Promise<OpenEdgeDbObserverPayload> {
   return databaseCollector.metrics();

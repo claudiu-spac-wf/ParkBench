@@ -1,3 +1,4 @@
+import { recordComparisonProjectionMetadata } from "../../../../packages/metrics/src/query-evidence";
 import { NativeQueryBudget } from "../grafana/native-query-budget";
 import { createHash } from "node:crypto";
 import type {
@@ -260,7 +261,7 @@ export function createMetricSelectionService(deps: {
                 (a.unit === b.unit && a.unit === d.units[stat])
             );
         const rowId = hash([runId, m.metricId, dimensions, stat]);
-        return {
+        const projected: ProjectedMetricValue = {
           rowId,
           runId,
           runState: owner.run.state,
@@ -297,6 +298,8 @@ export function createMetricSelectionService(deps: {
             : {}),
           difference
         };
+        recordComparisonProjectionMetadata({ definitionId: d.definitionId ?? d.metricId, group: d.group, dimensions, statistic: stat, status: projected.availability, reasonCodes: projected.reasons, coverage: a?.coverage, sourceReferences: a?.sourceReferences });
+        return projected;
       };
       const produce = async (): Promise<ProjectedMetricValue | undefined> => {
         while (state.run < request.runIds.length) {

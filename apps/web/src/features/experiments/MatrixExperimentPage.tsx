@@ -1,3 +1,7 @@
+import { DatabaseIopsField, DatabaseIopsPreview } from "./DatabaseIopsField";
+import { DATABASE_IOPS_PARAMETER, DATABASE_IOPS_CATALOG, DatabaseIopsPresetId } from "../../../../../packages/contracts/src/database-iops";
+import { DatabaseSetupFields, DatabaseSetupSummary } from "./DatabaseSetupFields";
+import type { DatabaseSetup } from "../../../../../packages/contracts/src/database-setup";
 import { DatabaseParameterHelp } from "./DatabaseParameterHelp";
 import { DATABASE_RUN_CONTROL_HELP } from "../../../../../packages/contracts/src/database-run-control-help";
 import { DatabaseParameterCatalog, parseStartupDimension } from "./DatabaseParameterCatalog";
@@ -47,6 +51,8 @@ export function MatrixExperimentPage() {
   const addDimensionButton = React.useRef(null as HTMLButtonElement | null);
   const pendingDimensionFocus = React.useRef(undefined as number | "add" | undefined);
   const [runName, setRunName] = useState("");
+  const [databaseSetup, setDatabaseSetup] = useState(undefined as DatabaseSetup | undefined);
+  const [setupValid, setSetupValid] = useState(true);
   const [scenarios, setScenarios] = useState([] as any[]);
   const [scenario, setScenario] = useState(undefined as any);
   const [assets, setAssets] = useState([] as any[]);
@@ -65,6 +71,8 @@ export function MatrixExperimentPage() {
     else dimensionSelectors.current.get(target)?.focus();
   }, [dimensions]);
   const [repetitions, setRepetitions] = useState(1);
+  const [iopsPresets,setIopsPresets]=useState(["unlimited"] as DatabaseIopsPresetId[]);
+  const [iopsCatalog,setIopsCatalog]=useState(undefined as typeof DATABASE_IOPS_CATALOG|undefined);
   const [databaseLatency, setDatabaseLatency] = useState("");
   const [runControls, setRunControls] = useState({} as Record<string, string>);
   const [preview, setPreview] = useState(undefined as any);
@@ -142,7 +150,8 @@ export function MatrixExperimentPage() {
         }
         setAssets(available);
       } else setError((current) => current || assetResult.reason.message);
-      if (optionsResult.status === "fulfilled")
+      if (optionsResult.status === "fulfilled") {
+        setIopsCatalog(optionsResult.value.databaseIopsCatalog);
         setParameterOptions([
           ...(optionsResult.value.databaseParameters?.parameters ?? []),
           ...(optionsResult.value.runParameters ?? []).map((definition: any) => ({
@@ -152,7 +161,7 @@ export function MatrixExperimentPage() {
             name: definition.canonicalName,
             label:
               runControlFields.find((field) => field.name === definition.canonicalName)?.label ??
-              "Database latency (ms)",
+              (definition.canonicalName===DATABASE_IOPS_PARAMETER?"Database disk IOPS":"Database latency (ms)"),
             description: definition.description,
             explanation: definition.explanation,
             unit: definition.unit,
@@ -162,7 +171,7 @@ export function MatrixExperimentPage() {
             available: true
           }))
         ]);
-      else setError((current) => current || optionsResult.reason.message);
+      } else setError((current) => current || optionsResult.reason.message);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
@@ -200,17 +209,19 @@ export function MatrixExperimentPage() {
     );
   }, [scenario, assets, staleAssetFields]);
   const request = () => ({
+    databaseSetup,
     runName,
     scenarioSourceId: scenario.id,
-    dimensions: dimensions.map((dimension) => ({
+    dimensions: [...(iopsPresets.length>1?[{name:DATABASE_IOPS_PARAMETER,values:iopsPresets}]:[]),...dimensions.map((dimension) => ({
       name: dimension.name.trim(),
       values: parseStartupDimension(
         dimension.values,
         parameterOptions.find((p) => p.name === dimension.name)
       )
-    })),
+    }))],
     repetitions,
     fixedOverrides: {
+      ...(iopsPresets.length===1?{[DATABASE_IOPS_PARAMETER]:iopsPresets[0]}:{}),
       ...mergeRunControlValues(
         fixedStartup,
         runControls,
@@ -230,6 +241,8 @@ export function MatrixExperimentPage() {
     setPending(true);
     let prepared;
     try {
+      if (!setupValid)
+        throw new Error("Complete the additional native arguments before previewing.");
       prepared = request();
     } catch (e) {
       setError((e as Error).message);
@@ -553,12 +566,22 @@ export function MatrixExperimentPage() {
             </small>
           )}
         </label>
+        <DatabaseIopsField catalog={iopsCatalog} values={iopsPresets} disabled={pending||loadingChoices} onChange={values=>{setIopsPresets(values);invalidatePreview();}} />
         <RunControlsFields
           values={runControls}
           dimensions={dimensions.map((d) => d.name.trim())}
           disabled={pending || loadingChoices}
           onChange={(name, value) => {
             setRunControls((current) => ({ ...current, [name]: value }));
+            invalidatePreview();
+          }}
+        />
+        <DatabaseSetupFields
+          value={databaseSetup}
+          disabled={pending || loadingChoices}
+          onValidity={setSetupValid}
+          onChange={(value) => {
+            setDatabaseSetup(value);
             invalidatePreview();
           }}
         />
@@ -610,7 +633,7 @@ export function MatrixExperimentPage() {
               >
                 <option value="">Choose parameter</option>
                 {parameterOptions
-                  .filter((option) => option.available)
+                  .filter((option) => option.available && option.name!==DATABASE_IOPS_PARAMETER)
                   .map((option) => (
                     <option key={option.name} value={option.name}>
                       {option.label ?? option.name}
@@ -677,7 +700,7 @@ export function MatrixExperimentPage() {
             disabled={
               !scenario ||
               !validRunName ||
-              !latencyValid ||
+              !latencyValid || !iopsPresets.length || !iopsCatalog ||
               !validRunControlsInput(
                 runControls,
                 dimensions.map((d) => d.name.trim())
@@ -757,9 +780,11 @@ export function MatrixExperimentPage() {
                         </strong>
                       </div>
                     )}
+                    <DatabaseIopsPreview condition={cell.databaseIops}/>
                     {JSON.stringify(cell.effectiveConfiguration)}
                   </td>
                   <td>
+                    <DatabaseSetupSummary setup={cell.databaseSetup} />
                     <RunControlsSummary controls={cell.databaseRunControls} />
                     <small>
                       startup.pf: {cell.databaseStartup?.startupFile?.status ?? "unavailable"}

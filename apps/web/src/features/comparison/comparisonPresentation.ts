@@ -1,3 +1,4 @@
+import { databaseIopsPresentation } from "../../shared/database-iops-presentation";
 import { COMPARISON_METRIC_CATALOG } from "../../../../../packages/contracts/src/comparison-metric-selection";
 import type { SummaryRow } from "../../../../../packages/contracts/src/run-summary";
 import type {
@@ -163,6 +164,7 @@ export interface ScheduledParameterEntry {
   provenance?: string;
 }
 export interface ScheduledParameters {
+  databaseIops?: ReturnType<typeof databaseIopsPresentation>;
   entries: ScheduledParameterEntry[];
   status: "populated" | "empty" | "partial" | "unavailable";
   unavailableSources: ParameterSource[];
@@ -255,7 +257,9 @@ export function projectScheduledParameters(environmentSnapshot: unknown): Schedu
   }
   if (startupUnavailable) unavailableSources.push("Database startup");
 
+  const storage=databaseIopsPresentation(snapshot);
   return {
+    ...(storage.status!=="not_recorded"?{databaseIops:storage}:{}),
     entries,
     status:
       unavailableSources.length > 0

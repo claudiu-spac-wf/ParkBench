@@ -45,7 +45,9 @@ export function accountResourceSamples(
             "name",
             "image",
             "accounting_epoch"
-          ].includes(k) && !k.startsWith("container_label_")
+          ].includes(k) &&
+          !k.startsWith("container_label_") &&
+          !(s.metricName.startsWith("container_fs_") && k === "device" && s.labels.device === "")
       )
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
     const key = JSON.stringify([
@@ -158,7 +160,7 @@ export function accountResourceSamples(
         s.metricName === "container_cpu_usage_seconds_total"
           ? (s.labels.cpu ?? "total")
           : s.metricName.startsWith("container_fs_")
-            ? (s.labels.device ?? "total")
+            ? s.labels.device || "__unresolved_device__"
             : s.metricName.startsWith("container_network_")
               ? (s.labels.interface ?? "total")
               : "";
@@ -176,7 +178,7 @@ export function accountResourceSamples(
     if (s.metricName === "container_cpu_usage_seconds_total" && set.has("total"))
       return !s.labels.cpu || s.labels.cpu === "total";
     if (s.metricName.startsWith("container_fs_") && set.has("total"))
-      return !s.labels.device || s.labels.device === "total";
+      return s.labels.device === "total";
     if (s.metricName.startsWith("container_network_")) {
       if (s.labels.interface === "lo") return false;
       if (set.has("total")) return !s.labels.interface || s.labels.interface === "total";

@@ -25,7 +25,8 @@
     "docker/openedge-db/copy-seed.sh",
     "docker/openedge-db/entrypoint.sh",
     "docker/openedge-db/prepare-controls.sh",
-    "docker/openedge-db/controls-lifecycle.sh"
+    "docker/openedge-db/controls-lifecycle.sh",
+    "packages/contracts/src/measurement-diagnostics.ts"
   ],
   "ambientDocker": [
     "DOCKER_CONTEXT",
@@ -92,6 +93,16 @@
     "PARKBENCH_TARGET_BASE_URL",
     "PARKBENCH_VARIANT_ID",
     "PARKBENCH_WORKLOAD_START_FILE",
-    "PARKBENCH_CREDENTIAL_*"
+    "PARKBENCH_CREDENTIAL_*",
+    "PARKBENCH_MEASUREMENT_DIAGNOSTICS"
+  ],
+  "measurementDiagnostics": [
+    "PARKBENCH_DIAGNOSTICS_SUMMARY_BYTES",
+    "PARKBENCH_DIAGNOSTICS_TRACE_BYTES",
+    "PARKBENCH_DIAGNOSTICS_PENDING_BYTES",
+    "PARKBENCH_DIAGNOSTICS_EVENT_BYTES",
+    "PARKBENCH_DIAGNOSTICS_FLUSH_MS",
+    "PARKBENCH_DIAGNOSTICS_TRACE_TTL_MS",
+    "PARKBENCH_DIAGNOSTICS_RETAINED_TRACE_BYTES"
   ]
 }

@@ -66,7 +66,7 @@ benchmark images are used by each generated run.
 | `web`            | Nginx-served React Control UI. It calls the control-plane API; it does not execute benchmarks.                                                                                   |
 | `prometheus`     | Scrapes workload, observer, container, and host metrics. Its local time-series data is retained independently of run cleanup.                                                    |
 | `grafana`        | Displays dashboards over Prometheus. It is a visualization aid, not the source of retained evidence.                                                                             |
-| `cadvisor`       | Supplies container CPU, memory, network, filesystem, and block-I/O measurements when exposed by the Docker host; its local web UI is published on port 18080 by default.        |
+| `cadvisor`       | Supplies container CPU, memory, network, filesystem, and block-I/O measurements when exposed by the Docker host; its local web UI is published on port 18080 by default.         |
 | `node-exporter`  | Supplies host-level metrics, including block-device measurements needed for the disk-I/O evidence gate.                                                                          |
 | `loadgen-image`  | Build target for the explicitly tagged Node.js load-generator image. The image is used as the `loadgen` service in each run; the build-profile service itself is not long-lived. |
 | `observer-image` | Build target for the explicitly tagged Node.js observer image. The same image can back the database observer, PAS observer, and file sampler services in a run.                  |
@@ -77,14 +77,14 @@ and observer support images are built from `docker/loadgen/Dockerfile` and
 
 ### Per-run benchmark images and services
 
-| Run service/image                                    | Role                                                                                                                                                                                                                                                                              |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Run service/image                                    | Role                                                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `database` / `PARKBENCH_OPENEDGE_DB_IMAGE`           | Licensed OpenEdge database server. The image carries no database: each run copies the selected on-disk seed (for example `one_gb_win`, database `parkbench`) into the run-owned `/psc/wrk` volume and serves it on broker port `20931`. Database parameters such as startup arguments and CPU limits are applied here. |
-| `pas-1` ... `pas-N` / `PARKBENCH_OPENEDGE_PAS_IMAGE` | Licensed PAS for OpenEdge instances. The final image contains the ParkBench runner archive and exposes the configured HTTP endpoint, normally port `8810`; up to eight replicas are supported. PAS parameters such as maximum threads are applied here.                           |
-| `loadgen` / `PARKBENCH_LOADGEN_IMAGE`                | Sends the scenario’s weighted HTTP operations to PAS using deterministic constant concurrency, records request latency/status/error data, and exposes Prometheus metrics plus a run summary.                                                                                      |
-| `db-observer` / observer image                       | Runs the read-only OpenEdge database/VST observer. It exposes database-native metrics through `/metrics` and checks database readiness.                                                                                                                                           |
-| `pas-observer` / observer image                      | Queries PAS management metrics for every PAS replica and checks application health. Credentials are passed by reference at runtime.                                                                                                                                               |
-| `file-sampler` / observer image                      | Samples configured database or runtime file size and disk usage from the run-owned volume.                                                                                                                                                                                        |
+| `pas-1` ... `pas-N` / `PARKBENCH_OPENEDGE_PAS_IMAGE` | Licensed PAS for OpenEdge instances. The final image contains the ParkBench runner archive and exposes the configured HTTP endpoint, normally port `8810`; up to eight replicas are supported. PAS parameters such as maximum threads are applied here.                                                                |
+| `loadgen` / `PARKBENCH_LOADGEN_IMAGE`                | Sends the scenario’s weighted HTTP operations to PAS using deterministic constant concurrency, records request latency/status/error data, and exposes Prometheus metrics plus a run summary.                                                                                                                           |
+| `db-observer` / observer image                       | Runs the read-only OpenEdge database/VST observer. It exposes database-native metrics through `/metrics` and checks database readiness.                                                                                                                                                                                |
+| `pas-observer` / observer image                      | Queries PAS management metrics for every PAS replica and checks application health. Credentials are passed by reference at runtime.                                                                                                                                                                                    |
+| `file-sampler` / observer image                      | Samples configured database or runtime file size and disk usage from the run-owned volume.                                                                                                                                                                                                                             |
 
 The OpenEdge image builder also produces a licensed
 `parkbench/openedge-observer` image and records it in the image manifest. The
@@ -472,6 +472,9 @@ data volume.
 
 ## 10. Troubleshooting and safe habits
 
+For missing measurements, source/summary/chart reconciliation and controlled validation, see [measurement consistency](docs/measurement-consistency.md).
+
+
 - **Asset is not selectable:** rescan Catalog, verify the file/image, and use a
   valid non-`latest` image tag or content checksum. Unclassified local Docker
   images are intentionally blocked.
@@ -492,6 +495,15 @@ data volume.
   deleting run resources; `scripts/stop.sh` stops the persistent platform and
   deliberately leaves its persistent volumes in place.
 
+## Optional experiment database setup
+
+Schedule can apply ordered index rebuilds, index compaction, table reorganization,
+and custom `.sh` scripts to each fresh copied database before benchmarks start.
+Each operation supports multiple settings without multiplying matrix runs.
+Rebuild the DB image to include the setup helpers. See
+[`docs/database-setup-scripts.md`](docs/database-setup-scripts.md) for script roots,
+container lifecycle, defaults, errors and native validation.
+
 ## Further reading
 
 - [`README.md`](README.md): repository overview and command summary.
@@ -508,3 +520,22 @@ data volume.
   platform topology.
 - [`deploy/run-compose/template.yml`](deploy/run-compose/template.yml): base
   per-run topology.
+
+
+### Simulate slower database storage
+
+Below **Database latency**, choose one or more **Database disk IOPS** presets:
+HDD (150), SATA SSD (90,000), Slow NVME (250,000), Fast NVME (1,000,000), or the
+default Unlimited. Each finite number is an independent read and write IOPS cap
+per resolved working-storage device. Multiple selections create separate matrix
+conditions; review the frozen caps in the preview before queuing.
+
+Seed copy and all declared database setup run uncapped. The controller applies
+limits with Docker Engine API >=1.55 after preparation, verifies the actual kernel
+policy and readiness, and retains the limits through warmup, measurement and
+cooldown. This needs supported local cgroup-v2 block storage; it does not simulate
+seek latency, bandwidth or cache misses. Unlimited adds no ParkBench cap. See
+[configuration](docs/operator-configuration.md#database-disk-iops-presets) for the
+supported adapter and [operations](docs/operator-runbook.md#inspect-database-iops-enforcement)
+for drift diagnostics and recovery. Old results without recorded policy display
+**Not recorded**.

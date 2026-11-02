@@ -1,3 +1,5 @@
+import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
+import { DatabaseSetupStatus } from "../runs/DatabaseSetupStatus";
 import React, { useEffect, useRef, useState } from "react";
 import { cancelRun, getEvents, getMetrics, getRun } from "./monitoringApi";
 import { DashboardPanel } from "../dashboards/DashboardPanel";
@@ -183,6 +185,7 @@ export function ActiveRunPage({ runId }: { runId: string }) {
         <h2>Run status</h2>
         <p>State: {run?.state ?? (sources.status.error ? "unavailable" : "loading")}</p>
         {run?.failureReason && <p className="notice error">Failure: {run.failureReason}</p>}
+        {run&&<DatabaseIopsSummary snapshot={run.environmentSnapshot??run.snapshot} runId={runId}/>}
         <p>Measurement validity: {run?.measurementValidity ?? "pending"}</p>
         <p>
           Measurement completeness:{" "}
@@ -220,6 +223,7 @@ export function ActiveRunPage({ runId }: { runId: string }) {
             />
           )}
       </section>
+      {run?.environmentSnapshot?.databaseSetup && <DatabaseSetupStatus runId={runId} />}
       <section aria-label="Live service health" className="panel">
         <h2>Live service health: {health?.status ?? "unknown"}</h2>
         {Object.entries(health?.services ?? {}).map(([service, value]: [string, any]) => (

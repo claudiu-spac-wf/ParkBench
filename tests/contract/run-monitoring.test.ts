@@ -39,7 +39,7 @@ describe("run monitoring contract", () => {
           }
         },
         {
-          targets: ["control-plane:3000"],
+          targets: ["cadvisor:8080"],
           labels: { ...context, component: "run", service: "run-cadvisor" }
         }
       ]);
@@ -75,14 +75,18 @@ describe("run monitoring contract", () => {
     assert.match(prometheus, /job_name: parkbench-run-owned-cadvisor/);
     assert.match(prometheus, /regex: parkbench-platform/);
     assert.match(prometheus, /regex: cadvisor\|run-cadvisor/);
-    assert.match(prometheus, /source_labels: \[run_id\]\s+target_label: __param_run_id/);
+    assert.match(
+      prometheus,
+      /source_labels: \[container_label_parkbench_run_id\]\s+target_label: run_id\s+action: keepequal/
+    );
+    assert.doesNotMatch(prometheus, /__param_run_id|metrics_path: \/internal\/cadvisor\/metrics/);
     assert.match(coordinator, /targets: \["cadvisor:8080"\]/);
     assert.match(
       coordinator,
-      /targets: \[this\.options\.runCAdvisorTarget\?\.\(\) \?\? "control-plane:3000"\]/
+      /targets: \[this\.options\.runCAdvisorTarget\?\.\(\) \?\? "cadvisor:8080"\]/
     );
     assert.match(coordinator, /\["node-exporter", "cadvisor"\]/);
-    assert.match(routes, /filterCAdvisorMetrics\(await response\.text\(\),\s*runId\)/);
+    assert.match(routes, /filterCAdvisorMetrics\(body,\s*runId\)/);
     assert.match(routes, /request\.query\?\.run_id/);
   });
 });

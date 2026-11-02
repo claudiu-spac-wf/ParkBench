@@ -1,3 +1,4 @@
+import { DatabaseIopsCondition, validateDatabaseIopsCondition, resolveDatabaseIops, DATABASE_IOPS_PARAMETER } from "../../contracts/src/database-iops";
 import { Variant, validateVariant } from "../../contracts/src";
 import { validateBrokerParameter } from "./startup-file";
 import {
@@ -29,6 +30,7 @@ export interface ParameterPlan {
   workloadSeed?: number;
   /** One-way delay in ms added in each direction between PAS replicas and the database. */
   databaseLatencyMs: number;
+  databaseIops?: DatabaseIopsCondition;
   databaseRunControls: DatabaseRunControls;
 }
 
@@ -47,6 +49,7 @@ export function parameterPlan(
     rejectNetworkBrokerReadOnly?: boolean;
     /** The selected seed's database name; non-OpenEdge scenarios use the default. */
     databaseName?: string;
+    databaseIops?: DatabaseIopsCondition;
     databaseRunControls?: DatabaseRunControls;
     legacyDatabaseParameters?: boolean;
   } = {}
@@ -85,6 +88,7 @@ export function parameterPlan(
     resourceLimits: {},
     databaseMetricsEnabled: true,
     databaseLatencyMs: 0,
+    ...(options.databaseIops ? {databaseIops: validateDatabaseIopsCondition(options.databaseIops)} : {}),
     databaseRunControls: options.databaseRunControls
       ? validateDatabaseRunControls(options.databaseRunControls)
       : resolveDatabaseRunControls({}, parameters)
@@ -144,6 +148,10 @@ export function parameterPlan(
       case "pas.cpuLimit":
         plan.resourceLimits.pas = numeric(key);
         break;
+      case DATABASE_IOPS_PARAMETER:
+        plan.databaseIops = resolveDatabaseIops(value);
+        if(options.databaseIops && JSON.stringify(plan.databaseIops)!==JSON.stringify(options.databaseIops)) throw new Error("database_iops_invalid:snapshot_parameter_conflict");
+        break;
       case "network.databaseLatencyMs":
         if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 1000)
           throw new Error("invalid_parameter:network.databaseLatencyMs");
@@ -177,6 +185,7 @@ export function readParameterPlan(
       throw new Error("database_parameter_registry_unsupported");
     const result = structuredClone(input);
     validateDatabaseRunControls(result.databaseRunControls);
+    if(result.databaseIops) validateDatabaseIopsCondition(result.databaseIops);
     result.databaseEnvironment = controlsEnvironment(
       result.databaseEnvironment,
       result.databaseRunControls

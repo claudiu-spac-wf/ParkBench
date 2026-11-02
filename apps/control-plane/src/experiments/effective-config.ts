@@ -1,3 +1,4 @@
+import { normalizeMeasurementDiagnostics, MeasurementDiagnosticsConfig } from "../../../../packages/contracts/src/measurement-diagnostics";
 import { Variant } from "../../../../packages/contracts/src/experiment";
 import {
   applyParameters,
@@ -6,10 +7,11 @@ import {
 export function effectiveConfiguration(
   base: Record<string, unknown>,
   variant: Variant
-): { values: Record<string, unknown>; adapterVersion: string } {
+): { values: Record<string, unknown>; adapterVersion: string; measurementDiagnostics: MeasurementDiagnosticsConfig } {
   const values = applyParameters(base, variant);
   return {
     values,
+    measurementDiagnostics: normalizeMeasurementDiagnostics(variant.measurementDiagnostics),
     adapterVersion: PARAMETER_ADAPTER_VERSION
   };
 }

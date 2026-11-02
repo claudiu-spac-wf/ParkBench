@@ -1,0 +1,23 @@
+ADD TABLE "SetupCustomer"
+  AREA "SetupData"
+  DUMP-NAME "setupcustomer"
+ADD FIELD "Id" OF "SetupCustomer" AS integer
+  POSITION 2
+  ORDER 10
+ADD INDEX "CustomerId" ON "SetupCustomer"
+  AREA "SetupIndexes"
+  PRIMARY
+  UNIQUE
+  INDEX-FIELD "Id" ASCENDING
+ADD TABLE "SetupOrder"
+  AREA "SetupData"
+  DUMP-NAME "setuporder"
+ADD FIELD "Id" OF "SetupOrder" AS integer
+  POSITION 2
+  ORDER 10
+ADD INDEX "OrderId" ON "SetupOrder"
+  AREA "SetupIndexes"
+  PRIMARY
+  UNIQUE
+  INDEX-FIELD "Id" ASCENDING
+.

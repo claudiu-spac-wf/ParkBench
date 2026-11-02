@@ -252,3 +252,61 @@ windows are test attachments; inspect them to establish a live memory cause.
 ## Database analysis reports
 
 Open **Reports** to run DBANALYS, IDXANALYS or TABANALYS against a temporary database copied from a ready offline seed, inspect results and download full unit-bearing CSV. Reports take priority over waiting experiments; active work finishes uninterrupted. There is no automatic analysis time limit. Cleanup uncertainty reserves capacity and retries automatically every five seconds after a failed attempt finishes. See [Database analysis reports](database-analysis-reports.md) for metric meanings, concern rules, read-only seed inputs, temporary database startup and recovery.
+
+Comparison CSV preserves the saved semantic identity. Its appended
+`definition_id`, `operation`, `file` and `scope` columns distinguish rows such as
+BI read/write I/O even when their display labels and numeric readings match.
+Existing columns retain their positions, values, statuses and coverage.
+
+
+## Inspect database IOPS enforcement
+
+Queue, active run, history and comparison views show the saved requested preset
+separately from its enforcement status. Follow **IOPS diagnostics** to the existing
+run artifact `database-iops-evidence.v1.json`. It records bounded device coverage,
+exact owner identity, the durable application intent, capability, verification
+times, failures, accepted terminal cause and cleanup. Compact run metadata links
+to this artifact; measurement CSV contents and metric meanings are unchanged.
+
+A successful update response alone is insufficient. Finite runs must have a
+matching Engine configuration and owned cgroup `io.max` policy before workload
+release. One non-overlapping runtime check per five-second infrastructure tick,
+plus phase boundaries and the final pre-cleanup check, has a 500ms deadline.
+A single read-only worker in the existing host-PID reader waits for coordinator requests; it does not poll independently. Its Engine stream is bounded and closed at cleanup or connection loss. Startup uses bounded Engine exec requests, avoiding a Docker CLI process on every tick. Checks do not extend phase windows. Confirmed drift immediately stops workload,
+marks the run FAILED with unavailable validity and retains partial measurements
+and the expected/observed policy. Unreadable or late evidence is unconfirmed and
+also prevents a valid result. Limits are never automatically reapplied mid-run.
+
+If cancellation and drift race, the first decision accepted by the coordinator
+is retained: cancellation first remains CANCELLED; drift first remains FAILED.
+Controller recovery preserves this decision and the original quality. An intent
+saved without a durable outcome means **possibly applied**, including a crash
+before the HTTP request could be sent. Recovery may inspect only the recorded
+owned target, never retries the update and never resumes an interrupted workload.
+Cleanup deletes only owned run resources; cleanup errors remain separate evidence. Fresh Unlimited sends no update. If previously recorded owned limits must be removed before warmup, ParkBench uses an exact per-device unlimited Engine reset and verifies the kernel result; clearing Engine lists alone is insufficient on the tested runtime.
+
+For a normal platform update or retention check, first let the queue and active
+experiment become quiescent, then use the existing wrapper so discovery mounts,
+private input paths and generated native image settings remain intact:
+
+```bash
+npm run build
+./scripts/compose.sh build control-plane web
+./scripts/compose.sh up -d --no-deps control-plane web
+# For a quiescent recovery check without rebuilding:
+./scripts/compose.sh restart control-plane
+```
+
+Reopen saved runs and their diagnostics after restart. Their frozen caps, original
+quality, partial windows, failure cause and cleanup must agree without reconstructing
+results from Docker containers that have already been deleted.
+
+Ordinary IOPS fixture suites do not mutate the daemon. Native storage validation
+requires both `PARKBENCH_RUN_IOPS_TESTS=1` and an explicit non-latest
+`PARKBENCH_IOPS_TEST_IMAGE`. Licensed lifecycle/drift validation additionally
+requires `PARKBENCH_RUN_OPENEDGE_TESTS=1`; it schedules through the normal API.
+Use the [feature 025 quickstart](../../ParkBenchPlanning/specs/025-db-disk-iops/quickstart.md)
+for commands. The bounded acceptance set is one finite/Unlimited pair, three
+owned phase-drift injections and a separate 4KiB physical-I/O fixture. A skipped
+native prerequisite is incomplete acceptance. No host cache drops or global
+resource cleanup are part of these tests.

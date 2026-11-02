@@ -62,6 +62,54 @@ describe("comparison CSV v2", () => {
       }
     }, /comparison_summary_pending/);
   });
+  it("preserves BI operation and file/scope identity even when readings and display labels are identical", async () => {
+    const rows = ["read", "write"].map((operation) => ({
+      ...summaryRow(),
+      definitionId: "db.bi.io",
+      displayName: "db bi io",
+      coverageScope: "bi",
+      dimensions: { operation },
+      rowKey: `bi-${operation}`
+    }));
+    rows.push({
+      ...summaryRow(),
+      definitionId: "disk.space.allocated",
+      displayName: "Disk allocation",
+      coverageScope: "file",
+      dimensions: { file: "owned-path", scope: "file" },
+      rowKey: "file-row"
+    } as any);
+    const reader: any = {
+      read: () => ({ status: "READY", header: summaryHeader("v") }),
+      iterate: async function* () {
+        yield* rows;
+      }
+    };
+    let csv = "";
+    for await (const chunk of streamComparisonCsv(
+      { id: "identity", variantRunIds: ["v"], createdAt: "now", selectionRevision: 1 },
+      reader
+    ))
+      csv += chunk;
+    const [header, ...data] = csv
+      .trimEnd()
+      .split("\n")
+      .map((line) => line.split(","));
+    assert.ok(
+      header.includes("operation"),
+      "BI read/write identities require their operation column"
+    );
+    assert.deepEqual(
+      data.slice(0, 2).map((row) => row[header.indexOf("operation")]),
+      ["read", "write"]
+    );
+    assert.deepEqual(
+      data.slice(0, 2).map((row) => row[header.indexOf("definition_id")]),
+      ["db.bi.io", "db.bi.io"]
+    );
+    assert.equal(data[2][header.indexOf("file")], "owned-path");
+    assert.equal(data[2][header.indexOf("scope")], "file");
+  });
   it("exports numeric differences for incomplete runs from different experiments", async () => {
     const rows = { b: summaryRow(), v: summaryRow() };
     rows.b.statistics.average.value = 2;

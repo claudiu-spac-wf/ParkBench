@@ -1,3 +1,5 @@
+import { DATABASE_IOPS_FAILURE_CODES } from "../../../../packages/contracts/src/database-iops";
+import { DATABASE_SETUP_FAILURE_CODES } from "../../../../packages/contracts/src/database-setup";
 import { FailureKind, RunFailureCode } from "../../../../packages/contracts/src/run";
 import { DATABASE_LATENCY_UNSUPPORTED_MESSAGE } from "../../../../packages/contracts/src/database-latency";
 
@@ -8,13 +10,71 @@ export interface ClassifiedRunError {
 }
 
 const failureReasons: Record<RunFailureCode, { kind: FailureKind; reason: string }> = {
-  database_writer_unavailable: { kind: "infrastructure", reason: "requested database writer capability is unavailable" },
-  database_writer_capacity_insufficient: { kind: "infrastructure", reason: "database connection capacity cannot accommodate the requested writers" },
-  database_bi_preparation_failed: { kind: "infrastructure", reason: "run-owned BI cluster preparation failed" },
-  database_writer_start_failed: { kind: "infrastructure", reason: "the exact requested database writers could not be established" },
-  database_run_control_unapplied: { kind: "infrastructure", reason: "observed database configuration does not match the frozen run controls" },
-  database_writer_lost: { kind: "infrastructure", reason: "an expected database writer was lost during the run" },
-  named_latch_evidence_missing: { kind: "observer", reason: "required named latch evidence could not be collected or verified" },
+  database_iops_unsupported: { kind: "infrastructure", reason: "The Docker host cannot apply verified database IOPS limits." },
+  database_iops_device_unresolved: { kind: "infrastructure", reason: "Database working-storage devices could not be resolved safely." },
+  database_iops_policy_conflict: { kind: "infrastructure", reason: "Existing IOPS rules conflict with this run." },
+  database_iops_apply_failed: { kind: "infrastructure", reason: "Database IOPS application or intent persistence failed." },
+  database_iops_unconfirmed: { kind: "infrastructure", reason: "Effective database IOPS policy could not be verified." },
+  database_iops_policy_drift: { kind: "infrastructure", reason: "Database IOPS policy changed during the workload." },
+
+  database_setup_script_unavailable: {
+    kind: "infrastructure",
+    reason: "Selected setup script is unavailable."
+  },
+  database_setup_unavailable: {
+    kind: "infrastructure",
+    reason:
+      "Database image does not support the requested setup. Rebuild the selected OpenEdge database image with the current ParkBench setup helpers, then schedule a new run."
+  },
+  database_setup_failed: { kind: "infrastructure", reason: "Database setup operation failed." },
+  database_setup_start_failed: {
+    kind: "infrastructure",
+    reason: "Temporary setup database failed to start."
+  },
+  database_setup_shutdown_unconfirmed: {
+    kind: "infrastructure",
+    reason: "Temporary setup database shutdown is unconfirmed."
+  },
+  database_setup_evidence_invalid: {
+    kind: "infrastructure",
+    reason: "Database setup evidence is missing or invalid."
+  },
+  database_setup_replay_refused: {
+    kind: "infrastructure",
+    reason: "Reusing partially prepared database state was refused."
+  },
+  database_setup_process_unconfirmed: {
+    kind: "infrastructure",
+    reason: "Setup process completion could not be confirmed."
+  },
+  database_writer_unavailable: {
+    kind: "infrastructure",
+    reason: "requested database writer capability is unavailable"
+  },
+  database_writer_capacity_insufficient: {
+    kind: "infrastructure",
+    reason: "database connection capacity cannot accommodate the requested writers"
+  },
+  database_bi_preparation_failed: {
+    kind: "infrastructure",
+    reason: "run-owned BI cluster preparation failed"
+  },
+  database_writer_start_failed: {
+    kind: "infrastructure",
+    reason: "the exact requested database writers could not be established"
+  },
+  database_run_control_unapplied: {
+    kind: "infrastructure",
+    reason: "observed database configuration does not match the frozen run controls"
+  },
+  database_writer_lost: {
+    kind: "infrastructure",
+    reason: "an expected database writer was lost during the run"
+  },
+  named_latch_evidence_missing: {
+    kind: "observer",
+    reason: "required named latch evidence could not be collected or verified"
+  },
   observer_contract_invalid: {
     kind: "observer",
     reason: "configured OpenEdge observer schema or metric catalog is invalid"
@@ -43,11 +103,26 @@ const failureReasons: Record<RunFailureCode, { kind: FailureKind; reason: string
     kind: "infrastructure",
     reason: "the run-owned database does not satisfy the workload's declared schema"
   },
-  database_startup_source_changed: { kind: "infrastructure", reason: "selected seed or startup.pf changed after preview" },
-  database_parameter_unapplied: { kind: "infrastructure", reason: "reviewed database broker value was not applied" },
-  database_parameter_unverifiable: { kind: "observer", reason: "reviewed database broker value could not be verified" },
-  database_parameter_capture_invalid: { kind: "observer", reason: "database parameter capture response is invalid" },
-  database_parameter_metrics_unavailable: { kind: "export", reason: "database parameter metrics were not ingested or exported" },
+  database_startup_source_changed: {
+    kind: "infrastructure",
+    reason: "selected seed or startup.pf changed after preview"
+  },
+  database_parameter_unapplied: {
+    kind: "infrastructure",
+    reason: "reviewed database broker value was not applied"
+  },
+  database_parameter_unverifiable: {
+    kind: "observer",
+    reason: "reviewed database broker value could not be verified"
+  },
+  database_parameter_capture_invalid: {
+    kind: "observer",
+    reason: "database parameter capture response is invalid"
+  },
+  database_parameter_metrics_unavailable: {
+    kind: "export",
+    reason: "database parameter metrics were not ingested or exported"
+  },
   insufficient_disk_space: {
     kind: "infrastructure",
     reason: "the run root has less free space than one more seed copy plus 20% headroom"
@@ -69,13 +144,20 @@ const failureReasons: Record<RunFailureCode, { kind: FailureKind; reason: string
 export function classifyRunError(error: unknown): ClassifiedRunError | undefined {
   const message = String(error).slice(0, 4096);
   let failureCode: RunFailureCode | undefined;
-  const controlCode = (["database_writer_unavailable", "database_writer_capacity_insufficient",
-    "database_bi_preparation_failed", "database_writer_start_failed", "database_run_control_unapplied",
-    "database_writer_lost", "named_latch_evidence_missing"] as RunFailureCode[])
-    .find(code => message.includes(code));
-  if (
-    controlCode
-  ) failureCode = controlCode;
+  const controlCode = (
+    [
+      ...DATABASE_SETUP_FAILURE_CODES,
+      ...DATABASE_IOPS_FAILURE_CODES,
+      "database_writer_unavailable",
+      "database_writer_capacity_insufficient",
+      "database_bi_preparation_failed",
+      "database_writer_start_failed",
+      "database_run_control_unapplied",
+      "database_writer_lost",
+      "named_latch_evidence_missing"
+    ] as RunFailureCode[]
+  ).find((code) => message.includes(code));
+  if (controlCode) failureCode = controlCode;
   else if (
     message.includes("observer_contract_invalid") ||
     message.includes("openedge_manifest_observer_contract_invalid")
@@ -88,12 +170,19 @@ export function classifyRunError(error: unknown): ClassifiedRunError | undefined
     failureCode = "observer_image_mismatch";
   else if (message.includes("database_schema_invalid")) failureCode = "database_schema_invalid";
   else if (message.includes("insufficient_disk_space")) failureCode = "insufficient_disk_space";
-  else if (message.includes("database_startup_source_changed")) failureCode = "database_startup_source_changed";
-  else if (message.includes("database_parameter_unapplied")) failureCode = "database_parameter_unapplied";
-  else if (message.includes("database_parameter_unverifiable")) failureCode = "database_parameter_unverifiable";
-  else if (message.includes("database_parameter_capture_invalid") || message.includes("openedge_db_parameter_capture_invalid"))
+  else if (message.includes("database_startup_source_changed"))
+    failureCode = "database_startup_source_changed";
+  else if (message.includes("database_parameter_unapplied"))
+    failureCode = "database_parameter_unapplied";
+  else if (message.includes("database_parameter_unverifiable"))
+    failureCode = "database_parameter_unverifiable";
+  else if (
+    message.includes("database_parameter_capture_invalid") ||
+    message.includes("openedge_db_parameter_capture_invalid")
+  )
     failureCode = "database_parameter_capture_invalid";
-  else if (message.includes("database_parameter_metrics_unavailable")) failureCode = "database_parameter_metrics_unavailable";
+  else if (message.includes("database_parameter_metrics_unavailable"))
+    failureCode = "database_parameter_metrics_unavailable";
   else if (message.includes("run_readiness_timeout")) {
     failureCode = message.includes("database")
       ? "database_readiness_timeout"
@@ -101,12 +190,24 @@ export function classifyRunError(error: unknown): ClassifiedRunError | undefined
   } else if (message.includes("database_readiness_failed"))
     failureCode = "database_readiness_failed";
   else if (message.includes("pas_readiness_failed")) failureCode = "pas_readiness_failed";
-  else if (message.includes("database_latency_unsupported")) failureCode = "database_latency_unsupported";
-  else if (message.includes("database_latency_apply_failed")) failureCode = "database_latency_apply_failed";
-  else if (message.includes("database_latency_unconfirmed")) failureCode = "database_latency_unconfirmed";
+  else if (message.includes("database_latency_unsupported"))
+    failureCode = "database_latency_unsupported";
+  else if (message.includes("database_latency_apply_failed"))
+    failureCode = "database_latency_apply_failed";
+  else if (message.includes("database_latency_unconfirmed"))
+    failureCode = "database_latency_unconfirmed";
   if (!failureCode) return undefined;
   const { kind, reason } = failureReasons[failureCode];
-  return { failureKind: kind, failureCode,
-    failureReason: ["database_parameter_unapplied", "database_parameter_unverifiable",
-      "database_startup_source_changed", "database_latency_apply_failed"].includes(failureCode) ? message.slice(0, 512) : reason.slice(0, 512) };
+  return {
+    failureKind: kind,
+    failureCode,
+    failureReason: [
+      "database_parameter_unapplied",
+      "database_parameter_unverifiable",
+      "database_startup_source_changed",
+      "database_latency_apply_failed"
+    ].includes(failureCode)
+      ? message.slice(0, 512)
+      : reason.slice(0, 512)
+  };
 }

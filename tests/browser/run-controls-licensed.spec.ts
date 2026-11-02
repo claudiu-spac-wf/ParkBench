@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-import os from "node:os";
 import { loadConfig } from "../../packages/contracts/src/config";
 import { loadOpenEdgeImageEnvironment } from "../../packages/contracts/src/local-env";
 import { createPlatform } from "../../apps/control-plane/src/platform";
@@ -24,7 +23,6 @@ test("licensed UI sweep matches frozen BI controls before native measurement", a
   const preliminary = loadConfig();
   loadOpenEdgeImageEnvironment(process.cwd(), preliminary.openedge.outputRoot!);
   const configured = loadConfig();
-  let metricsTarget = "";
   const platform = createPlatform(
     {
       ...configured,
@@ -38,8 +36,7 @@ test("licensed UI sweep matches frozen BI controls before native measurement", a
       }
     },
     {
-      targetDiscoveryFileName: `feature021-ui-${process.pid}.json`,
-      runCAdvisorTarget: () => metricsTarget
+      targetDiscoveryFileName: `feature021-ui-${process.pid}.json`
     }
   );
   const app = buildServer(platform);
@@ -58,17 +55,7 @@ test("licensed UI sweep matches frozen BI controls before native measurement", a
   ]);
   try {
     await platform.startupRecovery;
-    const address = await app.listen({ host: "0.0.0.0", port: 0 });
-    const addresses = Object.values(
-      os.networkInterfaces() as Record<
-        string,
-        Array<{ family: string; internal: boolean; address: string }>
-      >
-    )
-      .flat()
-      .filter((a) => a?.family === "IPv4" && !a.internal)
-      .map((a) => a!.address);
-    metricsTarget = `${process.env.PARKBENCH_SMOKE_METRICS_HOST ?? (addresses.length === 1 ? addresses[0] : "host.docker.internal")}:${new URL(address).port}`;
+    await app.listen({ host: "0.0.0.0", port: 0 });
     await installControlUiFixture(page, {
       platform,
       app,

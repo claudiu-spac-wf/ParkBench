@@ -1,3 +1,20 @@
+import { EngineApi } from "./engine-api";
+import { DatabaseIopsInspector } from "./database-iops-inspection";
+import { applyIopsPolicy, checkIopsPolicy, verifyIopsPolicy } from "./database-iops";
+import {
+  DatabaseIopsError,
+  desiredIops,
+  pendingDatabaseIops,
+  unlimitedDatabaseIops,
+  validateDatabaseIopsIntent
+} from "../../contracts/src/database-iops";
+import {
+  DatabaseIopsCondition,
+  DatabaseIopsEvidence,
+  PersistIopsIntent
+} from "../../contracts/src/database-iops";
+import { DatabaseSetupEvidence } from "../../contracts/src/database-setup";
+import { readDatabaseSetupEvidence } from "./database-setup-evidence";
 import {
   DatabaseRunControlsError,
   DatabaseRunControlsEvidence,
@@ -102,7 +119,38 @@ export function dockerHostPath(localPath: string, env: NodeJS.ProcessEnv = proce
   return mapContainerPath(localPath, localRoot, hostRoot);
 }
 
+export interface MeasurementTopologyMember {
+  group: "platform" | "database" | "pas";
+  service: string;
+  memberId: string;
+  imageId: string;
+}
 export interface RunOrchestrator {
+  inspectDatabaseIopsRecovery?(
+    bundle: ComposeBundle,
+    evidence: DatabaseIopsEvidence
+  ): Promise<NonNullable<DatabaseIopsEvidence["recoveryObservation"]>>;
+  applyDatabaseIops?(
+    bundle: ComposeBundle,
+    condition: DatabaseIopsCondition,
+    isCancelled: () => boolean,
+    persistIntent: PersistIopsIntent
+  ): Promise<DatabaseIopsEvidence>;
+  checkDatabaseIops?(
+    bundle: ComposeBundle,
+    evidence: DatabaseIopsEvidence,
+    phase: string,
+    isCancelled: () => boolean
+  ): Promise<DatabaseIopsEvidence>;
+  inspectMeasurementProducerRefs?(bundle: ComposeBundle): Promise<Record<string, string>>;
+  inspectMeasurementTopology?(bundle: ComposeBundle): Promise<MeasurementTopologyMember[]>;
+  quiesceMeasurementProducers?(bundle: ComposeBundle): Promise<void>;
+  waitForDatabaseSetup?(
+    bundle: ComposeBundle,
+    isCancelled: () => boolean,
+    onProgress: (evidence: DatabaseSetupEvidence) => void
+  ): Promise<DatabaseSetupEvidence>;
+  startRemainingServices?(bundle: ComposeBundle, isCancelled: () => boolean): Promise<void>;
   provision(bundle: ComposeBundle, isCancelled?: () => boolean): Promise<RunResource[]>;
   waitForReady(
     bundle: ComposeBundle,
@@ -144,6 +192,140 @@ export function classifyReadinessProbeStatus(status: number): "ready" | "failed"
 }
 
 export class DockerComposeOrchestrator implements RunOrchestrator {
+  async inspectDatabaseIopsRecovery(
+    bundle: ComposeBundle,
+    evidence: DatabaseIopsEvidence
+  ): Promise<NonNullable<DatabaseIopsEvidence["recoveryObservation"]>> {
+    const checkedAt = new Date().toISOString(),
+      intent = evidence.applicationIntent;
+    if (!intent) return { status: "UNAVAILABLE", checkedAt, reason: "no_recorded_target" };
+    try {
+      const api = await EngineApi.forDocker(this.docker);
+      if (api.daemonId !== intent.owner.daemonId) throw Error();
+      const target = await api.inspect(intent.owner.containerId);
+      if (
+        target.State?.Pid !== intent.owner.pid ||
+        target.State?.StartedAt !== intent.owner.startedAt
+      )
+        throw Error();
+      const inspector = new DatabaseIopsInspector(api);
+      const current = await inspector.snapshot(
+        intent.owner.containerId,
+        bundle.projectName,
+        intent.runId,
+        bundle.databaseName ?? "parkbench",
+        Date.now() + 5000
+      );
+      try {
+        verifyIopsPolicy(intent.condition, current.coverage, current.rules, current.kernel);
+        return { status: "MATCHED", checkedAt };
+      } catch {
+        return {
+          status: "MISMATCH",
+          checkedAt,
+          observed: { rules: current.rules, kernel: current.kernel }
+        };
+      }
+    } catch {
+      return { status: "UNAVAILABLE", checkedAt, reason: "recorded_owned_target_unavailable" };
+    }
+  }
+  private readonly iopsContexts = new Map<
+    string,
+    { api: EngineApi; inspector: DatabaseIopsInspector; id: string; runId: string }
+  >();
+  async applyDatabaseIops(
+    bundle: ComposeBundle,
+    condition: DatabaseIopsCondition,
+    isCancelled: () => boolean,
+    persistIntent: PersistIopsIntent
+  ): Promise<DatabaseIopsEvidence> {
+    if (condition.presetId === "unlimited" && !bundle.databaseIopsEvidence?.applicationIntent)
+      return (bundle.databaseIopsEvidence = unlimitedDatabaseIops());
+    this.releaseDatabaseIops(bundle.projectName);
+    const labels = bundle.resources[0]?.labels ?? {},
+      runId = labels["parkbench.run_id"],
+      experimentId = labels["parkbench.experiment_id"];
+    const deadline = bundle.databaseIopsDeadline ?? Date.now() + 300000;
+    const api = await EngineApi.forDocker(this.docker, process.env, deadline);
+    api.requireFinite();
+    const inspector = new DatabaseIopsInspector(api, this.docker);
+    const id = await inspector.selectDatabase(bundle.projectName, runId, deadline);
+    this.iopsContexts.set(bundle.projectName, { api, inspector, id, runId });
+    const inspect = (until: number) =>
+      inspector.snapshot(
+        id,
+        bundle.projectName,
+        runId,
+        bundle.databaseName ?? "parkbench",
+        until,
+        true
+      );
+    const evidence = await applyIopsPolicy({
+      api,
+      inspect,
+      condition,
+      runId,
+      experimentId,
+      variantId: bundle.variantId,
+      cancelled: isCancelled,
+      persistIntent,
+      deadline,
+      ownedPrevious: bundle.databaseIopsEvidence?.applicationIntent
+    });
+    bundle.databaseIopsEvidence = evidence;
+    try {
+      if (condition.presetId !== "unlimited")
+        await inspector.prepareRuntime(evidence.owner, evidence.coverage.workingRoot, deadline);
+    } catch {
+      evidence.failure = {
+        code: "database_iops_unconfirmed",
+        stage: "VERIFIED",
+        phase: "prewarmup",
+        reason: "readonly_worker_start_unavailable"
+      };
+      evidence.verification.status = "UNAVAILABLE";
+      throw new DatabaseIopsError(
+        "database_iops_unconfirmed",
+        evidence,
+        "readonly_worker_start_unavailable"
+      );
+    }
+    return evidence;
+  }
+  releaseDatabaseIops(projectName: string) {
+    this.iopsContexts.get(projectName)?.inspector.close();
+    this.iopsContexts.delete(projectName);
+  }
+  async checkDatabaseIops(
+    bundle: ComposeBundle,
+    evidence: DatabaseIopsEvidence,
+    phase: string,
+    isCancelled: () => boolean
+  ): Promise<DatabaseIopsEvidence> {
+    if (evidence.condition.presetId === "unlimited" || isCancelled()) return evidence;
+    const ctx = this.iopsContexts.get(bundle.projectName);
+    if (!ctx)
+      throw new DatabaseIopsError(
+        "database_iops_unconfirmed",
+        evidence,
+        "active_policy_context_missing"
+      );
+    return checkIopsPolicy(
+      (deadline) =>
+        ctx.inspector.snapshot(
+          ctx.id,
+          bundle.projectName,
+          ctx.runId,
+          bundle.databaseName ?? "parkbench",
+          deadline
+        ),
+      evidence,
+      phase,
+      isCancelled
+    );
+  }
+
   constructor(
     private readonly root = path.resolve(process.env.PARKBENCH_RUN_ROOT ?? ".parkbench/runs"),
     private readonly docker = "docker"
@@ -158,8 +340,18 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
       path.join(this.root, `${bundle.projectName}-scenario.json`),
       JSON.stringify(bundle.scenario, null, 2)
     );
-    if(bundle.brokerDirectories!==undefined)fs.writeFileSync(path.join(this.root,`${bundle.projectName}-broker-directories`),bundle.brokerDirectories,{mode:0o600});
-    if(bundle.brokerArgv!==undefined)fs.writeFileSync(path.join(this.root,`${bundle.projectName}-broker.argv`),bundle.brokerArgv,{mode:0o600});
+    if (bundle.brokerDirectories !== undefined)
+      fs.writeFileSync(
+        path.join(this.root, `${bundle.projectName}-broker-directories`),
+        bundle.brokerDirectories,
+        { mode: 0o600 }
+      );
+    if (bundle.brokerArgv !== undefined)
+      fs.writeFileSync(
+        path.join(this.root, `${bundle.projectName}-broker.argv`),
+        bundle.brokerArgv,
+        { mode: 0o600 }
+      );
     if (bundle.summaryPath) {
       fs.mkdirSync(path.dirname(bundle.summaryPath), { recursive: true });
       if (!fs.existsSync(bundle.summaryPath)) fs.writeFileSync(bundle.summaryPath, "");
@@ -178,14 +370,115 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
     const services = bundle.resources
       .filter((resource) => resource.type === "container" && resource.name !== "loadgen")
       .map((resource) => resource.name);
-    await this.command(["compose", "-p", bundle.projectName, "-f", file, "up", "-d", ...services]);
-    await this.refreshObserverPorts(bundle, ["db-observer", "pas-observer", "file-sampler"]);
-    return bundle.resources.map((resource) => ({
+    if (bundle.databaseSetup) {
+      const image = bundle.databaseSetup.manifest.image;
+      const capability = await this.command(
+        [
+          "image",
+          "inspect",
+          "--format",
+          '{{index .Config.Labels "org.parkbench.database-setup"}}',
+          image
+        ],
+        true
+      );
+      if (capability.stdout.trim() !== "database-setup.v1")
+        throw new Error("database_setup_unavailable:image_capability");
+    }
+    await this.command([
+      "compose",
+      "-p",
+      bundle.projectName,
+      "-f",
+      file,
+      "up",
+      "-d",
+      ...(bundle.databaseSetup ? ["database"] : services)
+    ]);
+    if (!bundle.databaseSetup)
+      await this.refreshObserverPorts(bundle, ["db-observer", "pas-observer", "file-sampler"]);
+    const createdResources = bundle.databaseSetup
+      ? bundle.resources.filter(
+          (resource) =>
+            resource.type === "compose_project" ||
+            resource.type === "network" ||
+            resource.name === "database" ||
+            resource.name === `${bundle.projectName}_run-db-data`
+        )
+      : bundle.resources;
+    return createdResources.map((resource) => ({
       resourceType: resource.type as RunResource["resourceType"],
       resourceId: resource.name,
       labels: resource.labels,
       createdAt: new Date().toISOString()
     }));
+  }
+
+  async waitForDatabaseSetup(
+    bundle: ComposeBundle,
+    isCancelled: () => boolean,
+    onProgress: (evidence: DatabaseSetupEvidence) => void
+  ): Promise<DatabaseSetupEvidence> {
+    if (!bundle.databaseSetup) throw new Error("database_setup_unavailable:manifest");
+    let previous = "";
+    while (true) {
+      if (isCancelled()) {
+        fs.writeFileSync(
+          path.join(bundle.databaseSetup.manifest.paths.control, "cancel"),
+          "cancel\n"
+        );
+        throw new Error("run_cancelled");
+      }
+      const evidence = readDatabaseSetupEvidence(bundle.databaseSetup.manifest);
+      const signature = JSON.stringify(evidence);
+      if (signature !== previous) {
+        onProgress(evidence);
+        previous = signature;
+      }
+      if (evidence.state === "SUCCEEDED") return evidence;
+      if (evidence.state === "FAILED")
+        throw new Error(evidence.failure?.code ?? "database_setup_failed");
+      if (evidence.state === "CANCELLED") throw new Error("run_cancelled");
+      const result = await this.command(
+        [
+          "compose",
+          "-p",
+          bundle.projectName,
+          "-f",
+          this.fileFor(bundle),
+          "ps",
+          "--all",
+          "--format",
+          "json",
+          "database"
+        ],
+        true
+      );
+      const rows = parseComposePs(result.stdout);
+      if (rows.some((row) => /exited|dead/i.test(row.State ?? row.Status ?? "")))
+        throw new Error("database_setup_evidence_invalid:container_exited");
+      if (!rows.length) throw new Error("database_setup_evidence_invalid:container_missing");
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+
+  async startRemainingServices(bundle: ComposeBundle, isCancelled: () => boolean): Promise<void> {
+    if (isCancelled()) throw new Error("run_cancelled");
+    const services = bundle.resources
+      .filter((r) => r.type === "container" && !["database", "loadgen"].includes(r.name))
+      .map((r) => r.name);
+    await this.command([
+      "compose",
+      "-p",
+      bundle.projectName,
+      "-f",
+      this.fileFor(bundle),
+      "up",
+      "-d",
+      ...services
+    ]);
+    await this.refreshObserverPorts(bundle, ["db-observer", "pas-observer", "file-sampler"]);
+    if (isCancelled()) throw new Error("run_cancelled");
   }
 
   async waitForReady(
@@ -404,7 +697,7 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
   ): Promise<"ready" | "failed" | "retry"> {
     const observerService = targetService === "database" ? "db-observer" : "pas-observer";
     const target = `http://127.0.0.1:9100${pathWithQuery}`;
-    const script = `try { const response = await fetch(${JSON.stringify(target)}); const body = await response.text(); console.log(body.startsWith("named_latch_evidence_missing:") ? "named_latch_evidence_missing" : response.status); } catch { console.log(0); }`;
+    const script = `try { const response = await fetch(${JSON.stringify(target)}, { signal: AbortSignal.timeout(5000) }); const body = await response.text(); console.log(body.startsWith("named_latch_evidence_missing:") ? "named_latch_evidence_missing" : response.status); } catch { console.log(0); }`;
     try {
       const result = await this.command(
         [
@@ -442,7 +735,7 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
     bundle: ComposeBundle,
     replica: number
   ): Promise<"ready" | "invalid" | "failed" | "retry"> {
-    const script = `try { const response = await fetch("http://127.0.0.1:9100/schema-readiness?replica=${replica}"); const body = await response.text(); console.log(response.status === 422 && body.trim() === "database_schema_invalid" ? "invalid" : response.ok ? "ready" : response.status >= 400 && response.status < 500 ? "failed" : "retry"); } catch { console.log("retry"); }`;
+    const script = `try { const response = await fetch("http://127.0.0.1:9100/schema-readiness?replica=${replica}", { signal: AbortSignal.timeout(5000) }); const body = await response.text(); console.log(response.status === 422 && body.trim() === "database_schema_invalid" ? "invalid" : response.ok ? "ready" : response.status >= 400 && response.status < 500 ? "failed" : "retry"); } catch { console.log("retry"); }`;
     const result = await this.command(
       [
         "compose",
@@ -722,6 +1015,7 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
   }
 
   async cleanup(bundle: ComposeBundle, resources: RunResource[]): Promise<RunResource[]> {
+    this.releaseDatabaseIops(bundle.projectName);
     let downError: string | undefined;
     const runId = bundle.resources[0]?.labels["parkbench.run_id"] ?? "";
     const owned = selectOwnedResources(resources, runId);
@@ -849,6 +1143,128 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
     }
   }
 
+  private async diagnosticContainers(projectName: string) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(projectName))
+      throw new Error("measurement_topology_project_invalid");
+    const listing = await execFileAsync(
+      this.docker,
+      [
+        "ps",
+        "-a",
+        "--no-trunc",
+        "--filter",
+        `label=com.docker.compose.project=${projectName}`,
+        "--format",
+        "{{.ID}}"
+      ],
+      { timeout: 10000, maxBuffer: 65536 }
+    );
+    const ids = listing.stdout.trim().split(/\s+/).filter(Boolean);
+    if (ids.length > 128 || ids.some((id) => !/^[a-f0-9]{64}$/.test(id)))
+      throw new Error("measurement_topology_inventory_invalid");
+    if (!ids.length) return [];
+    // A formatted allowlist deliberately excludes environment, mounts and secrets.
+    const result = await execFileAsync(
+      this.docker,
+      [
+        "inspect",
+        "--format",
+        '[{{json .Id}},{{json .Image}},{{json .State.Status}},{{json (index .Config.Labels "com.docker.compose.service")}},{{json (index .Config.Labels "parkbench.run_id")}},{{json (index .Config.Labels "com.docker.compose.project")}}]',
+        ...ids
+      ],
+      { timeout: 10000, maxBuffer: 131072 }
+    );
+    return result.stdout
+      .trim()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => {
+        const row = JSON.parse(line) as string[];
+        if (row.length !== 6 || row[5] !== projectName)
+          throw new Error("measurement_topology_owner_invalid");
+        return { id: row[0], imageId: row[1], state: row[2], service: row[3], runId: row[4] };
+      });
+  }
+  async inspectMeasurementTopology(bundle: ComposeBundle): Promise<MeasurementTopologyMember[]> {
+    const runId = bundle.resources[0]?.labels["parkbench.run_id"];
+    const [platform, run] = await Promise.all([
+      this.diagnosticContainers("parkbench-platform"),
+      this.diagnosticContainers(bundle.projectName)
+    ]);
+    if (run.some((row) => row.runId !== runId))
+      throw new Error("measurement_topology_run_owner_invalid");
+    return [
+      ...platform.map((row) => ({
+        group: "platform" as const,
+        service: row.service,
+        memberId: row.id,
+        imageId: row.imageId
+      })),
+      ...run
+        .filter((row) => row.service === "database" || /^pas-\d+$/.test(row.service))
+        .map((row) => ({
+          group: row.service === "database" ? ("database" as const) : ("pas" as const),
+          service: row.service,
+          memberId: row.id,
+          imageId: row.imageId
+        }))
+    ];
+  }
+  async inspectMeasurementProducerRefs(bundle: ComposeBundle): Promise<Record<string, string>> {
+    const nativeNames = ["db-observer", "pas-observer", "file-sampler"];
+    const names = bundle.measurementDiagnostics
+      ? Object.keys(bundle.measurementDiagnostics.producers).filter((name) =>
+          nativeNames.includes(name)
+        )
+      : nativeNames; // Audit-only accounting recovery may have no native mount.
+
+    if (!names.length) return {};
+    const runId = bundle.resources[0]?.labels["parkbench.run_id"],
+      rows = (await this.diagnosticContainers(bundle.projectName)).filter((row) =>
+        names.includes(row.service)
+      );
+    if (
+      names.some(
+        (name) =>
+          rows.filter(
+            (row) => row.service === name && row.state === "running" && row.runId === runId
+          ).length !== 1
+      ) ||
+      rows.some((row) => row.runId !== runId)
+    )
+      throw new Error("measurement_producer_deployment_unavailable");
+    return Object.fromEntries(
+      rows.flatMap((row) => [
+        [row.service, row.imageId],
+        [`producer:${row.service}:${row.id}`, row.imageId]
+      ])
+    );
+  }
+  async quiesceMeasurementProducers(bundle: ComposeBundle): Promise<void> {
+    const runId = bundle.resources[0]?.labels["parkbench.run_id"];
+    const nativeNames = ["db-observer", "pas-observer", "file-sampler"];
+    const names = bundle.measurementDiagnostics
+      ? Object.keys(bundle.measurementDiagnostics.producers).filter((name) =>
+          nativeNames.includes(name)
+        )
+      : nativeNames; // Audit-only accounting recovery may have no native mount.
+
+    const owned = (await this.diagnosticContainers(bundle.projectName)).filter((row) =>
+      names.includes(row.service)
+    );
+    if (owned.some((row) => row.runId !== runId))
+      throw new Error("measurement_producer_owner_invalid");
+    const live = owned.filter((row) => !["exited", "dead"].includes(row.state));
+    if (live.length)
+      await execFileAsync(this.docker, ["stop", "--time", "10", ...live.map((row) => row.id)], {
+        timeout: 30000,
+        maxBuffer: 65536
+      });
+    const after = await this.diagnosticContainers(bundle.projectName);
+    if (after.some((row) => names.includes(row.service) && !["exited", "dead"].includes(row.state)))
+      throw new Error("measurement_producer_quiescence_unconfirmed");
+  }
+
   async inspectImage(image: string): Promise<boolean> {
     try {
       await this.command(["image", "inspect", image], false);
@@ -900,8 +1316,14 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
       `./${scenarioFile}`,
       yamlEscape(this.dockerPath(path.join(this.root, scenarioFile)))
     );
-    rendered=rendered.replaceAll(`./${bundle.projectName}-broker.argv`,yamlEscape(this.dockerPath(path.join(this.root,`${bundle.projectName}-broker.argv`))));
-    rendered=rendered.replaceAll(`./${bundle.projectName}-broker-directories`,yamlEscape(this.dockerPath(path.join(this.root,`${bundle.projectName}-broker-directories`))));
+    rendered = rendered.replaceAll(
+      `./${bundle.projectName}-broker.argv`,
+      yamlEscape(this.dockerPath(path.join(this.root, `${bundle.projectName}-broker.argv`)))
+    );
+    rendered = rendered.replaceAll(
+      `./${bundle.projectName}-broker-directories`,
+      yamlEscape(this.dockerPath(path.join(this.root, `${bundle.projectName}-broker-directories`)))
+    );
     for (const localPath of [
       ...bundle.localPaths,
       bundle.summaryPath,
@@ -1153,6 +1575,98 @@ function parsePublishedPort(output: string): number | undefined {
 }
 
 export class FakeRunOrchestrator implements RunOrchestrator {
+  async inspectDatabaseIopsRecovery(
+    _bundle: ComposeBundle,
+    _evidence: DatabaseIopsEvidence
+  ): Promise<NonNullable<DatabaseIopsEvidence["recoveryObservation"]>> {
+    return {
+      status: "UNAVAILABLE",
+      checkedAt: new Date().toISOString(),
+      reason: "simulated_recovery"
+    };
+  }
+  async applyDatabaseIops(
+    bundle: ComposeBundle,
+    condition: DatabaseIopsCondition,
+    isCancelled: () => boolean,
+    persistIntent: PersistIopsIntent
+  ): Promise<DatabaseIopsEvidence> {
+    if (isCancelled()) throw Error("run_cancelled");
+    if (condition.presetId === "unlimited")
+      return (bundle.databaseIopsEvidence = unlimitedDatabaseIops());
+    this.calls.push("applyDatabaseIops");
+    const labels = bundle.resources[0].labels;
+    const owner = {
+      daemonId: "fake",
+      containerId: "a".repeat(64),
+      pid: 1,
+      startedAt: new Date().toISOString(),
+      runId: labels["parkbench.run_id"],
+      composeProject: bundle.projectName,
+      component: "database" as const
+    };
+    const coverage = {
+      owner,
+      workingRoot: `/psc/wrk/${bundle.databaseName ?? "parkbench"}`,
+      devices: [
+        {
+          id: "8:0",
+          path: "/dev/fake",
+          filesystem: "ext4",
+          mountId: "1",
+          paths: [`/psc/wrk/${bundle.databaseName ?? "parkbench"}`]
+        }
+      ]
+    };
+    const intent = validateDatabaseIopsIntent({
+      contractVersion: "database-iops-application-intent.v1",
+      attemptId: crypto.randomUUID(),
+      experimentId: labels["parkbench.experiment_id"],
+      runId: owner.runId,
+      variantId: bundle.variantId,
+      preparedAt: new Date().toISOString(),
+      condition,
+      owner,
+      coverage,
+      previousIops: { read: [], write: [] },
+      desiredIops: desiredIops(condition, coverage)
+    });
+    if (typeof persistIntent !== "function")
+      throw new DatabaseIopsError(
+        "database_iops_apply_failed",
+        undefined,
+        "persistence_callback_required"
+      );
+    await persistIntent(intent);
+    if (isCancelled()) throw Error("run_cancelled");
+    const now = new Date().toISOString();
+    return (bundle.databaseIopsEvidence = {
+      ...pendingDatabaseIops(condition),
+      stage: "VERIFIED",
+      mode: "simulated",
+      applicationOutcome: "VERIFIED",
+      owner,
+      coverage,
+      applicationIntent: intent,
+      appliedAt: now,
+      verifiedAt: now,
+      verification: { status: "MATCHED", checks: 1, firstVerifiedAt: now, lastVerifiedAt: now }
+    });
+  }
+  async checkDatabaseIops(
+    bundle: ComposeBundle,
+    evidence: DatabaseIopsEvidence,
+    phase: string,
+    isCancelled: () => boolean
+  ): Promise<DatabaseIopsEvidence> {
+    if (!isCancelled()) {
+      this.calls.push("checkDatabaseIops:" + phase);
+      evidence.verification.checks++;
+      evidence.verification.lastVerifiedAt = new Date().toISOString();
+    }
+    return evidence;
+  }
+
   readonly calls: string[] = [];
   readonly resources: RunResource[] = [];
   ready = true;

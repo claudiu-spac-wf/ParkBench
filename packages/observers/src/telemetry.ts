@@ -1,6 +1,9 @@
+import type { ObserverContext } from "./adapter";
+import { emitMeasurementEvidence } from "./measurement-evidence";
 const OBSERVER_KINDS = new Set(["openedge_db_v1", "openedge_pas_v1", "file_sampler_v1", "http_v1"]);
 
 export class ObserverCollectionTelemetry {
+  constructor(private readonly measurementEvidence?: ObserverContext["measurementEvidence"]) {}
   private scrapes = 0;
   private failures = 0;
   private lastSuccess = 0;
@@ -8,7 +11,8 @@ export class ObserverCollectionTelemetry {
   private lastOutcome: "success" | "failure" = "success";
   private readonly outcomes = { success: 0, failure: 0 };
 
-  record(durationSeconds: number, outcome: "success" | "failure", nowSeconds = Date.now() / 1000) {
+  record(durationSeconds: number, outcome: "success" | "failure", nowSeconds = Date.now() / 1000, timing?: { startedAtMs: number; finishedAtMs: number; monotonicDurationMs: number }) {
+    emitMeasurementEvidence({ measurementEvidence: this.measurementEvidence }, "DISPATCH", outcome === "success" ? "SUCCEEDED" : "FAILED", { callerRole: "UNKNOWN", startedAtMs: timing?.startedAtMs ?? null, finishedAtMs: timing?.finishedAtMs ?? null, durationMs: timing?.monotonicDurationMs ?? 0, counts: { observedBatches: outcome === "success" ? 1 : 0 }, reasonCodes: timing ? ["observer_telemetry_batch"] : ["observer_telemetry_batch", "duration_clock_unknown"] });
     this.lastDurationSeconds = Number.isFinite(durationSeconds) ? Math.max(0, durationSeconds) : 0;
     this.lastOutcome = outcome;
     this.outcomes[outcome] += 1;

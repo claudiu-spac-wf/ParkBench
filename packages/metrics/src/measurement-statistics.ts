@@ -1,3 +1,4 @@
+import { currentQueryEvidence } from "./query-evidence";
 import { Coverage, StatisticValue, SummaryReason } from "../../contracts/src/metric-definitions";
 import { MAX_PERCENTILE_BINS, RAW_RESPONSE_SAMPLES } from "./limits";
 export interface Observation {
@@ -50,7 +51,7 @@ function build(
   series: MeasurementSeries,
   w: { start: number; end: number },
   o: StatisticsOptions
-): { pieces: Piece[]; reasons: SummaryReason[]; count: number } {
+): { pieces: Piece[]; reasons: SummaryReason[]; count: number; decisions: { resetIntervals: number; epochTransitionIntervals: number; duplicateTimestamps: number; conflictingTimestamps: number; gapIntervals: number } } {
   if (series.activeIntervals) {
     const results = series.activeIntervals
       .filter((i) => i.end > i.start)
@@ -64,7 +65,8 @@ function build(
     return {
       pieces: results.flatMap((r) => r.pieces),
       reasons: [...new Set(results.flatMap((r) => r.reasons))],
-      count: results.reduce((n, r) => n + r.count, 0)
+      count: results.reduce((n, r) => n + r.count, 0),
+      decisions: Object.fromEntries(["resetIntervals", "epochTransitionIntervals", "duplicateTimestamps", "conflictingTimestamps", "gapIntervals"].map(key => [key, results.reduce((n, r) => n + r.decisions[key], 0)])) as any
     };
   }
   const { start: S, end: E } = w,
@@ -96,6 +98,9 @@ function build(
     }
     points.push(point);
   }
+  let conflictCount = 0; for (const timestamp of conflicts) if (timestamp >= S && timestamp <= E) conflictCount++;
+  const decisions = { resetIntervals: 0, epochTransitionIntervals: 0, duplicateTimestamps: input.length - points.length, conflictingTimestamps: conflictCount, gapIntervals: 0 };
+  const captureDecisions = Boolean(currentQueryEvidence()?.recordStatistics);
   const pieces: Piece[] = [];
   let firstInvalid = false,
     lastInvalid = false;
@@ -103,6 +108,11 @@ function build(
     const a = points[i - 1],
       b = points[i],
       dt = b.timestamp - a.timestamp;
+    if (captureDecisions) {
+      if (o.type === "counter" && b.value < a.value) decisions.resetIntervals++;
+      if (a.epoch !== b.epoch) decisions.epochTransitionIntervals++;
+      if (dt > 1.5 * c + EPS) decisions.gapIntervals++;
+    }
     let reason: SummaryReason | undefined;
     if (dt > 1.5 * c + EPS) reason = "insufficient_data";
     else if (a.epoch !== b.epoch || (o.type === "counter" && b.value < a.value))
@@ -140,6 +150,7 @@ function build(
   return {
     pieces,
     reasons: [...reasons],
+    decisions,
     count: points.filter((p) => p.timestamp < E && !conflicts.has(p.timestamp)).length
   };
 }
@@ -176,6 +187,9 @@ export class MeasurementStatisticsAccumulator {
             Math.max(0, Math.min(this.window.end, i.end) - Math.max(this.window.start, i.start)),
           0
         ) ?? this.window.end - this.window.start;
+    const context = currentQueryEvidence();
+    try { context?.recordStatistics?.({ contractVersion: "measurement-statistics-decision.v1", startMs: this.window.start * 1000, endMs: this.window.end * 1000, cadenceMs: series.cadenceSeconds * 1000, physicalId: series.physicalId ?? null, storedObservations: source.count, reasonCodes: source.reasons, counts: source.decisions, ...(this.options.constituentSelector ? { scope: this.options.constituentSelector } : {}) }); }
+    catch { try { context?.reportLoss?.("statistics_evidence_failed"); } catch {} }
     if (series.activeIntervals) this.activeIntervals.push(...series.activeIntervals);
     else this.unrestricted = true;
     this.members++;

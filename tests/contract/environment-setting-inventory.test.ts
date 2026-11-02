@@ -53,6 +53,10 @@ describe("operator environment setting inventory", () => {
       ...settings.ambientDocker,
       ...sourceKeys
     ]);
+    for (const key of settings.measurementDiagnostics) {
+      assert.ok(example.has(key), `${key} needs an example default`);
+      assert.ok(sourceKeys.has(key), `${key} needs a runtime consumer`);
+    }
     for (const key of expected) {
       const cells = documented.get(key);
       assert.ok(cells, `${key} needs an operator configuration row`);

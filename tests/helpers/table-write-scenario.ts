@@ -9,7 +9,6 @@ import { ComposeBundle } from "../../packages/compose-runner/src/run-compose";
 import { RunResource } from "../../packages/compose-runner/src/resources";
 import { Scenario } from "../../packages/contracts/src/scenario";
 import { isTerminal } from "../../packages/contracts/src/run-state";
-import os from "node:os";
 import { createPlatform } from "../../apps/control-plane/src/platform";
 import { buildServer } from "../../apps/control-plane/src/server";
 import { loadConfig } from "../../packages/contracts/src/config";
@@ -20,12 +19,16 @@ import {
 } from "../../packages/contracts/src/run-summary";
 
 const boundedFileHash = (filename: string): string => {
-  const hash = crypto.createHash("sha256"), buffer = Buffer.allocUnsafe(1024 * 1024);
+  const hash = crypto.createHash("sha256"),
+    buffer = Buffer.allocUnsafe(1024 * 1024);
   const descriptor = fs.openSync(filename, "r");
   try {
     let bytes: number;
-    while ((bytes = fs.readSync(descriptor, buffer, 0, buffer.length, null)) > 0) hash.update(buffer.subarray(0, bytes));
-  } finally { fs.closeSync(descriptor); }
+    while ((bytes = fs.readSync(descriptor, buffer, 0, buffer.length, null)) > 0)
+      hash.update(buffer.subarray(0, bytes));
+  } finally {
+    fs.closeSync(descriptor);
+  }
   return hash.digest("hex");
 };
 export const databaseHashes = (root: string): Record<string, string> =>
@@ -34,10 +37,7 @@ export const databaseHashes = (root: string): Record<string, string> =>
       .readdirSync(root)
       .filter((n) => /\.(?:db|st|[bdat]\d+)$/.test(n))
       .sort()
-      .map((n) => [
-        n,
-        boundedFileHash(path.join(root, n))
-      ])
+      .map((n) => [n, boundedFileHash(path.join(root, n))])
   );
 
 export class TableWriteScenarioOrchestrator extends DockerComposeOrchestrator {
@@ -283,7 +283,6 @@ export async function runMeasuredScenario(options: {
     options.inventory,
     options.assertions
   );
-  let metricsTarget = "";
   const platform = createPlatform(
     {
       ...config,
@@ -295,7 +294,6 @@ export async function runMeasuredScenario(options: {
     },
     {
       orchestrator,
-      runCAdvisorTarget: () => metricsTarget,
       targetDiscoveryFileName: "table-write-scenario-" + process.pid + "-" + Date.now() + ".json"
     }
   );
@@ -303,19 +301,7 @@ export async function runMeasuredScenario(options: {
   let experimentId: string | undefined;
   try {
     await platform.startupRecovery;
-    const address = await app.listen({ host: "0.0.0.0", port: 0 });
-    const addresses = Object.values(
-      os.networkInterfaces() as Record<
-        string,
-        Array<{ family: string; internal: boolean; address: string }>
-      >
-    )
-      .flat()
-      .filter((a) => a?.family === "IPv4" && !a.internal);
-    const host =
-      process.env.PARKBENCH_SMOKE_METRICS_HOST ??
-      (addresses.length === 1 ? addresses[0]!.address : "host.docker.internal");
-    metricsTarget = host + ":" + new URL(address).port;
+    await app.listen({ host: "0.0.0.0", port: 0 });
     const created = platform.coordinator.createExperiment(
       {
         scenario: options.scenario,
@@ -384,7 +370,10 @@ export async function runMeasuredScenario(options: {
         assert.equal(workload.timeoutCount, 0);
         assert.equal(summary.quality.complete, true);
         assert.equal(summary.windows.measurement.state, "completed");
-        assert.ok(summary.windows.measurement.durationSeconds >= options.scenario.phases.measurementSeconds - 1);
+        assert.ok(
+          summary.windows.measurement.durationSeconds >=
+            options.scenario.phases.measurementSeconds - 1
+        );
         assert.ok(summary.totalRowCount > 0);
         assert.equal(context.parameterReference?.state, "captured");
         // Normal cleanup removes the transient raw file. The published summary

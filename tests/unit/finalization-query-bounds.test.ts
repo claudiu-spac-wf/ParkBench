@@ -9,6 +9,61 @@ import { RunCoordinator } from "../../apps/control-plane/src/runs/coordinator";
 import { summaryRun } from "../helpers/summary";
 import { calculateCompleteness, DISK_IO_QUERIES } from "../../packages/metrics/src";
 
+test("required disk verification accounts for jittered cAdvisor source age without inflating acquisitions", async () => {
+  const run = summaryRun("disk-jitter-window");
+  run.phaseBoundaries = {
+    measurement: {
+      startedAt: new Date(0).toISOString(),
+      finishedAt: new Date(180000).toISOString()
+    }
+  };
+  const points: any[] = [];
+  for (const metricName of [
+    DISK_IO_QUERIES.containerRead,
+    DISK_IO_QUERIES.containerWrite,
+    DISK_IO_QUERIES.containerReadOperations,
+    DISK_IO_QUERIES.containerWriteOperations
+  ])
+    for (let i = 0; i < 35; i++)
+      points.push({
+        metricName,
+        type: "counter",
+        timestamp: 3.666 + 5 * i,
+        value: i,
+        source: "cadvisor",
+        labels: {
+          id: "/docker/database",
+          service: "database",
+          job: "parkbench-run-owned-cadvisor",
+          run_id: run.id
+        }
+      });
+  const counts = (
+    await (RunCoordinator.prototype as any).collectDiskIoCompleteness.call(
+      {
+        diagnostics: new Map(),
+        options: {
+          phaseScale: 1,
+          observerSamplingIntervalSeconds: 5,
+          cadvisorHousekeepingSeconds: 1
+        },
+        prometheus: new MemoryPrometheusClient(points)
+      },
+      run,
+      180,
+      { resources: [{ name: "database", type: "container" }] }
+    )
+  ).filter((c: any) => c.observerId.startsWith("disk-io-cadvisor-"));
+  assert.equal(counts.length, 4);
+  for (const count of counts) {
+    assert.equal(count.expected, 36);
+    assert.equal(count.observed, 35);
+    assert.equal(count.coverage.missingSeconds, 0);
+    assert.ok(Math.abs(count.coverage.estimatedEdgeSeconds - 10) < 1e-8);
+  }
+  assert.equal(calculateCompleteness(counts).complete, true);
+});
+
 test("disk coverage retains 59 raw acquisitions and rejects a real internal gap", async () => {
   const run = summaryRun("disk-window");
   run.phaseBoundaries = {
@@ -42,6 +97,7 @@ test("disk coverage retains 59 raw acquisitions and rejects a real internal gap"
     (
       await (RunCoordinator.prototype as any).collectDiskIoCompleteness.call(
         {
+          diagnostics: new Map(),
           options: {
             phaseScale: 1,
             observerSamplingIntervalSeconds: 5,
@@ -161,7 +217,11 @@ test("disk completeness streams bounded selectors without a nine-request fan-out
     }
   };
   const counts = await (RunCoordinator.prototype as any).collectDiskIoCompleteness.call(
-    { options: { phaseScale: 1, observerSamplingIntervalSeconds: 1 }, prometheus: client },
+    {
+      diagnostics: new Map(),
+      options: { phaseScale: 1, observerSamplingIntervalSeconds: 1 },
+      prometheus: client
+    },
     run,
     1200,
     { resources: [{ name: "database", type: "container" }] }

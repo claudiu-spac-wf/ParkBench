@@ -1,6 +1,9 @@
 import { ScenarioRef } from "./scenario";
 export type ComparisonMode = "comparative" | "exploratory";
 export interface Variant {
+  databaseIops?: import("./database-iops").DatabaseIopsCondition;
+  measurementDiagnostics?: import("./measurement-diagnostics").MeasurementDiagnosticsConfig;
+  databaseSetup?: import("./database-setup").DatabaseSetup;
   id: string;
   name: string;
   parameters: Record<string, string | number | boolean>;
@@ -19,6 +22,7 @@ export interface ExperimentInputRefs {
   credentialRef?: string;
 }
 export interface ExperimentRequest {
+  measurementDiagnostics?: import("./measurement-diagnostics").MeasurementDiagnosticsConfig;
   scheduleName?: string;
   scenario: ScenarioRef;
   comparisonMode: ComparisonMode;
@@ -28,6 +32,7 @@ export interface ExperimentRequest {
   inputs: ExperimentInputRefs;
 }
 export interface ExperimentScheduleV2Request {
+  measurementDiagnostics?: import("./measurement-diagnostics").MeasurementDiagnosticsConfig;
   contractVersion: "experiment-schedule.v2";
   runName: string;
   scenarioSourceId: string;

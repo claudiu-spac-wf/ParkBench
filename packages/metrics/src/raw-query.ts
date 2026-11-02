@@ -1,3 +1,5 @@
+import { currentQueryEvidence } from "./query-evidence";
+import type { ResponseReadEvidence } from "./query-evidence";
 import type { MetricSample } from "../../contracts/src/metrics";
 import type { PrometheusClient } from "./prometheus-client";
 import { RAW_CHUNK_SECONDS, RAW_RESPONSE_BYTES, RAW_RESPONSE_SAMPLES } from "./limits";
@@ -72,12 +74,14 @@ export const sharedRawQueryScheduler = new RawQueryScheduler(2);
 export async function boundedResponseJson(
   response: Response,
   signal?: AbortSignal,
-  allowVector = false
+  allowVector = false,
+  onRead?: (metadata: ResponseReadEvidence) => void
 ): Promise<any> {
   if (!response.ok) throw new Error("source_unavailable:" + response.status);
   const reader = response.body?.getReader();
   if (!reader) throw new Error("source_unavailable:empty_response");
-  let bytes = 0;
+  let bytes = 0, seriesCount = 0, sampleCount = 0, complete = false;
+  const started = performance.now();
   const parts: Uint8Array[] = [];
   try {
     while (true) {
@@ -100,8 +104,10 @@ export async function boundedResponseJson(
       samples += (series.values ?? (series.value ? [series.value] : [])).length;
       if (samples > RAW_RESPONSE_SAMPLES) throw new Error("summary_limit_exceeded:raw_samples");
     }
+    seriesCount = data.data.result.length; sampleCount = samples; complete = true;
     return data;
   } finally {
+    try { onRead?.({ responseBytes: bytes, bodyReadMs: performance.now() - started, seriesCount, sampleCount, complete }); } catch { /* Observability must not change response parsing. */ }
     await reader.cancel().catch(() => undefined);
   }
 }
@@ -161,6 +167,9 @@ export async function* readRawChunks(
           (options.includeExactEnd && s.type === "counter" && s.timestamp === end)) &&
         !previous.has(identity(s))
     );
+    let duplicateSeamSamples = 0;
+    if (currentQueryEvidence()?.recordChunk) for (const sample of samples) if (previous.has(identity(sample))) duplicateSeamSamples++;
+    try { currentQueryEvidence()?.recordChunk?.({ requestedStartMs: start * 1000, requestedEndMs: end * 1000, effectiveStartMs: a * 1000, effectiveEndMs: b * 1000, returnedSamples: samples.length, retainedSamples: fresh.length, duplicateSeamSamples, cadenceMs: cadence * 1000 }); } catch { try { currentQueryEvidence()?.reportLoss?.("raw_chunk_evidence_failed"); } catch {} }
     previous = new Set(samples.filter((s) => s.timestamp >= b - cadence - 0.001).map(identity));
     yield { samples: fresh, query: selector, start: a, end: b };
   }

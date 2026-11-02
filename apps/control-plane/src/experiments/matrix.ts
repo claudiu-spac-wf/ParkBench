@@ -1,6 +1,8 @@
+import { normalizeMeasurementDiagnostics } from "../../../../packages/contracts/src/measurement-diagnostics";
 import { ExperimentRequest } from "../../../../packages/contracts/src/experiment";
 import { validateVariant } from "../../../../packages/contracts/src/variant";
 export function validateMatrix(request: ExperimentRequest): void {
+  normalizeMeasurementDiagnostics(request.measurementDiagnostics);
   if (!request.variants.length || request.repetitions < 1)
     throw new Error("matrix_must_have_variant_and_repetition");
   const ids = new Set<string>();

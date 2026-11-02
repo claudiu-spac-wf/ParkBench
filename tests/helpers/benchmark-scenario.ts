@@ -2,7 +2,6 @@
    unchanged workloads, load generation, phase clocks and observer sources. */
 import fs from "node:fs";
 import path from "node:path";
-import os from "node:os";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createPlatform } from "../../apps/control-plane/src/platform";
@@ -67,7 +66,6 @@ export async function runBenchmarkScenario(options: {
       });
     }
   }
-  let metricsTarget = "";
   const platform = createPlatform(
     {
       ...config,
@@ -79,7 +77,6 @@ export async function runBenchmarkScenario(options: {
     },
     {
       orchestrator: new AcceptanceOrchestrator(path.join(directory, "compose")),
-      runCAdvisorTarget: () => metricsTarget,
       targetDiscoveryFileName: "benchmark-019-" + process.pid + "-" + Date.now() + ".json"
     }
   );
@@ -88,13 +85,6 @@ export async function runBenchmarkScenario(options: {
   try {
     await platform.startupRecovery;
     const address = await app.listen({ host: "0.0.0.0", port: 0 });
-    const hosts = Object.values(os.networkInterfaces() as Record<string, os.NetworkInterfaceInfo[]>)
-      .flat()
-      .filter((a) => a?.family === "IPv4" && !a.internal);
-    const host =
-      process.env.PARKBENCH_SMOKE_METRICS_HOST ??
-      (hosts.length === 1 ? hosts[0]!.address : "host.docker.internal");
-    metricsTarget = host + ":" + new URL(address).port;
     const created = platform.coordinator.createExperiment(
       {
         name: options.scenario.id,

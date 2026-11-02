@@ -20,3 +20,6 @@ export * from "./summary-catalog";
 export * from "./database-summary";
 export * from "./historical-summary-input";
 export * from "./required-sources";
+
+export * from "./query-evidence";
+export * from "./cadvisor-source-age";

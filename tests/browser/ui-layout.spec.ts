@@ -96,7 +96,7 @@ test("metric rows align, explain unsupported choices, and preserve independent s
     await expect(page.getByRole("tooltip")).toContainText("Enable this metric");
     await page.keyboard.press("Escape");
     await expect(
-      page.getByRole("checkbox", { name: "Database · Used memory", exact: true })
+      page.getByRole("checkbox", { name: "Database container · Working-set memory", exact: true })
     ).toBeChecked();
     await page.getByRole("textbox", { name: "Find metrics", exact: true }).fill("Latency p95");
     await page.getByRole("checkbox", { name: latency.displayName, exact: true }).check();

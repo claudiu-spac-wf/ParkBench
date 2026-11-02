@@ -1,3 +1,4 @@
+import { recordChartDecision } from "../measurement-diagnostics/chart-evidence";
 import { scanSelectors } from "./promql-selectors";
 import { RunTimeline } from "./run-timeline";
 
@@ -31,6 +32,7 @@ export function continuousPhaseQuery(expression: string, timeline: RunTimeline) 
     expression: rewritten,
     filter(body: any) {
       if (unrestricted || !body?.data?.result) return body;
+      let beforePoints = 0; for (const series of body.data.result) beforePoints += series.values?.length ?? (series.value ? 1 : 0);
       const keep = (timestamp: number) =>
         timeline.phases.some(
           (span) =>
@@ -46,6 +48,8 @@ export function continuousPhaseQuery(expression: string, timeline: RunTimeline) 
         if (Array.isArray(series.value)) return keep(Number(series.value[0])) ? [series] : [];
         return [series];
       });
+      let afterPoints = 0; for (const series of body.data.result) afterPoints += series.values?.length ?? (series.value ? 1 : 0);
+      recordChartDecision({ stage: "PHASE_FILTER", outcome: "SUCCEEDED", runId: timeline.runId, counts: { returnedPoints: beforePoints, retainedPoints: afterPoints, rejectedPoints: beforePoints - afterPoints }, reasonCodes: ["continuous_phase_view", "phase_intervals_left_closed_right_open"] });
       return body;
     }
   };

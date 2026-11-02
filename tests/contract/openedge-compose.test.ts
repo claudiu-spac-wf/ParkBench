@@ -37,6 +37,11 @@ describe("OpenEdge Compose contract", () => {
       /:\/run\/parkbench\/(?:shutdown|workload-start|phase-clock\.json):/
     );
     assert.ok(bundle.localPaths.includes(runtimeDirectory));
+    const dbObserver = bundle.file.split("  db-observer:")[1].split(/\n  [a-z0-9_-]+:/)[0];
+    assert.ok(dbObserver.includes(`${runtimeDirectory}:/run/parkbench/runtime:ro`));
+    assert.ok(
+      dbObserver.includes("PARKBENCH_PHASE_CLOCK_PATH: /run/parkbench/runtime/phase-clock.json")
+    );
   });
 
   it("keeps host-side bind mounts unchanged when only a Docker host root is configured", () => {
@@ -305,7 +310,10 @@ describe("OpenEdge Compose contract", () => {
         fs.writeFileSync(path.join(mockDir, name), "#!/bin/sh\nexit 0\n");
       for (const name of ["proserve", "pgrep", "tail", "prostrct"])
         fs.chmodSync(path.join(mockDir, name), 0o755);
-      fs.writeFileSync(path.join(mockDir,"broker.argv"),"-B\n1000\n-spin\n2\n-diagPrefix\nliteral $*\n-ssj\n0\n");
+      fs.writeFileSync(
+        path.join(mockDir, "broker.argv"),
+        "-B\n1000\n-spin\n2\n-diagPrefix\nliteral $*\n-ssj\n0\n"
+      );
       const dockerArgs = (environment: string[]) => [
         "run",
         "--rm",

@@ -774,3 +774,97 @@ pre {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+.metric-selection .metric-title {
+  align-items: flex-start;
+}
+.metric-selection .metric-select {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0;
+  min-width: 0;
+}
+.metric-title-text {
+  line-height: 1.5rem;
+}
+.metric-select > input[type="checkbox"] {
+  margin-top: 0.25rem;
+}
+.metric-title > .field-help {
+  flex: none;
+}
+
+.database-iops-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
+  min-width: 0;
+}
+.database-iops-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+.database-iops-label > .field-help {
+  flex: none;
+}
+.database-iops-trigger {
+  width: 100%;
+  min-height: 2.5rem;
+  text-align: left;
+  justify-content: flex-start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.database-iops-options {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border: 1px solid #c9d4d5;
+  border-radius: 0.35rem;
+  background: #fffdf8;
+  min-width: 0;
+}
+.database-iops-options > label {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  margin: 0;
+}
+.database-iops-options input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  min-height: 0;
+  margin: 0.2rem 0 0;
+}
+.database-iops-options small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.database-iops-preview {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.database-iops-field [role="alert"] {
+  color: #9c2828;
+}
+
+.database-iops-summary {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin-block: 0.65rem;
+}
+.database-iops-summary h3 {
+  font-size: 1rem;
+  margin: 0 0 0.3rem;
+}
+.database-iops-summary p {
+  margin: 0.3rem 0;
+}
+.database-iops-summary small {
+  display: block;
+}

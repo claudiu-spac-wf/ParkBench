@@ -1,10 +1,16 @@
-import {ReportService} from "./reports/service";
-import {ReportRepository} from "./reports/repository";
-import {ReportArtifacts} from "./reports/artifacts";
-import {HostDispatcher} from "./execution/host-dispatcher";
-import {DockerAnalysisRunner,AnalysisRunner} from "../../../packages/compose-runner/src/report-runner";
-import {resolveManagedInputPath} from "./catalog/managed-input-path";
-import {validateSeedDirectory} from "../../../packages/contracts/src/seed";
+import { CADVISOR_DISK_SNAPSHOT_PROFILE } from "../../../packages/metrics/src/cadvisor-disk-snapshots";
+import { MeasurementTraceRetention } from "./measurement-diagnostics/retention";
+import { persistSetupEvidence, reconcileSetupResources } from "./database-setup/evidence";
+import { ReportService } from "./reports/service";
+import { ReportRepository } from "./reports/repository";
+import { ReportArtifacts } from "./reports/artifacts";
+import { HostDispatcher } from "./execution/host-dispatcher";
+import {
+  DockerAnalysisRunner,
+  AnalysisRunner
+} from "../../../packages/compose-runner/src/report-runner";
+import { resolveManagedInputPath } from "./catalog/managed-input-path";
+import { validateSeedDirectory } from "../../../packages/contracts/src/seed";
 import { ComparisonSummaryService } from "./runs/comparison-summary-service";
 import { HistoricalSummaryWorker } from "./runs/historical-summary-worker";
 import fs from "node:fs";
@@ -62,6 +68,7 @@ import { CatalogBulkActions } from "./catalog/bulk-actions";
 import { requirePlatformEnvironment } from "../../../packages/contracts/src/local-env";
 import { RunMetricsAvailability } from "./runs/metrics-availability";
 export interface Platform {
+  measurementRetention: MeasurementTraceRetention;
   reports: ReportService;
   hostDispatcher: HostDispatcher;
   config: ParkBenchConfig;
@@ -107,7 +114,7 @@ export interface PlatformOptions {
   phaseScale?: number;
   requiredDiskIo?: boolean;
   targetDiscoveryFileName?: string;
-  /** Reachable owner of the run-scoped cAdvisor proxy (standalone smoke). */
+  /** Reachable cAdvisor source for run-owned resource scrapes. */
   runCAdvisorTarget?: () => string;
   discoveryProviders?: DiscoveryProviders;
   parameterCapture?: (
@@ -168,12 +175,47 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
   const repositories = new Repositories(database);
   const storage = new ArtifactStorage(config.artifactRoot);
   const artifacts = new ArtifactService(storage, repositories);
+  const measurementRetention = new MeasurementTraceRetention({
+    artifactRoot: config.artifactRoot,
+    run: (id) => repositories.getRun(id),
+    listArtifacts: (id) => repositories.listArtifacts(id),
+    allDiagnosticRuns: () => repositories.listAllRuns(),
+    allTraceArtifacts: () =>
+      repositories
+        .listAllRuns()
+        .flatMap((run) => repositories.listArtifacts(run.id))
+        .filter(
+          (a) =>
+            a.kind === "diagnostics" &&
+            a.sourceMetadata?.contractVersion === "measurement-diagnostics.v1" &&
+            a.sourceMetadata?.role === "trace"
+        ),
+    registerArtifact: (artifact) => repositories.saveArtifact(artifact),
+    isIdle: () =>
+      !repositories
+        .listAllRuns()
+        .some((run) =>
+          [
+            "PROVISIONING",
+            "DB_READY",
+            "PAS_READY",
+            "WARMING_UP",
+            "MEASURING",
+            "COOLDOWN",
+            "FINALIZING"
+          ].includes(run.state)
+        )
+  });
   const managedInputRoot =
     options.inputRoot ?? process.env.PARKBENCH_CONTAINER_PATH_ROOT ?? process.cwd();
   const prometheus =
     options.prometheus ??
     (testMode ? new MemoryPrometheusClient() : new HttpPrometheusClient(config.prometheusUrl));
-  const observerMetrics = options.observerMetrics ?? new PrometheusMetricBuffer();
+  const observerMetrics =
+    options.observerMetrics ??
+    new PrometheusMetricBuffer((event) =>
+      diagnosticCoordinator?.recordMeasurementPublication(event)
+    );
   const supportImages = options.supportImages ?? {
     loadgen: process.env.PARKBENCH_LOADGEN_IMAGE ?? (testMode ? "parkbench/loadgen:fixture" : ""),
     observer:
@@ -259,13 +301,36 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     new Map(),
     {
       orchestrator,
+      onDatabaseIopsEvidence: (run, evidence) => {
+        const metadata = controlRepository.getRunMetadata(run.id);
+        if (metadata)
+          controlRepository.saveRunMetadata({
+            ...metadata,
+            runId: run.id,
+            snapshot: {
+              ...metadata.snapshot,
+              databaseIops: evidence.condition,
+              databaseIopsEvidence: evidence
+            },
+            updatedAt: new Date().toISOString()
+          });
+      },
       observerFactory,
       testMode,
       observerMetrics,
+      measurementRetention: async (requestedBytes) => {
+        await measurementRetention.prepareBatch({
+          requestedBytes,
+          limitBytes: config.measurementDiagnostics?.retainedTraceLimitBytes
+        });
+      },
+      measurementDiagnostics: config.measurementDiagnostics,
       observerSamplingIntervalSeconds: config.prometheusScrapeIntervalSeconds,
       cadvisorHousekeepingSeconds: config.cadvisorHousekeepingSeconds,
+      cadvisorDiskAccountingProfile: testMode ? undefined : CADVISOR_DISK_SNAPSHOT_PROFILE,
       inputRoot: managedInputRoot,
       workloadsRoot: config.discoveryRoots?.workloads,
+      scriptsRoot: config.discoveryRoots?.scripts,
       seedsRoot: config.discoveryRoots?.seeds,
       runRoot: testMode ? undefined : config.runRoot,
       supportImages,
@@ -289,8 +354,10 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     supportImages,
     config.openedge
   );
+  const diagnosticCoordinator = coordinator;
   const controlRepository = new ControlUiRepository(database);
   const controlUi = new ControlUiService({
+    measurementDiagnostics: config.measurementDiagnostics,
     prometheusUrl: config.prometheusUrl,
     summaryReader: options.summaryReader,
     summaryScheduler: options.summaryScheduler ?? summaryWorker,
@@ -311,6 +378,7 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
       workloads: config.discoveryRoots?.workloads,
       observers: config.discoveryRoots?.observers,
       seeds: config.discoveryRoots?.seeds,
+      scripts: config.discoveryRoots?.scripts,
       archives: config.discoveryRoots?.archives
     },
     inputRefs: {
@@ -376,21 +444,44 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
   const reportRepository = new ReportRepository(database);
   const hostDispatcher = new HostDispatcher(reportRepository);
   const startupHostClaim = reportRepository.currentClaim();
-  if (!testMode || startupHostClaim || reportRepository.list("RUNNING").length) hostDispatcher.pause();
+  if (!testMode || startupHostClaim || reportRepository.list("RUNNING").length)
+    hostDispatcher.pause();
   coordinator.hostDispatcher = hostDispatcher;
-  const reports = new ReportService(reportRepository, new ReportArtifacts(config.artifactRoot,reportRepository), options.reportRunner ?? new DockerAnalysisRunner(), hostDispatcher, {
-    image:config.openedge.dbImage ?? "",licensePath:config.openedge.licensePath,version:config.openedge.version,
-    resolveSeed(id) {
-      const asset=controlUi.getAsset(id);
-      if(!asset)throw new Error("report_seed_unavailable");
-      let seedPath:string;
-      try { seedPath=resolveManagedInputPath(asset,asset.immutableRef,"seed",config.discoveryRoots??{}); }
-      catch {throw new Error("report_seed_invalid");}
-      const seed=validateSeedDirectory(seedPath);
-      return {assetId:asset.id,name:seed.name,path:seedPath,databaseName:seed.databaseName,managedRoot:fs.realpathSync(config.discoveryRoots!.seeds)};
+  const reports = new ReportService(
+    reportRepository,
+    new ReportArtifacts(config.artifactRoot, reportRepository),
+    options.reportRunner ?? new DockerAnalysisRunner(),
+    hostDispatcher,
+    {
+      image: config.openedge.dbImage ?? "",
+      licensePath: config.openedge.licensePath,
+      version: config.openedge.version,
+      resolveSeed(id) {
+        const asset = controlUi.getAsset(id);
+        if (!asset) throw new Error("report_seed_unavailable");
+        let seedPath: string;
+        try {
+          seedPath = resolveManagedInputPath(
+            asset,
+            asset.immutableRef,
+            "seed",
+            config.discoveryRoots ?? {}
+          );
+        } catch {
+          throw new Error("report_seed_invalid");
+        }
+        const seed = validateSeedDirectory(seedPath);
+        return {
+          assetId: asset.id,
+          name: seed.name,
+          path: seedPath,
+          databaseName: seed.databaseName,
+          managedRoot: fs.realpathSync(config.discoveryRoots!.seeds)
+        };
+      }
     }
-  });
-  hostDispatcher.onAvailable(()=>controlUi.wakeExecutionQueue());
+  );
+  hostDispatcher.onAvailable(() => controlUi.wakeExecutionQueue());
   const discovery = new CatalogDiscoveryService(controlRepository, discoveryProviders);
   const catalogActions = new CatalogBulkActions(
     controlRepository,
@@ -408,22 +499,39 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
       const scenario = snapshot.scenario as any;
       const inputs = snapshot.inputs ?? {};
       if (!scenario) throw new Error("cleanup_context_missing");
-      const bundle = generateRunCompose(
-        run.id,
-        run.experimentId,
-        scenario,
-        { db: inputs.databaseImage, pas: inputs.pasImage },
-        {
-          ...inputs,
-          parameters: snapshot.effectiveConfiguration ?? {},
-          loadgenImage: supportImages.loadgen,
-          observerImage: supportImages.observer,
-          dbObserverImage: config.openedge.observerImage,
-          summaryPath: path.join(config.artifactRoot, run.id, "loadgen-summary.json"),
-          shutdownPath: path.join(config.artifactRoot, run.id, "shutdown")
-        }
-      );
+      const bundle =
+        snapshot.databaseSetupBundle ??
+        generateRunCompose(
+          run.id,
+          run.experimentId,
+          scenario,
+          { db: inputs.databaseImage, pas: inputs.pasImage },
+          {
+            ...inputs,
+            databaseIops: snapshot.databaseIops,
+            variantId: run.variantId,
+            measurementDiagnostics: snapshot.measurementDiagnosticsMount,
+            parameters: snapshot.effectiveConfiguration ?? {},
+            loadgenImage: supportImages.loadgen,
+            observerImage: supportImages.observer,
+            dbObserverImage: config.openedge.observerImage,
+            summaryPath: path.join(config.artifactRoot, run.id, "loadgen-summary.json"),
+            shutdownPath: path.join(config.artifactRoot, run.id, "shutdown")
+          }
+        );
       if (stage === "beforeMetrics") {
+        await coordinator.recoverDatabaseIops(run, bundle);
+        if (bundle.databaseSetup) {
+          if (fs.existsSync(bundle.databaseSetup.manifest.paths.control))
+            fs.writeFileSync(
+              path.join(bundle.databaseSetup.manifest.paths.control, "cancel"),
+              "cancel\n"
+            );
+          persistSetupEvidence(run, bundle.databaseSetup.manifest, storage, repositories, {
+            state: "INTERRUPTED",
+            finishedAt: new Date().toISOString()
+          });
+        }
         try {
           await orchestrator.stopWorkload(bundle);
         } catch (error) {
@@ -434,29 +542,56 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
         }
         return;
       }
-      const resources = repositories.listResources(run.id) as any;
+      await coordinator.recoverMeasurementDiagnostics(run, bundle);
+      const resources = reconcileSetupResources(run, repositories.listResources(run.id) as any);
       targetDiscovery.remove(run.id);
       const cleaned = await orchestrator.cleanup(bundle, resources);
-      cleaned.forEach((resource) => repositories.saveResource(run.id, resource));
+      cleaned.forEach((resource) => {
+        if (resource.createdAt) repositories.saveResource(run.id, resource);
+      });
+      if (bundle.databaseSetup) {
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          databaseSetupIntentCleanup: cleaned.map((resource) => ({
+            type: resource.resourceType,
+            name: resource.resourceId,
+            result: resource.cleanupResult
+          }))
+        };
+        repositories.saveRun(run);
+      }
       if (cleaned.some((resource) => resource.cleanupResult !== "deleted"))
         throw new Error("owned_resource_cleanup_incomplete");
     },
     () => bootstrap.retryPendingCleanup()
   );
   const startupRecovery = reconciler.run().then(async (count) => {
-    if(platformClosed)return count;
-    const oldClaim=startupHostClaim;
-    if(oldClaim?.kind==="EXPERIMENT"){
-      const resources=repositories.listRuns(oldClaim.owner_id).flatMap(run=>repositories.listResources(run.id));
-      if(resources.every(resource=>resource.cleanupResult === "deleted"))reportRepository.release(oldClaim.token);
+    if (platformClosed) return count;
+    const oldClaim = startupHostClaim;
+    if (oldClaim?.kind === "EXPERIMENT") {
+      const resources = repositories
+        .listRuns(oldClaim.owner_id)
+        .flatMap((run) => repositories.listResources(run.id));
+      if (
+        resources.every((resource) => resource.cleanupResult === "deleted") &&
+        repositories
+          .listRuns(oldClaim.owner_id)
+          .every(
+            (run) =>
+              !run.environmentSnapshot?.databaseSetupResourceIntents ||
+              run.cleanupStatus === "COMPLETE"
+          )
+      )
+        reportRepository.release(oldClaim.token);
     }
     await reports.recover();
-    if(platformClosed)return count;
+    if (platformClosed) return count;
     hostDispatcher.resume();
     summaryWorker.recover();
     return count;
   });
   return {
+    measurementRetention,
     reports,
     hostDispatcher,
     config,
@@ -519,7 +654,7 @@ function hydrateObserverDeclaration(
   };
 }
 
-const httpObserverFactory: ObserverFactory = {
+export const httpObserverFactory: ObserverFactory = {
   create(declaration) {
     const configuration = declaration.configuration ?? {};
     if (
@@ -545,7 +680,7 @@ const httpObserverFactory: ObserverFactory = {
         declaration.kind,
         configuration.metricsUrl,
         typeof configuration.metricsPath === "string" ? configuration.metricsPath : "/metrics",
-        typeof configuration.timeoutMs === "number" ? configuration.timeoutMs : 3000
+        typeof configuration.timeoutMs === "number" ? configuration.timeoutMs : undefined
       );
     if (declaration.kind === "file_sampler_v1" && typeof configuration.path === "string")
       return fileObserver(declaration, configuration.path);

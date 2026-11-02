@@ -1417,7 +1417,7 @@ test("selected metrics keep +20% and orange warnings; empty selection and defaul
   await expect(
     page.getByText("No metrics selected. Choose metrics or restore defaults.", { exact: true })
   ).toBeVisible();
-  await page.getByLabel("Database · Used memory", { exact: true }).check();
+  await page.getByLabel("Database container · Working-set memory", { exact: true }).check();
   const run = page.locator('details[data-run-id="presentation-1"]');
   await run.locator("summary").first().click();
   await expect(run.locator("[data-tone]")).toHaveText("↑ +20.00%");

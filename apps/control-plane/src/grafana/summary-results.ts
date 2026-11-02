@@ -1,3 +1,4 @@
+import { recordChartDecision } from "../measurement-diagnostics/chart-evidence";
 import { TableRankSelector } from "./table-ranking";
 import type { SummaryReader } from "../../../../packages/contracts/src/comparison";
 /** Paged read-only view of the same persisted statistics used by UI/API/CSV. */
@@ -8,6 +9,7 @@ export class SavedSummaryQueries {
   ) {}
   async query(runId: string, labels: Map<string, string>, time: number): Promise<any[]> {
     let state = this.reader.read(runId);
+    recordChartDecision({ stage: "SAVED_SUMMARY", outcome: state.status === "READY" ? "SUCCEEDED" : "UNAVAILABLE", runId, counts: { cacheHits: state.status === "READY" ? 1 : 0 }, reasonCodes: ["saved_summary_read", "cache_read_is_not_source_acquisition"] });
     if (state.status !== "READY") {
       this.schedule?.(runId);
       state = this.reader.read(runId);

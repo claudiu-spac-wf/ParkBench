@@ -1,6 +1,8 @@
 USING Progress.Json.ObjectModel.JsonArray.
 USING Progress.Json.ObjectModel.JsonObject.
 
+DEFINE STREAM pbJsonOut.
+
 /* Connected-schema preparation can explicitly disable an absent source.
    Defaults describe the nominal full-source schema, not a patch guarantee. */
 &IF DEFINED(PB_HAS_DBSTATUS) = 0 &THEN
@@ -335,17 +337,16 @@ END PROCEDURE.
 
 PROCEDURE emitJson:
   DEFINE INPUT PARAMETER objectToEmit AS JsonObject NO-UNDO.
-  DEFINE VARIABLE textToEmit AS LONGCHAR NO-UNDO.
-  DEFINE VARIABLE offsetToEmit AS INTEGER NO-UNDO.
-  DEFINE VARIABLE chunkToEmit AS CHARACTER NO-UNDO.
-  objectToEmit:Write(INPUT-OUTPUT textToEmit).
-  offsetToEmit = 1.
-  DO WHILE offsetToEmit <= LENGTH(textToEmit):
-    chunkToEmit = SUBSTRING(textToEmit, offsetToEmit, 30000).
-    PUT UNFORMATTED chunkToEmit.
-    offsetToEmit = offsetToEmit + 30000.
+  /* The default terminal stream emits one character at a time, even in batch.
+     Buffer through a fixed byte copier, and let the JSON writer encode UTF-8
+     directly instead of converting LONGCHAR chunks through the session charset. */
+  OUTPUT STREAM pbJsonOut THROUGH "/bin/cat" NO-CONVERT.
+  IF NOT objectToEmit:WriteStream("pbJsonOut", FALSE, "UTF-8") THEN DO:
+    OUTPUT STREAM pbJsonOut CLOSE.
+    RETURN ERROR "openedge_db_observer_json_output_failed".
   END.
-  PUT UNFORMATTED SKIP.
+  PUT STREAM pbJsonOut CONTROL CHR(10).
+  OUTPUT STREAM pbJsonOut CLOSE.
 END PROCEDURE.
 
 /* Raw meanings: https://docs.progress.com/bundle/openedge-database-management/page/Database-status-_DbStatus.html
@@ -832,11 +833,25 @@ PROCEDURE captureTrans:
   DEFINE OUTPUT PARAMETER rows AS JsonArray NO-UNDO.
   DEFINE OUTPUT PARAMETER sourceExists AS LOGICAL NO-UNDO.
   DEFINE VARIABLE rowObject AS JsonObject NO-UNDO.
+  DEFINE VARIABLE emptyRow AS JsonObject NO-UNDO.
+  DEFINE VARIABLE durationField AS HANDLE NO-UNDO.
   rows = NEW JsonArray().
   sourceExists = FALSE.
 &IF {&PB_HAS_TRANS} = 1 &THEN
   sourceExists = TRUE.
+  durationField = BUFFER bTrans:BUFFER-FIELD("_Trans-Duration") NO-ERROR.
+  /* Unused transaction slots still contribute a row. Reuse one immutable empty
+     object instead of allocating and later destroying an object for every slot. */
+  emptyRow = NEW JsonObject().
   FOR EACH bTrans NO-LOCK:
+    IF NOT VALID-HANDLE(durationField) THEN DO:
+      rows:Add(emptyRow).
+      NEXT.
+    END.
+    IF durationField:BUFFER-VALUE = ? THEN DO:
+      rows:Add(emptyRow).
+      NEXT.
+    END.
     rowObject = NEW JsonObject().
     /* Transaction duration in seconds; adapter takes maximum and counts all returned rows, without state filtering. */
     RUN addField(INPUT rowObject, INPUT BUFFER bTrans:HANDLE, INPUT "_Trans-Duration").

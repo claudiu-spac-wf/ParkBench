@@ -7,12 +7,14 @@ export interface FileSample {
   sizeBytes?: number;
   diskUsageBytes?: number;
   exists: boolean;
+  kind?: "file" | "directory" | "other";
 }
 export function samplePath(filePath: string): FileSample {
   if (!fs.existsSync(filePath)) return { path: filePath, exists: false };
   const stat = fs.statSync(filePath);
   return {
     path: filePath,
+    kind: stat.isFile() ? "file" : stat.isDirectory() ? "directory" : "other",
     sizeBytes: stat.isFile() ? stat.size : undefined,
     diskUsageBytes: stat.isDirectory() ? directorySize(filePath) : stat.size,
     exists: true

@@ -1,3 +1,7 @@
+import {
+  MeasurementProducerConfig,
+  validateMeasurementProducerConfig
+} from "../../contracts/src/measurement-diagnostics";
 import path from "node:path";
 import { encodeDatabaseArgv } from "./database-argv";
 import {
@@ -9,7 +13,7 @@ import {
 import { legacyDatabaseParameterDefinition } from "../../contracts/src/database-parameter-options-v1";
 import { createRequire } from "node:module";
 import { Scenario } from "../../contracts/src/scenario";
-import { composeProjectName } from "./project-name";
+import { composeProjectName, runServiceAlias } from "./project-name";
 import { ownershipLabels } from "./ownership";
 import { ParameterPlan, parameterPlan } from "./parameters";
 import { checkImageReference } from "./input-checks";
@@ -40,7 +44,17 @@ function cpuSetTools(): CpuSetTools {
   }
   throw new Error("parkbench_cpuset_helper_not_found");
 }
+export interface RunDiagnosticsMount {
+  directory: string;
+  producers: Record<string, MeasurementProducerConfig>;
+}
 export interface ComposeBundle {
+  variantId?: string;
+  databaseIopsDeadline?: number;
+  databaseIops?: import("../../contracts/src/database-iops").DatabaseIopsCondition;
+  databaseIopsEvidence?: import("../../contracts/src/database-iops").DatabaseIopsEvidence;
+  measurementDiagnostics?: RunDiagnosticsMount;
+  databaseSetup?: { manifest: import("../../contracts/src/database-setup").DatabaseSetupManifest };
   projectName: string;
   file: string;
   brokerArgv?: string;
@@ -62,6 +76,9 @@ export interface ComposeBundle {
   resources: Array<{ type: string; name: string; labels: Record<string, string> }>;
 }
 export interface RunInputMounts {
+  databaseIops?: import("../../contracts/src/database-iops").DatabaseIopsCondition;
+  measurementDiagnostics?: RunDiagnosticsMount;
+  databaseSetup?: import("../../contracts/src/database-setup").DatabaseSetupManifest;
   /** Seed folder (an on-disk Linux OpenEdge database), mounted read-only into the database. */
   seed?: string;
   /** The seed's database name; drives DB_NAME, the PAS connection and the DB observer. */
@@ -97,6 +114,39 @@ export function generateRunCompose(
   images: { db: string; pas: string },
   inputs: RunInputMounts = {}
 ): ComposeBundle {
+  if (inputs.measurementDiagnostics) {
+    const mount = inputs.measurementDiagnostics;
+    if (
+      !path.isAbsolute(mount.directory) ||
+      path.basename(mount.directory) !== "measurement-diagnostics" ||
+      path.basename(path.dirname(mount.directory)) !== runId
+    )
+      throw new Error("measurement_diagnostics_invalid:mount_owner");
+    const producers = Object.entries(mount.producers).map(([component, value]) => {
+      const p = validateMeasurementProducerConfig(value);
+      if (p.runId !== runId || p.experimentId !== experimentId || p.component !== component)
+        throw new Error("measurement_diagnostics_invalid:producer_mount_owner");
+      return p;
+    });
+    const frozen = producers[0];
+    if (
+      !frozen ||
+      producers.some(
+        (p) =>
+          p.runBudgetId !== frozen.runBudgetId ||
+          p.diagnosticAttemptId !== frozen.diagnosticAttemptId ||
+          JSON.stringify(p.config) !== JSON.stringify(frozen.config)
+      )
+    )
+      throw new Error("measurement_diagnostics_invalid:producer_snapshot");
+    if (
+      producers.reduce((n, p) => n + p.summaryBytes, 0) + frozen.config.retentionControlBytes >
+        frozen.config.summaryLimitBytes ||
+      producers.reduce((n, p) => n + p.traceBytes, 0) > frozen.config.traceLimitBytes ||
+      producers.reduce((n, p) => n + p.pendingLimitBytes, 0) > frozen.config.pendingLimitBytes
+    )
+      throw new Error("measurement_diagnostics_invalid:combined_allocation");
+  }
   if (inputs.runtimeDirectory) {
     for (const [filename, value] of Object.entries({
       "summary.json": inputs.summaryPath,
@@ -157,6 +207,7 @@ export function generateRunCompose(
     ),
     databaseName: inputs.databaseName,
     legacyDatabaseParameters: !!inputs.databaseStartup && !inputs.databaseStartup.registryVersion,
+    databaseIops: inputs.databaseIops,
     databaseRunControls: inputs.databaseRunControls
   });
   if (
@@ -260,6 +311,11 @@ export function generateRunCompose(
             : observerImage;
   const runEnvironment = (service: string): string[] => {
     const lines = [...envLines];
+    const producer = inputs.measurementDiagnostics?.producers[service];
+    if (producer)
+      lines.push(
+        `      PARKBENCH_MEASUREMENT_DIAGNOSTICS: "${escapeYaml(JSON.stringify(producer))}"`
+      );
     if (inputs.parameters && Object.keys(inputs.parameters).length)
       lines.push(
         `      PARKBENCH_PARAMETER_ADAPTER_VERSION: "${runtimeParameters.contractVersion}"`,
@@ -279,6 +335,10 @@ export function generateRunCompose(
           ? `      PARKBENCH_VARIANT_ID: "${escapeYaml(inputs.variantId)}"`
           : `      PARKBENCH_VARIANT_ID: "baseline"`,
         `      PARKBENCH_REPETITION: "${inputs.repetition ?? 1}"`
+      );
+    if (service === "database" && inputs.databaseSetup)
+      lines.push(
+        `      PARKBENCH_SETUP_ATTEMPT_ID: "${escapeYaml(inputs.databaseSetup.attemptId)}"`
       );
     if (service === "database")
       lines.push(
@@ -319,6 +379,9 @@ export function generateRunCompose(
         `      PARKBENCH_OPENEDGE_DB_METRICS_ENABLED: "${runtimeParameters.databaseMetricsEnabled}"`,
         `      PARKBENCH_OBSERVER_TARGET_URL: "http://database:8810"`,
         `      PARKBENCH_OBSERVER_KIND: "openedge_db_v1"`,
+        inputs.phaseClockPath
+          ? `      PARKBENCH_PHASE_CLOCK_PATH: ${inputs.runtimeDirectory ? "/run/parkbench/runtime/phase-clock.json" : "/run/parkbench/phase-clock.json"}`
+          : "",
         `      DB_NAME: "${escapeYaml(runtimeParameters.databaseEnvironment.DB_NAME)}"`,
         observerExecutable
           ? `      PARKBENCH_OPENEDGE_DB_OBSERVER_EXECUTABLE: "${escapeYaml(observerExecutable)}"`
@@ -394,18 +457,27 @@ export function generateRunCompose(
     volumeLines.join("\n")
   ].join("\n");
   return {
+    variantId: inputs.variantId,
     projectName,
+    measurementDiagnostics: inputs.measurementDiagnostics
+      ? structuredClone(inputs.measurementDiagnostics)
+      : undefined,
+    databaseSetup: inputs.databaseSetup ? { manifest: inputs.databaseSetup } : undefined,
     file: yaml,
     scenario,
     metricsNetworkName,
     brokerArgv,
     brokerDirectories,
     localPaths: [
+      inputs.measurementDiagnostics?.directory,
       inputs.seed,
       inputs.applicationArchive,
       inputs.dbObserverProcedure,
       inputs.dbObserverRuntimePath,
       inputs.runtimeDirectory,
+      inputs.databaseSetup?.paths.input,
+      inputs.databaseSetup?.paths.output,
+      inputs.databaseSetup?.paths.control,
       inputs.phaseClockPath,
       inputs.workloadStartPath
     ]
@@ -413,6 +485,7 @@ export function generateRunCompose(
       .filter((value): value is string => Boolean(value)),
     summaryPath: inputs.summaryPath,
     schemaReadinessProcedures,
+    databaseIops: inputs.databaseIops,
     databaseRunControls: runtimeParameters.databaseRunControls,
     databaseName: runtimeParameters.databaseEnvironment.DB_NAME,
     expectedBiBuffers: Number.isSafeInteger(expectedBiBuffers) ? expectedBiBuffers : undefined,
@@ -500,7 +573,7 @@ function serviceYaml(
   const cpuSetLine = cpuSet ? `\n    cpuset: "${escapeYaml(cpuSet)}"` : "";
   const volumes =
     service === "database"
-      ? `\n    volumes:\n      - run-db-data:/psc/wrk\n      - ./${composeProjectName(runId)}-broker.argv:/run/parkbench/broker.argv:ro\n      - ./${composeProjectName(runId)}-broker-directories:/run/parkbench/broker-directories:ro${localMount(inputs.seed, "/run/parkbench/seed/db")}`
+      ? `\n    volumes:\n      - run-db-data:/psc/wrk\n      - ./${composeProjectName(runId)}-broker.argv:/run/parkbench/broker.argv:ro\n      - ./${composeProjectName(runId)}-broker-directories:/run/parkbench/broker-directories:ro${localMount(inputs.seed, "/run/parkbench/seed/db")}${inputs.databaseSetup ? localMount(inputs.databaseSetup.paths.input, "/run/parkbench/setup-input") + localMount(inputs.databaseSetup.paths.output, "/run/parkbench/setup-output", "rw") + localMount(inputs.databaseSetup.paths.control, "/run/parkbench/setup-control", "rw") : ""}`
       : isPasReplica(service)
         ? `\n    volumes:\n      - run-service-data-${service}:/psc/wrk${localMount(inputs.applicationArchive, "/deploy/artifacts/oepas1.zip")}`
         : service === "loadgen"
@@ -522,10 +595,29 @@ function serviceYaml(
               : service.includes("observer")
                 ? '\n    expose:\n      - "9100"'
                 : "";
+  const diagnosticMount = inputs.measurementDiagnostics?.producers[service]
+    ? localMount(
+        inputs.measurementDiagnostics.directory,
+        "/run/parkbench/measurement-diagnostics",
+        "rw"
+      )
+    : "";
+  const nativeClockMount =
+    service === "db-observer" && inputs.phaseClockPath
+      ? inputs.runtimeDirectory
+        ? localMount(inputs.runtimeDirectory, "/run/parkbench/runtime", "ro")
+        : localMount(inputs.phaseClockPath, "/run/parkbench/phase-clock.json", "ro")
+      : "";
+  const extraMounts = diagnosticMount + nativeClockMount;
+  const volumesWithDiagnostics = extraMounts
+    ? volumes.includes("\n    volumes:")
+      ? volumes + extraMounts
+      : volumes + "\n    volumes:" + extraMounts
+    : volumes;
   const metricsNetwork = ["loadgen", "db-observer", "pas-observer", "file-sampler"].includes(
     service
   )
-    ? `\n      run-metrics:\n        aliases:\n          - ${projectName}-${service}`
+    ? `\n      run-metrics:\n        aliases:\n          - ${runServiceAlias(projectName, service)}`
     : "";
   const hostMetricsPort = ["loadgen", "db-observer", "pas-observer", "file-sampler"].includes(
     service
@@ -535,7 +627,7 @@ function serviceYaml(
   const privateNetwork = isPasReplica(service)
     ? `\n      run-private:\n        aliases:\n          - ${escapeYaml(pasService)}`
     : "\n      run-private: {}";
-  return `  ${service}:\n    image: ${serviceImage(service)}\n    labels:\n      parkbench.managed: "true"\n      parkbench.run_id: "${runId}"\n      parkbench.experiment_id: "${experimentId}"\n      parkbench.component: "${service}"\n    networks:${privateNetwork}${metricsNetwork}${hostMetricsPort}${environment}${resources}${cpuSetLine}${memoryLines}${volumes}`;
+  return `  ${service}:\n    image: ${serviceImage(service)}${service === "database" && inputs.databaseSetup ? '\n    restart: "no"' : ""}\n    labels:\n      parkbench.managed: "true"\n      parkbench.run_id: "${runId}"\n      parkbench.experiment_id: "${experimentId}"\n      parkbench.component: "${service}"\n    networks:${privateNetwork}${metricsNetwork}${hostMetricsPort}${environment}${resources}${cpuSetLine}${memoryLines}${volumesWithDiagnostics}`;
 }
 
 function escapeYaml(value: string): string {

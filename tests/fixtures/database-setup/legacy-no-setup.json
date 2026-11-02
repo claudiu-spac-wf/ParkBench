@@ -1,0 +1,9 @@
+{
+  "runName": "legacy-setup",
+  "scenario": {
+    "id": "s",
+    "version": "1"
+  },
+  "dimensions": [],
+  "repetitions": 2
+}

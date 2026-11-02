@@ -1,3 +1,5 @@
+import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
+import { DatabaseSetupStatus } from "../runs/DatabaseSetupStatus";
 import { RunControlsSummary } from "../experiments/RunControlsFields";
 import React, { useEffect, useRef, useState } from "react";
 import { latencyOf, latencySummary } from "../../shared/latency";
@@ -360,6 +362,7 @@ export function HistoryPage() {
                   )}
                 </section>
               )}
+              <DatabaseIopsSummary snapshot={selected.run?.environmentSnapshot} runId={selected.run?.id}/>
               {selected.run?.environmentSnapshot?.databaseStartup && (
                 <section aria-label="Database startup settings">
                   <h3>Database startup settings</h3>
@@ -393,6 +396,9 @@ export function HistoryPage() {
                     )}
                   </dl>
                 </section>
+              )}
+              {selected.run?.environmentSnapshot?.databaseSetup && (
+                <DatabaseSetupStatus runId={selected.run.id} />
               )}
               {selected.run?.environmentSnapshot?.databaseRunControls && (
                 <section aria-label="Database run controls">

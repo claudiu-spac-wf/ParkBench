@@ -33,6 +33,13 @@ services:
       PARKBENCH_NODE_EXPORTER_IMAGE: ${PARKBENCH_NODE_EXPORTER_IMAGE:?PARKBENCH_NODE_EXPORTER_IMAGE must be an explicit non-latest tag}
       PARKBENCH_NODE_BASE_IMAGE: ${PARKBENCH_NODE_BASE_IMAGE:?PARKBENCH_NODE_BASE_IMAGE must be an explicit non-latest tag}
       PARKBENCH_NGINX_IMAGE: ${PARKBENCH_NGINX_IMAGE:?PARKBENCH_NGINX_IMAGE must be an explicit non-latest tag}
+      PARKBENCH_DIAGNOSTICS_SUMMARY_BYTES: ${PARKBENCH_DIAGNOSTICS_SUMMARY_BYTES:-8388608}
+      PARKBENCH_DIAGNOSTICS_TRACE_BYTES: ${PARKBENCH_DIAGNOSTICS_TRACE_BYTES:-33554432}
+      PARKBENCH_DIAGNOSTICS_PENDING_BYTES: ${PARKBENCH_DIAGNOSTICS_PENDING_BYTES:-1048576}
+      PARKBENCH_DIAGNOSTICS_EVENT_BYTES: ${PARKBENCH_DIAGNOSTICS_EVENT_BYTES:-4096}
+      PARKBENCH_DIAGNOSTICS_FLUSH_MS: ${PARKBENCH_DIAGNOSTICS_FLUSH_MS:-1000}
+      PARKBENCH_DIAGNOSTICS_TRACE_TTL_MS: ${PARKBENCH_DIAGNOSTICS_TRACE_TTL_MS:-604800000}
+      PARKBENCH_DIAGNOSTICS_RETAINED_TRACE_BYTES: ${PARKBENCH_DIAGNOSTICS_RETAINED_TRACE_BYTES:-1073741824}
       PARKBENCH_PROMETHEUS_URL: http://prometheus:9090
       PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL: ${PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL:-5s}
       PARKBENCH_CADVISOR_HOUSEKEEPING_INTERVAL: ${PARKBENCH_CADVISOR_HOUSEKEEPING_INTERVAL:-1s}
@@ -44,6 +51,7 @@ services:
       PARKBENCH_DISCOVERY_WORKLOADS_ROOT: /var/lib/parkbench/workloads
       PARKBENCH_DISCOVERY_OBSERVERS_ROOT: /var/lib/parkbench/observers
       PARKBENCH_DISCOVERY_SEEDS_ROOT: /var/lib/parkbench/seeds
+      PARKBENCH_DISCOVERY_SCRIPTS_ROOT: /var/lib/parkbench/scripts
       PARKBENCH_DISCOVERY_ARCHIVES_ROOT: /var/lib/parkbench/archives
       PARKBENCH_DB_MEMORY_LIMIT: ${PARKBENCH_DB_MEMORY_LIMIT:-10g}
       PARKBENCH_OPENEDGE_DB_IMAGE: ${PARKBENCH_OPENEDGE_DB_IMAGE:?PARKBENCH_OPENEDGE_DB_IMAGE must be an explicit non-latest tag}
@@ -63,6 +71,7 @@ services:
       - ${PARKBENCH_HOST_DISCOVERY_WORKLOADS_ROOT:-../openedge/workloads/Workloads}:/var/lib/parkbench/workloads:ro
       - ${PARKBENCH_HOST_DISCOVERY_OBSERVERS_ROOT:-../.parkbench/observers}:/var/lib/parkbench/observers:ro
       - ${PARKBENCH_HOST_DISCOVERY_SEEDS_ROOT:-../.parkbench/seeds}:/var/lib/parkbench/seeds:ro
+      - ${PARKBENCH_HOST_DISCOVERY_SCRIPTS_ROOT:-../.parkbench/scripts}:/var/lib/parkbench/scripts:ro
       - ${PARKBENCH_HOST_DISCOVERY_ARCHIVES_ROOT:-../.parkbench/archives}:/var/lib/parkbench/archives
       - ${PARKBENCH_PROMETHEUS_TARGET_DIR:-../.parkbench/prometheus-targets}:/etc/prometheus/targets
       # The control plane loads the operator-owned active profile at startup.
@@ -143,6 +152,10 @@ services:
       # cAdvisor jitters collection up to twice this interval, even without dynamic housekeeping.
       # Keep source capture faster than the Prometheus scrape so captures remain fresh.
       - --housekeeping_interval=${PARKBENCH_CADVISOR_HOUSEKEEPING_INTERVAL:-1s}
+      # Export only measurement ownership metadata. Docker Desktop/Compose labels
+      # otherwise expand every resource sample, including empty label values.
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service,com.docker.compose.container-number,parkbench.managed,parkbench.run_id,parkbench.experiment_id,parkbench.variant_id,parkbench.repetition,parkbench.component
       - --docker=unix:///rootfs/run/docker.sock
       - --containerd=/rootfs/run/containerd/containerd.sock
       - --disable_metrics=advtcp,cpu_topology,cpuset,hugetlb,memory_numa,referenced_memory,resctrl,sched,tcp,udp

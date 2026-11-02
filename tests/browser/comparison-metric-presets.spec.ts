@@ -95,7 +95,7 @@ test("three metric presets reuse explicitly after reload in a different comparis
     await page.getByRole("button", { name: "Choose metrics", exact: true }).click();
     await page.getByRole("button", { name: "Clear metrics", exact: true }).click();
     for (const label of [
-      "Database · Used memory",
+      "Database container · Working-set memory",
       "Workload · Completed requests",
       "Named latches · Wait naps"
     ])
@@ -189,7 +189,7 @@ test("removing stale preset choices preserves overlapping ids and same-id semant
     await expect(
       page.getByRole("button", { name: "Remove unavailable choice", exact: true })
     ).toHaveCount(0);
-    await expect(page.getByLabel("Platform · CPU usage", { exact: true })).toBeChecked();
+    await expect(page.getByLabel("Platform services · CPU usage", { exact: true })).toBeChecked();
     await expect(page.locator('input[value="Customer"]')).toBeVisible();
     expect(
       await page.evaluate(() => localStorage.getItem("parkbench.comparisonMetricPresets.v1"))

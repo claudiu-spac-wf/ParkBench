@@ -1,3 +1,4 @@
+import { nativeProcessFailure, NativeProcessFailure } from "./failure-metadata";
 import path from "node:path";
 import fs from "node:fs";
 import { execFile } from "node:child_process";
@@ -59,6 +60,15 @@ export interface OpenEdgeDatabaseCommandOptions {
   /** Only adapter-level test doubles may use a non-procedure launcher argument. */
   allowNonProcedure?: boolean;
   readOnly?: boolean;
+  onStage?: (event: {
+    stage: "PROCESS" | "NORMALIZE";
+    outcome: "SUCCEEDED" | "FAILED";
+    startedAtMs: number;
+    finishedAtMs: number;
+    durationMs: number;
+    responseBytes?: number;
+    failure?: NativeProcessFailure;
+  }) => void;
 }
 
 export function validateOpenEdgeDatabaseCommand(options: OpenEdgeDatabaseCommandOptions): void {
@@ -276,17 +286,73 @@ export async function readOpenEdgeDbObserverPayload(
   options: OpenEdgeDatabaseCommandOptions
 ): Promise<OpenEdgeDbObserverPayload> {
   validateOpenEdgeDatabaseCommand(options);
+  const report = (
+    stage: "PROCESS" | "NORMALIZE",
+    startedAtMs: number,
+    monotonicStart: number,
+    outcome: "SUCCEEDED" | "FAILED",
+    responseBytes?: number,
+    failure?: NativeProcessFailure
+  ) => {
+    try {
+      options.onStage?.({
+        stage,
+        outcome,
+        startedAtMs,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - monotonicStart,
+        ...(responseBytes === undefined ? {} : { responseBytes }),
+        ...(failure ? { failure } : {})
+      });
+    } catch {
+      /* Diagnostic sinks cannot affect the native result. */
+    }
+  };
+  const processStartedAt = Date.now(),
+    processStart = performance.now();
   const result = await execFileAsync(
     options.executable,
     [options.procedure, ...(options.args ?? [])],
-    { timeout: options.timeoutMs ?? 5000, maxBuffer: 8 * 1024 * 1024 }
+    {
+      timeout: options.timeoutMs ?? 5000,
+      // The native client handles SIGTERM; a deadline must terminate the child,
+      // rather than wait indefinitely for its database disconnect handler.
+      killSignal: "SIGKILL",
+      maxBuffer: 8 * 1024 * 1024
+    }
   ).catch((error: unknown) => {
+    const failure = nativeProcessFailure(error, parseOpenEdgeDbObserverOutput);
+    report("PROCESS", processStartedAt, processStart, "FAILED", failure.outputBytes, failure);
     const stdout = String((error as { stdout?: unknown }).stdout ?? "");
     if (/\((?:748|1154)\)/.test(stdout) && /\(19489\)/.test(stdout))
       throw new Error("openedge_db_observer_connection_capacity_exhausted:review_-n_-Ma_-Mn");
     throw error;
   });
-  return parseOpenEdgeDbObserverOutput(result.stdout);
+  report("PROCESS", processStartedAt, processStart, "SUCCEEDED", Buffer.byteLength(result.stdout));
+  const normalizeStartedAt = Date.now(),
+    normalizeStart = performance.now();
+  try {
+    const payload = parseOpenEdgeDbObserverOutput(result.stdout);
+    report("NORMALIZE", normalizeStartedAt, normalizeStart, "SUCCEEDED");
+    return payload;
+  } catch (error) {
+    report(
+      "NORMALIZE",
+      normalizeStartedAt,
+      normalizeStart,
+      "FAILED",
+      Buffer.byteLength(result.stdout),
+      {
+        code: "native_output_invalid",
+        exitCode: null,
+        signal: null,
+        outputState: "INVALID",
+        outputBytes: Buffer.byteLength(result.stdout),
+        sourceCapturedAtMs: null
+      }
+    );
+    throw error;
+  }
 }
 export class OpenEdgeDatabaseObserverV3 implements ObserverAdapter {
   id = "openedge-db";

@@ -9,6 +9,7 @@ export interface GrafanaRoutesDeps {
   metricsAvailability?: import("./prom-api").GrafanaDatasourceDeps["metricsAvailability"];
   parameterSnapshots?: ParameterSnapshotQueries;
   savedSummaries?: SavedSummaryQueries;
+  measurementEvidence?: import("./prom-api").GrafanaDatasourceDeps["measurementEvidence"];
   prometheusUrl: string;
   grafanaUrl: string;
   timelines: RunTimelineSource;

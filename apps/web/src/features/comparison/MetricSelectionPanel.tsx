@@ -55,7 +55,9 @@ export function MetricSelectionPanel({
   const descriptors = COMPARISON_METRIC_CATALOG.filter(
     (descriptor) =>
       (domain === "all" || descriptor.domain === domain) &&
-      descriptor.displayName.toLowerCase().includes(search.toLowerCase())
+      [descriptor.displayName, ...(descriptor.searchTerms ?? [])].some((text) =>
+        text.toLowerCase().includes(search.toLowerCase())
+      )
   );
   const visibleEntries = descriptors.flatMap((descriptor) =>
     selection.filter((entry) => entry.metricId === descriptor.metricId && valid.has(entry))
@@ -119,28 +121,41 @@ export function MetricSelectionPanel({
                   return (
                     <div className="metric-entry" key={rowId}>
                       <div className="metric-choice-row" data-metric-id={descriptor.metricId}>
-                        {rowIndex === 0 ? (
-                          <label className="metric-name">
-                            <input
-                              id={masterId}
-                              type="checkbox"
-                              aria-label={descriptor.displayName}
-                              checked={matching.length > 0}
-                              onChange={(event) =>
-                                onChange(
-                                  toggleMetricSelection(
-                                    selection,
-                                    descriptor.metricId,
-                                    event.target.checked
+                        <div className="metric-name metric-title">
+                          {rowIndex === 0 ? (
+                            <label className="metric-select">
+                              <input
+                                id={masterId}
+                                type="checkbox"
+                                aria-label={descriptor.displayName}
+                                checked={matching.length > 0}
+                                onChange={(event) =>
+                                  onChange(
+                                    toggleMetricSelection(
+                                      selection,
+                                      descriptor.metricId,
+                                      event.target.checked
+                                    )
                                   )
-                                )
-                              }
-                            />
-                            <span>{descriptor.displayName}</span>
-                          </label>
-                        ) : (
-                          <span className="metric-name">{descriptor.displayName}</span>
-                        )}
+                                }
+                              />
+                              <span className="metric-title-text">{descriptor.displayName}</span>
+                            </label>
+                          ) : (
+                            <span className="metric-title-text">{descriptor.displayName}</span>
+                          )}
+                          <FieldHelp label={descriptor.displayName}>
+                            <span>{descriptor.description}</span>{" "}
+                            <span>{descriptor.scopeDescription}</span>{" "}
+                            <span>
+                              Statistics and units:{" "}
+                              {descriptor.statistics
+                                .map((statistic) => `${statistic}: ${descriptor.units[statistic]}`)
+                                .join("; ")}
+                              .
+                            </span>
+                          </FieldHelp>
+                        </div>
                         {statistics.map(([statistic, label]) => {
                           const available = descriptor.statistics.includes(statistic);
                           const enabled = available && !!entry;
@@ -239,7 +254,13 @@ export function MetricSelectionPanel({
           })}
           {supported.unavailable.map((choice) => (
             <p key={choice.index} className="comparison-warning">
-              {choice.message}
+              {choice.message}{" "}
+              <FieldHelp
+                label={`Unavailable metric ${selection[choice.index]?.metricId ?? choice.index + 1}`}
+              >
+                This recorded choice cannot currently be resolved. {choice.message} Remove or
+                replace it to choose another metric; historical evidence is retained.
+              </FieldHelp>
               <button
                 onClick={() => onChange(removeUnavailableMetricSelection(selection, choice.index))}
               >

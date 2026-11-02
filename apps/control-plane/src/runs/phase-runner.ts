@@ -1,9 +1,32 @@
+import type { NativeScrapeTiming } from "../../../../packages/metrics/src/prometheus-client";
+
 export function phaseSchedule(
   phases: { warmupSeconds: number; measurementSeconds: number; cooldownSeconds: number },
   startMs: number,
-  scale = 1
+  scale = 1,
+  nativeScrape?: NativeScrapeTiming
 ) {
   let cursor = startMs;
+  if (nativeScrape) {
+    const { lastScrapeAtMs, cadenceMs } = nativeScrape;
+    if (
+      !Number.isSafeInteger(lastScrapeAtMs) ||
+      lastScrapeAtMs < 0 ||
+      !Number.isSafeInteger(cadenceMs) ||
+      cadenceMs <= 0 ||
+      cadenceMs > 120000 ||
+      !Number.isFinite(startMs) ||
+      lastScrapeAtMs > startMs
+    )
+      throw new Error("native_scrape_clock_invalid");
+    // Place the measurement source origin just before the next actual scrape.
+    // The entire adjacent schedule moves together; no phase or cadence changes.
+    const leadMs = Math.min(250, cadenceMs / 20);
+    const measurementReadyAtMs = startMs + Math.max(0, phases.warmupSeconds * 1000 * scale);
+    const nextOrdinal = Math.ceil((measurementReadyAtMs + leadMs - lastScrapeAtMs) / cadenceMs);
+    const measurementStartMs = lastScrapeAtMs + nextOrdinal * cadenceMs - leadMs;
+    cursor += measurementStartMs - measurementReadyAtMs;
+  }
   return (
     [
       ["warmup", phases.warmupSeconds],

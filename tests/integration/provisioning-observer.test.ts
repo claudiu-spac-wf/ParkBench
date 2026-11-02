@@ -106,7 +106,8 @@ test("observer parameter capture retries a startup failure and caches the recove
     fetch(`http://127.0.0.1:${port}${route}`, { signal: AbortSignal.timeout(2000) });
   try {
     let ready = false;
-    for (let i = 0; i < 100 && !ready; i++) {
+    // Allow cold module startup on the development filesystem; capture deadlines stay unchanged.
+    for (let i = 0; i < 500 && !ready; i++) {
       try {
         ready = (await request("/health")).ok;
       } catch {}
@@ -176,7 +177,8 @@ setTimeout(()=>console.log(JSON.stringify(payload)),80);
     fetch(`http://127.0.0.1:${port}${route}`, { signal: AbortSignal.timeout(3000) });
   try {
     let ready = false;
-    for (let i = 0; i < 100 && !ready; i++) {
+    // Allow cold module startup on the development filesystem; capture deadlines stay unchanged.
+    for (let i = 0; i < 500 && !ready; i++) {
       try {
         ready = (await request("/health")).ok;
       } catch {}

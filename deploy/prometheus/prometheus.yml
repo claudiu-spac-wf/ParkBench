@@ -35,16 +35,15 @@ scrape_configs:
         target_label: service
         action: replace
   - job_name: parkbench-run-owned-cadvisor
-    metrics_path: /internal/cadvisor/metrics
     file_sd_configs: [{ files: ["/etc/prometheus/targets/*.json"], refresh_interval: 1s }]
     relabel_configs:
       - source_labels: [service]
         regex: run-cadvisor
         action: keep
-      - source_labels: [run_id]
-        target_label: __param_run_id
-        action: replace
     metric_relabel_configs:
+      - source_labels: [container_label_parkbench_run_id]
+        target_label: run_id
+        action: keepequal
       - source_labels: [container_label_parkbench_managed]
         regex: "true"
         action: keep

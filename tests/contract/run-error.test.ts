@@ -41,7 +41,12 @@ async function checkStaticObserverFailure(failure: "contract" | "image" | "suppo
       phaseScale: 0,
       requiredDiskIo: false,
       ...(failure === "support-image"
-        ? { supportImages: { loadgen: "parkbench/loadgen:fixture", observer: "parkbench/observer:fixture" } }
+        ? {
+            supportImages: {
+              loadgen: "parkbench/loadgen:fixture",
+              observer: "parkbench/observer:fixture"
+            }
+          }
         : {}),
       observerFactory: {
         validate(declaration: any) {
@@ -163,6 +168,17 @@ async function checkRuntimeReadinessFailure(
 }
 
 describe("typed run failure contract", () => {
+  it("explains how to recover an incompatible setup image without exposing diagnostics", () => {
+    const result = classifyRunError(
+      new Error("database_setup_unavailable:image_capability:/private/path")
+    );
+    assert.equal(result?.failureCode, "database_setup_unavailable");
+    assert.equal(result?.failureKind, "infrastructure");
+    assert.match(result?.failureReason ?? "", /[Rr]ebuild.*database image/);
+    assert.match(result?.failureReason ?? "", /new run/);
+    assert.doesNotMatch(result?.failureReason ?? "", /private\/path/);
+    assert.ok((result?.failureReason.length ?? 0) <= 512);
+  });
   it("maps observer contract and image mismatches to bounded observer failures", () => {
     const contract = classifyRunError(new Error("observer_contract_invalid:secret-value"));
     const image = classifyRunError(new Error("observer_image_mismatch:/private/path"));
@@ -265,3 +281,7 @@ describe("typed run failure contract", () => {
     }
   });
 });
+
+
+import { DATABASE_IOPS_FAILURE_CODES } from "../../packages/contracts/src/database-iops";
+it("IOPS failures retain typed infrastructure classification", () => { for (const code of DATABASE_IOPS_FAILURE_CODES) assert.equal(classifyRunError(new Error(code))?.failureCode, code); });

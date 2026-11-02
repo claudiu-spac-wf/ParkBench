@@ -29,15 +29,20 @@ export function buildRunContext(run: Run, final = false): RunContext {
     runId: run.id,
     scenario: e.scenario ?? {},
     requested: e.requestedConfiguration ?? {
+      measurementDiagnostics: e.measurementDiagnostics,
       parameters: e.variant?.parameters ?? {},
       databaseStartup: e.variant?.databaseStartup ?? {},
-      ...(e.databaseRunControls ? { databaseRunControls:e.databaseRunControls } : {}),
+      ...(e.databaseSetup ? { databaseSetup: e.databaseSetup } : {}),
+      ...(e.databaseRunControls ? { databaseRunControls: e.databaseRunControls } : {}),
       inputs: e.inputs ?? {}
     },
     effective: {
+      measurementDiagnostics: e.measurementDiagnostics,
+      resolvedMeasurementDiagnostics: e.resolvedMeasurementDiagnostics,
       parameters: e.effectiveConfiguration ?? {},
       databaseStartup: e.databaseStartup ?? {},
-      ...(e.databaseRunControls ? { databaseRunControls:e.databaseRunControls } : {}),
+      ...(e.databaseSetup ? { databaseSetup: e.databaseSetup } : {}),
+      ...(e.databaseRunControls ? { databaseRunControls: e.databaseRunControls } : {}),
       adapterVersion: e.parameterAdapterVersion
     },
     observed: {
@@ -87,7 +92,12 @@ export function buildRunContext(run: Run, final = false): RunContext {
     capturedAt: e.contextCapturedAt ?? e.createdAt ?? run.startedAt ?? new Date().toISOString(),
     health: run.observerHealth ?? {},
     parameterReference: e.parameterSnapshotCapture ?? { state: "not_collected" },
-    diagnostics: { failureReason: run.failureReason, ...e.summaryDiagnostics }
+    diagnostics: {
+      measurementRecordingState: e.measurementDiagnosticsEvidence?.recordingState ?? "NOT_RECORDED",
+      measurementDiagnostics: e.measurementDiagnosticsEvidence,
+      failureReason: run.failureReason,
+      ...e.summaryDiagnostics
+    }
   };
   if (final) context.finalizedAt = new Date().toISOString();
   const safe = redactSecrets(context, runtimeSecretValues()) as RunContext;

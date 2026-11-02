@@ -1,0 +1,160 @@
+.database-setup-fields {
+  --setup-control-height: 2.75rem;
+  margin-block: 1.5rem;
+  min-width: 0;
+}
+.database-setup-fields label {
+  min-width: 0;
+  margin: 0;
+}
+.setup-add,
+.setup-custom-source {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+}
+.setup-add > label,
+.setup-custom-source > label {
+  display: contents;
+}
+.setup-add > label > .setup-field-label,
+.setup-custom-source > label > .setup-field-label {
+  grid-column: 1;
+  grid-row: 1;
+}
+.setup-add select,
+.setup-custom-source select {
+  grid-column: 1;
+  grid-row: 2;
+}
+.setup-add > button,
+.setup-custom-source > button {
+  grid-column: 2;
+  grid-row: 2;
+}
+.setup-custom-source > p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.setup-row-heading,
+.setup-actions,
+.setup-row-heading > div {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.setup-row-heading {
+  justify-content: space-between;
+}
+.database-setup-step {
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-block: 1rem;
+  min-width: 0;
+}
+.database-setup-set {
+  min-width: 0;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 0.35rem;
+}
+.setup-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.35rem 1rem;
+  align-items: start;
+}
+/* Share label, control and validation tracks even when one label wraps. */
+.setup-inputs > label {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+}
+.setup-inputs > label > .setup-field-label {
+  grid-row: 1;
+}
+.setup-inputs > label > input,
+.setup-inputs > label > select,
+.setup-inputs > label > textarea,
+.setup-check > .setup-check-control {
+  grid-row: 2;
+}
+.setup-inputs > label > small {
+  grid-row: 3;
+  margin: 0;
+}
+.setup-field-label {
+  display: flex;
+  gap: 0.35rem;
+  align-items: start;
+  min-width: 0;
+  line-height: 1.5rem;
+}
+.setup-field-label > span:first-child {
+  min-width: 0;
+}
+.setup-field-label > .field-help {
+  flex: none;
+}
+.database-setup-fields input:not([type="checkbox"]),
+.database-setup-fields select,
+.setup-add > button,
+.setup-custom-source > button,
+.setup-index-row > button {
+  min-width: 0;
+  height: var(--setup-control-height);
+}
+.database-setup-fields textarea {
+  min-width: 0;
+  resize: vertical;
+}
+.setup-check-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--setup-control-height);
+}
+.setup-check-control > input[type="checkbox"] {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  margin: 0;
+}
+.setup-actions {
+  margin-top: 1rem;
+}
+.setup-index-targets {
+  grid-column: 1 / -1;
+}
+.setup-index-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  margin-bottom: 0.75rem;
+}
+.setup-index-row > button {
+  grid-column: 3;
+  grid-row: 2;
+}
+.database-setup-summary code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: block;
+}
+@media (max-width: 600px) {
+  .setup-add,
+  .setup-custom-source,
+  .setup-index-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .setup-add > button,
+  .setup-custom-source > button,
+  .setup-index-row > button {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+  }
+}

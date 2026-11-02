@@ -1,4 +1,6 @@
-import {registerReportRoutes} from "../api/report-routes";
+import { diagnosticDownloadPath } from "../measurement-diagnostics/producer-files";
+import { registerDatabaseSetupRoutes } from "../api/database-setup-routes";
+import { registerReportRoutes } from "../api/report-routes";
 import { ParameterSnapshotQueries } from "../grafana/parameter-snapshots";
 import { SavedSummaryQueries } from "../grafana/summary-results";
 import fs from "node:fs";
@@ -18,32 +20,120 @@ import { checkImageReference } from "../../../../packages/compose-runner/src/inp
 import { registerControlUiRoutes } from "../api/control-ui-routes";
 import { registerGrafanaRoutes, repositoryTimelineSource } from "../grafana";
 export function registerRoutes(app: any, platform: Platform): void {
-  registerReportRoutes(app,platform);
+  registerReportRoutes(app, platform);
+  registerDatabaseSetupRoutes(app, platform);
   app.get("/internal/cadvisor/metrics", async (request: any, reply: any) => {
+    const requestedRunId = request.query?.run_id;
+    let runId: string | undefined;
+    try {
+      runId = resolveRequestedRunId(
+        requestedRunId,
+        (id) => platform.repositories.getRun(id),
+        () => platform.activeRunId()
+      );
+    } catch {
+      reply.code(404);
+      return "run_not_found";
+    }
+    const requestStartedAtMs = Date.now(),
+      requestMonotonicStart = performance.now();
+    const record = (
+      stage: "HTTP" | "PARSE" | "EXPOSITION",
+      outcome: "SUCCEEDED" | "FAILED" | "TIMED_OUT" | "CANCELLED",
+      startedAtMs: number,
+      monotonicStart: number,
+      counts: Record<string, number>,
+      reasonCode: string
+    ) => {
+      if (!runId) return;
+      try {
+        platform.coordinator.recordMeasurementPublication({
+          runId,
+          observerId: "cadvisor-proxy",
+          stage,
+          outcome,
+          startedAtMs,
+          finishedAtMs: Date.now(),
+          durationMs: performance.now() - monotonicStart,
+          counts,
+          reasonCodes: [reasonCode]
+        });
+      } catch {
+        /* Diagnostics cannot reject a scrape. */
+      }
+    };
     try {
       const response = await fetch(
         `${platform.config.cadvisorUrl ?? "http://cadvisor:8080"}/metrics`,
         { signal: AbortSignal.timeout(5000) }
       );
+      record(
+        "HTTP",
+        response.ok ? "SUCCEEDED" : "FAILED",
+        requestStartedAtMs,
+        requestMonotonicStart,
+        { httpStatus: response.status },
+        "cadvisor_headers_received"
+      );
       if (!response.ok) {
         reply.code(503);
         return `cadvisor_unavailable:${response.status}`;
       }
+      const bodyStartMs = Date.now(),
+        bodyMonotonicStart = performance.now();
+      const body = await response.text();
+      record(
+        "HTTP",
+        "SUCCEEDED",
+        bodyStartMs,
+        bodyMonotonicStart,
+        { responseBytes: Buffer.byteLength(body) },
+        "cadvisor_body_read_complete"
+      );
+      const filterStartMs = Date.now(),
+        filterMonotonicStart = performance.now();
+      const filtered = filterCAdvisorMetrics(body, runId);
+      const responseBytes = Buffer.byteLength(filtered);
+      record(
+        "PARSE",
+        "SUCCEEDED",
+        filterStartMs,
+        filterMonotonicStart,
+        { responseBytes },
+        "cadvisor_owned_filter_complete"
+      );
+      reply.raw.once("finish", () =>
+        record(
+          "EXPOSITION",
+          reply.raw.statusCode === 200 ? "SUCCEEDED" : "FAILED",
+          requestStartedAtMs,
+          requestMonotonicStart,
+          { responseBytes },
+          "cadvisor_response_finished"
+        )
+      );
+      reply.raw.once("close", () => {
+        if (!reply.raw.writableFinished)
+          record(
+            "EXPOSITION",
+            "CANCELLED",
+            requestStartedAtMs,
+            requestMonotonicStart,
+            { responseBytes },
+            "cadvisor_response_closed_before_finish"
+          );
+      });
       reply.type("text/plain; version=0.0.4");
-      const requestedRunId = request.query?.run_id;
-      let runId: string | undefined;
-      try {
-        runId = resolveRequestedRunId(
-          requestedRunId,
-          (id) => platform.repositories.getRun(id),
-          () => platform.activeRunId()
-        );
-      } catch {
-        reply.code(404);
-        return "run_not_found";
-      }
-      return filterCAdvisorMetrics(await response.text(), runId);
+      return filtered;
     } catch (error) {
+      record(
+        "HTTP",
+        (error as Error)?.name === "TimeoutError" ? "TIMED_OUT" : "FAILED",
+        requestStartedAtMs,
+        requestMonotonicStart,
+        {},
+        "cadvisor_proxy_request_failed"
+      );
       reply.code(503);
       return `cadvisor_proxy_failed:${String(error)}`;
     }
@@ -69,7 +159,22 @@ export function registerRoutes(app: any, platform: Platform): void {
   });
   app.get("/internal/observer-metrics", async (_request: any, reply: any) => {
     reply.type("text/plain; version=0.0.4");
-    return platform.observerMetrics.render();
+    const startedAtMs = Date.now(),
+      monotonicStart = performance.now(),
+      runId = platform.activeRunId();
+    const body = platform.observerMetrics.render(),
+      responseBytes = Buffer.byteLength(body);
+    if (runId && reply.raw?.once)
+      reply.raw.once("finish", () =>
+        platform.observerMetrics.reportExposition(
+          runId,
+          reply.raw.statusCode === 200 ? "SUCCEEDED" : "FAILED",
+          startedAtMs,
+          performance.now() - monotonicStart,
+          responseBytes
+        )
+      );
+    return body;
   });
   app.get("/api/v1/health", async () =>
     dependencyHealth({
@@ -120,7 +225,10 @@ export function registerRoutes(app: any, platform: Platform): void {
       const diskIo = await requiredDiskIo(platform);
       const result = validateExperimentRequest(input, scenario, {
         ...(body.options ?? {}),
-        databaseCapabilities: {version:platform.config.openedge?.version ?? "unverified",features:platform.config.openedge?.databaseFeatures ?? []},
+        databaseCapabilities: {
+          version: platform.config.openedge?.version ?? "unverified",
+          features: platform.config.openedge?.databaseFeatures ?? []
+        },
         observerValidate: platform.validateObserverDeclaration,
         diskIo,
         ...hostCapacity(platform.config.artifactRoot),
@@ -165,7 +273,10 @@ export function registerRoutes(app: any, platform: Platform): void {
         observerImageInspectable
       ] = await inspectDependencies(platform, input);
       validateExperimentRequest(input, scenario, {
-        databaseCapabilities: {version:platform.config.openedge?.version ?? "unverified",features:platform.config.openedge?.databaseFeatures ?? []},
+        databaseCapabilities: {
+          version: platform.config.openedge?.version ?? "unverified",
+          features: platform.config.openedge?.databaseFeatures ?? []
+        },
         observerValidate: platform.validateObserverDeclaration,
         diskIo: await requiredDiskIo(platform),
         ...hostCapacity(platform.config.artifactRoot),
@@ -376,7 +487,9 @@ export function registerRoutes(app: any, platform: Platform): void {
     const run = platform.repositories.getRun(request.params.runId);
     if (!run) return sendError(reply, new Error("run_not_found"), "not_found", 404);
     return {
-      artifacts: platform.artifacts.list(run.id).map((artifact) => ({
+      artifacts: (
+        await platform.measurementRetention.projectArtifacts(platform.artifacts.list(run.id))
+      ).map((artifact) => ({
         ...artifact,
         downloadUrl: `/api/v1/runs/${run.id}/artifacts/${artifact.id}`
       }))
@@ -387,10 +500,17 @@ export function registerRoutes(app: any, platform: Platform): void {
       .listArtifacts(request.params.runId)
       .find((item) => item.id === request.params.artifactId);
     if (!artifact) return sendError(reply, new Error("artifact_not_found"), "not_found", 404);
-    reply.type("application/octet-stream");
-    const filename = platform.storage.safePath(artifact.path);
+    let filename: string;
+    try {
+      filename =
+        (await diagnosticDownloadPath(platform.storage.root, artifact)) ??
+        platform.storage.safePath(artifact.path);
+    } catch {
+      return sendError(reply, new Error("artifact_unavailable"), "artifact_unavailable", 404);
+    }
     if (!fs.existsSync(filename) || !fs.statSync(filename).isFile())
       return sendError(reply, new Error("artifact_unavailable"), "artifact_unavailable", 404);
+    reply.type("application/octet-stream");
     return fs.createReadStream(filename);
   });
   app.get("/api/v1/comparisons/:comparisonId", async (request: any, reply: any) => {
@@ -441,6 +561,7 @@ export function registerRoutes(app: any, platform: Platform): void {
   });
   registerControlUiRoutes(app, platform);
   registerGrafanaRoutes(app, {
+    measurementEvidence: (evidence) => platform.coordinator.recordMeasurementChart(evidence),
     metricsAvailability: (ids) => platform.metricsAvailability.forRuns(ids),
     prometheusUrl: platform.config.prometheusUrl,
     grafanaUrl: platform.config.grafanaUrl ?? "http://127.0.0.1:13001",

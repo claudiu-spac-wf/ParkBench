@@ -2,17 +2,20 @@ import { Platform } from "../platform";
 import { sendControlUiError } from "./control-ui-errors";
 
 export function registerQueueRoutes(app: any, platform: Platform): void {
-  app.get("/api/v1/queue", async () => ({
-    contractVersion: "control-ui.v1",
-    activeExperiment: platform.controlUi.listExperiments({ status: "RUNNING" })[0]?.id,
-    items: platform.controlUi.listQueue(),
-    hasMore: false,
-    nextRetryAt: platform.controlUi
-      .listQueue()
-      .map((run) => run.nextRetryAt)
-      .filter(Boolean)
-      .sort()[0]
-  }));
+  app.get("/api/v1/queue", async () => {
+    const activeExperiment = platform.controlUi.runningExperimentId();
+    const queued = platform.controlUi.listQueue();
+    return {
+      contractVersion: "control-ui.v1",
+      activeExperiment,
+      items: queued,
+      hasMore: false,
+      nextRetryAt: queued
+        .map((run) => run.nextRetryAt)
+        .filter(Boolean)
+        .sort()[0]
+    };
+  });
   app.post("/api/v1/queue/start", async (request: any, reply: any) => {
     try {
       const key = request.headers?.["idempotency-key"];

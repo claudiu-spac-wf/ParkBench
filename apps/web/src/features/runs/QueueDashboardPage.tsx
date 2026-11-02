@@ -1,3 +1,5 @@
+import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
+import { DatabaseSetupSummary } from "../experiments/DatabaseSetupFields";
 import { RunControlsSummary } from "../experiments/RunControlsFields";
 import React, { useEffect, useRef, useState } from "react";
 import { latencyOf } from "../../shared/latency";
@@ -148,6 +150,13 @@ export function QueueDashboardPage() {
                   {(run.snapshot?.databaseStartup?.parameters ?? [])
                     .map((item: any) => `${item.name}=${item.displayValue} (${item.source})`)
                     .join(", ") || "Database defaults"}
+                  <DatabaseIopsSummary snapshot={run.snapshot} runId={run.id}/>
+                  <DatabaseSetupSummary setup={run.snapshot?.databaseSetup} />
+                  {run.databaseSetup && (
+                    <p>
+                      Setup: {run.databaseSetup.phase} · {run.databaseSetup.state}
+                    </p>
+                  )}
                   <RunControlsSummary
                     controls={run.snapshot?.databaseRunControls}
                     evidence={run.databaseRunControlEvidence}

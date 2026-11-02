@@ -1,3 +1,4 @@
+import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
 import {
   DEFAULT_COMPARISON_METRICS,
   type MetricSelection,
@@ -782,6 +783,7 @@ export function ComparisonPage({
                     />
                   </>
                 )}
+                <DatabaseIopsSummary snapshot={detail?.environmentSnapshot??run.context} runId={run.runId}/>
                 <section aria-label={`Parameters for ${run.runId}`}>
                   <h3>Parameters</h3>
                   {parameters.entries.length > 0 && (

@@ -205,7 +205,7 @@ export async function* buildDatabaseSummaryRows(
       .join("");
     const selector = `${d.sourceMetricNames[0]}{${scope}${labels}${d.definitionId === "db.records.write" ? ',operation=~"create|update|delete"' : ""}}`;
     try {
-      const samples = await acquireMetric(client, selector, options, cadence, true);
+      const samples = await acquireMetric(client, selector, options, cadence, true, { definition: d, dimensions: { ...d.selectorDimensions } });
       yield calculateSummaryRow(
         d,
         { ...d.selectorDimensions },

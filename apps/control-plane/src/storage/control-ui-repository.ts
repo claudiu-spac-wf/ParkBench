@@ -298,6 +298,37 @@ export class ControlUiRepository {
     ).map((row) => this.getControlExperiment(row.experiment_id)!);
   }
 
+  runningExperimentId(): string | undefined {
+    const row: any = this.database.db
+      .prepare(
+        `
+      SELECT c.experiment_id FROM control_experiments c
+      LEFT JOIN experiments e ON e.id=c.experiment_id
+      WHERE COALESCE(e.status,c.status)='RUNNING'
+      ORDER BY c.queue_ordinal LIMIT 1
+    `
+      )
+      .get();
+    return row?.experiment_id;
+  }
+
+  listQueueRunMetadata(): ControlRunView[] {
+    // Canonical state filters terminal history before any large snapshot is
+    // decoded. Missing canonical rows retain their prior metadata projection.
+    const rows = this.database.db
+      .prepare(
+        `
+      SELECT m.* FROM control_run_metadata m
+      LEFT JOIN runs r ON r.id=m.run_id
+      WHERE COALESCE(r.state,m.queue_state) NOT IN
+        ('SUCCEEDED','THRESHOLD_FAILED','FAILED','CANCELLED','INCOMPLETE','INTERRUPTED')
+      ORDER BY m.experiment_id,m.cell_ordinal,m.repetition
+    `
+      )
+      .all() as any[];
+    return rows.map((row) => this.runMetadataFromRow(row));
+  }
+
   updateControlExperiment(id: string, fields: { status?: string; baselineRunId?: string }): void {
     const current = this.getControlExperiment(id);
     if (!current) return;

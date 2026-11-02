@@ -204,6 +204,7 @@ test("repeated starts of the active experiment cannot launch concurrent runs", a
       () => f.platform.coordinator.startExperiment(next.id),
       /one_active_experiment_limit/
     );
+    await finished(() => f.orchestrator.calls.includes("provision"));
     assert.equal(f.orchestrator.calls.filter((call) => call === "provision").length, 1);
     release();
     await finished(

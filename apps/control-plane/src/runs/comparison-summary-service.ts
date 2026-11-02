@@ -1,3 +1,9 @@
+import {
+  recordProjectionMetadata,
+  currentQueryEvidence,
+  withQueryEvidenceOverrides,
+  flushQueryEvidence
+} from "../../../../packages/metrics/src/query-evidence";
 import fs from "node:fs";
 import nativeCatalog from "../../../../packages/contracts/src/openedge-db-metric-catalog.json";
 import type { Run } from "../../../../packages/contracts/src/run";
@@ -52,9 +58,30 @@ export class ComparisonSummaryService {
     private readonly defaultCadence = 5
   ) {}
   async prepare(run: Run, request: PrepareSummaryOptions): Promise<PreparedSummary> {
+    return withQueryEvidenceOverrides(
+      { consumer: request.origin === "new_run" ? "FINALIZATION" : "SUMMARY" },
+      () => this.prepareScoped(run, request)
+    );
+  }
+  private async prepareScoped(run: Run, request: PrepareSummaryOptions): Promise<PreparedSummary> {
     const version = METRIC_DEFINITIONS_VERSION,
       existing = this.repositories.getSummaryCache(run.id);
-    if (existing?.status === "READY") return { header: existing.header!, hasSupportedValues: true };
+    if (existing?.status === "READY") {
+      try {
+        currentQueryEvidence()?.recordCache?.({
+          runId: run.id,
+          summaryAttemptId: null,
+          version,
+          cache: "HIT",
+          publicationOutcome: "READY"
+        });
+      } catch {
+        try {
+          currentQueryEvidence()?.reportLoss?.("cache_evidence_failed");
+        } catch {}
+      }
+      return { header: existing.header!, hasSupportedValues: true };
+    }
     let window: MeasurementWindow;
     try {
       window = request.window ?? resolveMeasurementWindow(run);
@@ -64,6 +91,21 @@ export class ComparisonSummaryService {
     }
     const token = request.attemptToken ?? this.repositories.claimSummaryAttempt(run.id);
     if (!token) throw new Error("summary_attempt_busy");
+    const queryContext = currentQueryEvidence();
+    if (queryContext) queryContext.summaryAttemptId = token;
+    try {
+      queryContext?.recordCache?.({
+        runId: run.id,
+        summaryAttemptId: token,
+        version,
+        cache: "MISS",
+        publicationOutcome: null
+      });
+    } catch {
+      try {
+        queryContext?.reportLoss?.("cache_evidence_failed");
+      } catch {}
+    }
     this.repositories.assertSummaryAttempt(run.id, version, token);
     const jobSignal = request.signal
         ? AbortSignal.any([request.signal, AbortSignal.timeout(120000)])
@@ -238,6 +280,8 @@ export class ComparisonSummaryService {
         let batch: SummaryRow[] = [];
         for await (const row of rows) {
           signal.throwIfAborted();
+          recordProjectionMetadata(row, "STAGED");
+          await flushQueryEvidence();
           this.repositories.assertSummaryAttempt(run.id, version, token);
           if (Object.values(row.statistics).some((s) => s.value !== null))
             hasSupportedValues = true;

@@ -1,3 +1,4 @@
+import { recordChartDecision } from "../measurement-diagnostics/chart-evidence";
 import { orderRankedSeries } from "./table-ranking";
 import catalog from "../../../../packages/contracts/src/openedge-db-metric-catalog.json";
 import type { RunTimeline } from "./run-timeline";
@@ -491,6 +492,7 @@ export function createNativeDiagnostics(options: {
           budget.check();
           let raw = cache.getMatchingPrefix(key + "\0epochs:");
           budget.check();
+          const cacheHit = Boolean(raw);
           if (!raw) {
             const body = await budget.fetch(
               options.prometheusUrl.replace(/\/$/, "") + "/api/v1/query",
@@ -504,6 +506,9 @@ export function createNativeDiagnostics(options: {
               throw new NativeBudgetError("native_query_matrix_invalid");
             raw = body.data.result;
           }
+          let sourcePoints = 0, sourceTimestampMinMs: number | null = null, sourceTimestampMaxMs: number | null = null;
+          for (const series of raw) for (const point of series.values ?? []) { sourcePoints++; const time = Number(point[0]) * 1000; if (Number.isFinite(time)) { sourceTimestampMinMs = Math.min(sourceTimestampMinMs ?? Infinity, time); sourceTimestampMaxMs = Math.max(sourceTimestampMaxMs ?? -Infinity, time); } }
+          recordChartDecision({ stage: "NATIVE_SOURCE", outcome: "SUCCEEDED", runId: timeline.runId, requestedStartMs: descriptor.start, requestedEndMs: descriptor.end, effectiveStartMs: start * 1000, effectiveEndMs: end * 1000, stepMs: input.step, cadenceMs: cadence * 1000, lookbackMs: rateWindow, shiftMs: shift, sourceTimestampMinMs, sourceTimestampMaxMs, counts: { storedSourcePoints: sourcePoints, sourceSeries: raw.length, cacheHits: cacheHit ? 1 : 0, cacheMisses: cacheHit ? 0 : 1 }, reasonCodes: ["raw_stored_source_window", "stored_samples_are_not_new_captures"] });
           const canonical = canonicalNativeSeries(
             joinNamedLatchAvailability(raw, [timeline]),
             [timeline],

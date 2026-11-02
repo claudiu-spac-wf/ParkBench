@@ -1,6 +1,13 @@
+import type { ObservationEvidence } from "../../contracts/src/measurement-diagnostics";
 import type { OpenEdgeDbLatchInventory } from "../../contracts/src/openedge";
 import { MetricLabels, MetricSample } from "../../contracts/src/metrics";
 export interface ObserverContext {
+  measurementEvidence?: {
+    diagnosticAttemptId: string;
+    recordInventory?(inventory: unknown): void;
+    record(event: Omit<ObservationEvidence, "contractVersion" | "eventId" | "runId" | "experimentId" | "diagnosticAttemptId" | "component" | "componentInstanceId" | "sequence">): string | void;
+    parentEventId?: string; slotId?: string; controllerAttempt?: number; scheduledAtMs?: number;
+  };
   runId: string;
   experimentId: string;
   variantId: string;

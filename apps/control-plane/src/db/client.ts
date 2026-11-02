@@ -51,6 +51,7 @@ export class DatabaseClient {
         this.db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
     }
     for (const statement of [
+      "CREATE INDEX IF NOT EXISTS idx_artifacts_run_created ON artifacts(run_id, created_at)",
       "CREATE INDEX IF NOT EXISTS idx_control_run_repetition ON control_run_metadata(repetition, updated_at)",
       "CREATE INDEX IF NOT EXISTS idx_runs_history_state_finished ON runs(state, finished_at, experiment_id)",
       "CREATE INDEX IF NOT EXISTS idx_runs_history_experiment_finished ON runs(experiment_id, finished_at)"
@@ -58,7 +59,7 @@ export class DatabaseClient {
       try {
         this.db.exec(statement);
       } catch {
-        // Existing installations may not have the foundation run table yet.
+        // Existing installations may not have the foundation tables yet.
       }
     }
     // Remove legacy catalog copies after applying the historical schema. No run or

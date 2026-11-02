@@ -1,3 +1,5 @@
+import { DATABASE_IOPS_CATALOG } from "../../../../packages/contracts/src/database-iops";
+import { DATABASE_SETUP_DEFINITIONS } from "../../../../packages/contracts/src/database-setup";
 import { PLATFORM_RUN_PARAMETER_DEFINITIONS } from "../../../../packages/contracts/src/run-parameters";
 import { DATABASE_RUN_CONTROL_DEFINITIONS } from "../../../../packages/contracts/src/database-run-controls";
 import { sendControlUiError } from "./control-ui-errors";
@@ -50,6 +52,8 @@ export function registerControlUiRoutes(app: any, platform: Platform): void {
   app.get("/api/v1/ui-options", async () => {
     return {
       contractVersion: UI_OPTIONS_CONTRACT_VERSION,
+      databaseSetup: DATABASE_SETUP_DEFINITIONS,
+      databaseIopsCatalog: DATABASE_IOPS_CATALOG,
       databaseParameters: databaseParameterOptions({
         version: platform.config.openedge.version,
         features: platform.config.openedge.databaseFeatures

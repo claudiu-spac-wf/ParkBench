@@ -1,7 +1,9 @@
+import { DiagnosticsOperatorSettings, loadDiagnosticsSettings } from "./measurement-diagnostics";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 export interface ParkBenchConfig {
+  measurementDiagnostics?: DiagnosticsOperatorSettings;
   host: string;
   port: number;
   dbPath: string;
@@ -30,6 +32,7 @@ export interface ParkBenchConfig {
     observers: string;
     seeds: string;
     archives: string;
+    scripts?: string;
   };
   openedge: {
     dbImage?: string;
@@ -102,6 +105,7 @@ export function loadConfig(
   env: NodeJS.ProcessEnv = process.env,
   options: { root?: string } = {}
 ): ParkBenchConfig {
+  const measurementDiagnostics = loadDiagnosticsSettings(env);
   const prometheusScrapeInterval = env.PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL ?? "5s";
   const prometheusScrapeIntervalSeconds = prometheusDurationSeconds(prometheusScrapeInterval);
   if (prometheusScrapeIntervalSeconds === undefined)
@@ -129,6 +133,7 @@ export function loadConfig(
     return resolver.mapHostPathToContainer(hostPath, canonicalHostRoot, containerRoot, { root });
   };
   return {
+    measurementDiagnostics,
     host: env.PARKBENCH_HOST ?? "127.0.0.1",
     port: Number(env.PARKBENCH_PORT ?? 3000),
     dbPath:
@@ -158,6 +163,7 @@ export function loadConfig(
       nginx: env.PARKBENCH_NGINX_IMAGE ?? ""
     },
     discoveryRoots: {
+      scripts: resolvePath(env.PARKBENCH_DISCOVERY_SCRIPTS_ROOT ?? ".parkbench/scripts"),
       scenarios: resolvePath(env.PARKBENCH_DISCOVERY_SCENARIOS_ROOT ?? "examples/scenarios"),
       workloads: resolvePath(
         env.PARKBENCH_DISCOVERY_WORKLOADS_ROOT ??
@@ -205,7 +211,7 @@ export function loadConfig(
   };
 }
 
-function prometheusDurationSeconds(value: string): number | undefined {
+export function prometheusDurationSeconds(value: string): number | undefined {
   if (typeof value !== "string" || !/^(?:\d+(?:ms|s|m|h|d|w|y))+$/.test(value)) return undefined;
   const scale = { ms: 0.001, s: 1, m: 60, h: 3600, d: 86400, w: 604800, y: 31536000 };
   let seconds = 0;

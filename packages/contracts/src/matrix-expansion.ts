@@ -1,3 +1,6 @@
+import { DATABASE_IOPS_PARAMETER, DATABASE_IOPS_CATALOG, resolveDatabaseIops, validateDatabaseIopsCondition } from "./database-iops";
+import { normalizeMeasurementDiagnostics } from "./measurement-diagnostics";
+import { normalizeDatabaseSetup } from "./database-setup";
 import { ALLOWED_PARAMETERS } from "./allowed-parameters";
 import { isDatabaseRunControl, validateDatabaseRunControl } from "./database-run-controls";
 import {
@@ -129,6 +132,8 @@ export function resolveDatabaseStartup(
 export function normalizeMatrixParameterNames(request: MatrixPreviewRequest): MatrixPreviewRequest {
   return {
     ...request,
+    measurementDiagnostics: normalizeMeasurementDiagnostics(request.measurementDiagnostics),
+    databaseSetup: normalizeDatabaseSetup(request.databaseSetup),
     fixedOverrides: canonicalParameterValues(request.fixedOverrides ?? {}),
     dimensions: request.dimensions.map((d) => ({
       ...d,
@@ -139,12 +144,17 @@ export function normalizeMatrixParameterNames(request: MatrixPreviewRequest): Ma
 
 export function canonicalMatrixRequest(request: MatrixPreviewRequest): string {
   return stableJson({
+    measurementDiagnostics: normalizeMeasurementDiagnostics(request.measurementDiagnostics),
     runName: normalizeRunName(request.runName),
+    databaseIops: (request.dimensions.find(d=>d.name===DATABASE_IOPS_PARAMETER)?.values ?? [request.fixedOverrides?.[DATABASE_IOPS_PARAMETER] ?? "unlimited"]).map(value=>resolveDatabaseIops(value)),
     scenario: request.scenario,
     dimensions: request.dimensions,
     repetitions: request.repetitions,
     fixedOverrides: request.fixedOverrides ?? {},
-    inputs: request.inputs ?? {}
+    inputs: request.inputs ?? {},
+    ...(normalizeDatabaseSetup(request.databaseSetup)
+      ? { databaseSetup: normalizeDatabaseSetup(request.databaseSetup) }
+      : {})
   });
 }
 
@@ -227,7 +237,10 @@ export function expandMatrix(
       ordinal,
       values,
       repetition: index + 1,
-      effectiveConfiguration
+      effectiveConfiguration,
+      databaseIops: resolveDatabaseIops(effectiveConfiguration[DATABASE_IOPS_PARAMETER]),
+      measurementDiagnostics: normalizeMeasurementDiagnostics(request.measurementDiagnostics),
+      ...(request.databaseSetup ? { databaseSetup: structuredClone(request.databaseSetup) } : {})
     }));
   });
 }

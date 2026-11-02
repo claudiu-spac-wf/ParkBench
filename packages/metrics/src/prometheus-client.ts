@@ -1,3 +1,6 @@
+import { prometheusDurationSeconds } from "../../contracts/src/config";
+import { startQueryEvidence, currentQueryEvidence } from "./query-evidence";
+import type { ObservationEvidence } from "../../contracts/src/measurement-diagnostics";
 import { boundedResponseJson, sharedRawQueryScheduler, RawQueryOptions } from "./raw-query";
 import {
   RAW_REQUEST_TIMEOUT_MS,
@@ -7,6 +10,11 @@ import {
 } from "./limits";
 import { MetricSample, MetricType } from "../../contracts/src/metrics";
 import openEdgeDbMetricCatalog from "../../contracts/src/openedge-db-metric-catalog.json";
+/** Actual owned target timing; this is a scrape-assigned clock, not a reading. */
+export interface NativeScrapeTiming {
+  lastScrapeAtMs: number;
+  cadenceMs: number;
+}
 export interface PrometheusClient {
   queryRawRange?(
     selector: string,
@@ -18,6 +26,7 @@ export interface PrometheusClient {
   queryRange(query: string, start: number, end: number, step: number): Promise<MetricSample[]>;
   queryInstant(query: string): Promise<MetricSample[]>;
   health(): Promise<boolean>;
+  nativeScrapeTiming?(runId: string, timeoutMs?: number): Promise<NativeScrapeTiming>;
   waitForRunTargets?(
     runId: string,
     phase: string,
@@ -39,13 +48,86 @@ export interface MetricTextExporter {
  * plane. This keeps the production HTTP query client read-only while still
  * giving observer completeness evidence a real Prometheus source.
  */
+export interface MetricPublicationEvidence {
+  runId: string;
+  observerId?: string;
+  stage: ObservationEvidence["stage"];
+  outcome: ObservationEvidence["outcome"];
+  startedAtMs: number;
+  finishedAtMs: number;
+  durationMs: number;
+  counts: Record<string, number>;
+  reasonCodes: string[];
+}
 export class PrometheusMetricBuffer implements MetricSink, MetricTextExporter {
+  constructor(private readonly onEvidence?: (event: MetricPublicationEvidence) => void) {}
+  private emit(event: MetricPublicationEvidence) {
+    try {
+      this.onEvidence?.(event);
+    } catch {
+      /* Evidence must not block exposition. */
+    }
+  }
+  reportExposition(
+    runId: string,
+    outcome: MetricPublicationEvidence["outcome"],
+    startedAtMs: number,
+    durationMs: number,
+    responseBytes: number
+  ) {
+    this.emit({
+      runId,
+      stage: "EXPOSITION",
+      outcome,
+      startedAtMs,
+      finishedAtMs: Date.now(),
+      durationMs,
+      counts: { responseBytes },
+      reasonCodes: ["http_response_finished"]
+    });
+  }
   private readonly series = new Map<string, MetricSample>();
 
   append(samples: MetricSample[]): void {
+    const startedAtMs = Date.now(),
+      monotonicStart = performance.now();
+    const groups = new Map<string, { appendedSamples: number; overwrittenEntries: number }>();
+    let omittedGroups = 0;
     for (const sample of samples) {
       const key = `${sample.metricName}|${JSON.stringify(sample.labels)}`;
+      if (this.onEvidence && sample.labels.run_id) {
+        const runId = sample.labels.run_id;
+        if (groups.has(runId) || groups.size < 128) {
+          const counts = groups.get(runId) ?? { appendedSamples: 0, overwrittenEntries: 0 };
+          counts.appendedSamples++;
+          if (this.series.has(key)) counts.overwrittenEntries++;
+          groups.set(runId, counts);
+        } else omittedGroups++;
+      }
       this.series.set(key, { ...sample, labels: { ...sample.labels } });
+    }
+    for (const [runId, counts] of groups) {
+      this.emit({
+        runId,
+        stage: "BUFFER_APPEND",
+        outcome: "SUCCEEDED",
+        startedAtMs,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - monotonicStart,
+        counts,
+        reasonCodes: ["latest_value_buffer"]
+      });
+      if (omittedGroups)
+        this.emit({
+          runId,
+          stage: "DIAGNOSTIC_WRITE",
+          outcome: "REJECTED",
+          startedAtMs,
+          finishedAtMs: Date.now(),
+          durationMs: 0,
+          counts: { omittedGroups },
+          reasonCodes: ["diagnostic_publication_cardinality_exceeded"]
+        });
     }
   }
 
@@ -54,6 +136,9 @@ export class PrometheusMetricBuffer implements MetricSink, MetricTextExporter {
   }
 
   render(): string {
+    const startedAtMs = Date.now(),
+      monotonicStart = performance.now();
+    const groups = new Map<string, { renderedSamples: number; sampleLineBytes: number }>();
     const samples = this.samples();
     const types = new Map<string, MetricType>();
     for (const sample of samples) {
@@ -70,9 +155,28 @@ export class PrometheusMetricBuffer implements MetricSink, MetricTextExporter {
           .filter(([, value]) => value !== undefined)
           .map(([key, value]) => `${key}="${escapeLabel(String(value))}"`)
           .join(",");
-        return `${sample.metricName}{${labels}} ${sample.value} ${Math.floor(sample.timestamp * 1000)}`;
+        const line = `${sample.metricName}{${labels}} ${sample.value} ${Math.floor(sample.timestamp * 1000)}`;
+        const runId = sample.labels.run_id;
+        if (this.onEvidence && runId && (groups.has(runId) || groups.size < 128)) {
+          const counts = groups.get(runId) ?? { renderedSamples: 0, sampleLineBytes: 0 };
+          counts.renderedSamples++;
+          counts.sampleLineBytes += Buffer.byteLength(line) + 1;
+          groups.set(runId, counts);
+        }
+        return line;
       })
     );
+    for (const [runId, counts] of groups)
+      this.emit({
+        runId,
+        stage: "EXPOSITION",
+        outcome: "SUCCEEDED",
+        startedAtMs,
+        finishedAtMs: Date.now(),
+        durationMs: performance.now() - monotonicStart,
+        counts,
+        reasonCodes: ["render_complete", "render_does_not_prove_ingestion"]
+      });
     return `${lines.join("\n")}\n`;
   }
 }
@@ -155,34 +259,43 @@ export class HttpPrometheusClient implements PrometheusClient {
     )
       throw new Error("summary_selector_invalid");
     const duration = Math.round((end - start) * 1000) + 1;
-    return sharedRawQueryScheduler.run(
-      async () => {
-        const signal = options.signal
-          ? AbortSignal.any([options.signal, AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS)])
-          : AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS);
-        let payload: any;
-        try {
-          const response = await fetch(
-            `${this.baseUrl}/api/v1/query?${new URLSearchParams({ query: `${selector}[${duration}ms]`, time: String(end) })}`,
-            { signal }
+    const evidence = startQueryEvidence("RAW_STORED_SAMPLES", selector, start, end);
+    try {
+      const result = await sharedRawQueryScheduler.run(
+        async () => {
+          evidence?.dispatch();
+          const signal = options.signal
+            ? AbortSignal.any([options.signal, AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS)])
+            : AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS);
+          let payload: any;
+          try {
+            const response = await fetch(
+              `${this.baseUrl}/api/v1/query?${new URLSearchParams({ query: `${selector}[${duration}ms]`, time: String(end) })}`,
+              { signal }
+            );
+            payload = await boundedResponseJson(response, signal, false, evidence?.body);
+          } catch (error) {
+            if (signal.aborted && !options.signal?.aborted) throw new Error("query_timeout");
+            throw error;
+          }
+          return parsePrometheusResponse(payload, true).filter(
+            (s) =>
+              Number.isFinite(s.value) &&
+              Number.isFinite(s.timestamp) &&
+              s.timestamp >= start &&
+              (s.timestamp < end ||
+                (options.includeExactEnd && s.type === "counter" && s.timestamp === end))
           );
-          payload = await boundedResponseJson(response, signal);
-        } catch (error) {
-          if (signal.aborted && !options.signal?.aborted) throw new Error("query_timeout");
-          throw error;
-        }
-        return parsePrometheusResponse(payload, true).filter(
-          (s) =>
-            Number.isFinite(s.value) &&
-            Number.isFinite(s.timestamp) &&
-            s.timestamp >= start &&
-            (s.timestamp < end ||
-              (options.includeExactEnd && s.type === "counter" && s.timestamp === end))
-        );
-      },
-      options.priority,
-      options.signal
-    );
+        },
+        options.priority,
+        options.signal
+      );
+      evidence?.finish(result);
+      return result;
+    } catch (error) {
+      evidence?.finish([], error);
+      throw error;
+    }
   }
 
   constructor(public readonly baseUrl: string) {}
@@ -197,14 +310,97 @@ export class HttpPrometheusClient implements PrometheusClient {
     }
   }
   async queryInstant(query: string): Promise<MetricSample[]> {
-    return sharedRawQueryScheduler.run(async () => {
-      const signal = AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS);
-      const response = await fetch(
-        `${this.baseUrl}/api/v1/query?query=${encodeURIComponent(query)}`,
-        { signal }
-      );
-      return parsePrometheusResponse(await boundedResponseJson(response, signal, true));
-    });
+    const context = currentQueryEvidence(),
+      now = Date.now();
+    const window = context?.instantEffectiveWindow ?? { startMs: now, endMs: now };
+    const evidence = startQueryEvidence(
+      "EVALUATION_GRID",
+      query,
+      window.startMs / 1000,
+      window.endMs / 1000
+    );
+    try {
+      const result = await sharedRawQueryScheduler.run(async () => {
+        evidence?.dispatch();
+        const signal = AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS);
+        const response = await fetch(
+          `${this.baseUrl}/api/v1/query?query=${encodeURIComponent(query)}`,
+          { signal }
+        );
+        return parsePrometheusResponse(
+          await boundedResponseJson(response, signal, true, evidence?.body)
+        );
+      });
+      evidence?.finish(result);
+      return result;
+    } catch (error) {
+      evidence?.finish([], error);
+      throw error;
+    }
+  }
+  async nativeScrapeTiming(runId: string, timeoutMs = 20000): Promise<NativeScrapeTiming> {
+    if (!/^[a-zA-Z0-9_.-]{1,256}$/.test(runId)) throw new Error("native_scrape_run_invalid");
+    const deadline = Date.now() + Math.max(250, Math.min(120000, timeoutMs));
+    do {
+      try {
+        const signal = AbortSignal.timeout(Math.max(1, Math.min(5000, deadline - Date.now())));
+        const response = await fetch(this.baseUrl + "/api/v1/targets?state=active", { signal });
+        if (!response.ok || !response.body) throw new Error("native_scrape_schedule_unavailable");
+        let bytes = 0;
+        const chunks: Uint8Array[] = [];
+        const reader = response.body.getReader();
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            bytes += value.byteLength;
+            if (bytes > RAW_RESPONSE_BYTES) throw new Error("native_scrape_schedule_unavailable");
+            chunks.push(value);
+          }
+        } finally {
+          try {
+            await reader.cancel();
+          } catch {
+            /* The fixed unavailable result is retained. */
+          }
+          reader.releaseLock();
+        }
+        const payload = JSON.parse(Buffer.concat(chunks, bytes).toString("utf8"));
+        if (payload.status !== "success" || !Array.isArray(payload.data?.activeTargets))
+          throw new Error("native_scrape_schedule_unavailable");
+        const targets = payload.data.activeTargets.filter(
+          (target: any) =>
+            target.labels?.job === "parkbench-runs" &&
+            target.labels?.run_id === runId &&
+            target.labels?.component === "database"
+        );
+        if (targets.length > 1) throw new Error("native_scrape_target_ambiguous");
+        if (targets.length === 1 && targets[0].health === "up") {
+          const lastScrapeAtMs = Date.parse(targets[0].lastScrape);
+          const cadenceMs = (prometheusDurationSeconds(targets[0].scrapeInterval) ?? 0) * 1000;
+          const now = Date.now();
+          // The existing startup readiness bound also bounds the origin wait.
+          if (
+            Number.isSafeInteger(lastScrapeAtMs) &&
+            lastScrapeAtMs >= 0 &&
+            Number.isSafeInteger(cadenceMs) &&
+            cadenceMs > 0 &&
+            cadenceMs <= 120000 &&
+            lastScrapeAtMs <= now &&
+            now - lastScrapeAtMs <= 2 * cadenceMs
+          )
+            return { lastScrapeAtMs, cadenceMs };
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message === "native_scrape_target_ambiguous")
+          throw error;
+        // Target payloads/errors contain arbitrary labels and endpoint details.
+        // Preserve only the fixed unavailable result when the bounded wait ends.
+      }
+      if (Date.now() < deadline)
+        await new Promise((resolve) => setTimeout(resolve, Math.min(100, deadline - Date.now())));
+    } while (Date.now() < deadline);
+    throw new Error("native_scrape_schedule_unavailable");
   }
   async waitForRunTargets(
     runId: string,
@@ -258,9 +454,11 @@ export class HttpPrometheusClient implements PrometheusClient {
     const signal = AbortSignal.timeout(120000);
     const append = async (a: number, b: number) => {
       let samples: MetricSample[];
+      const evidence = startQueryEvidence("EVALUATION_GRID", query, a, b, step);
       try {
         samples = await sharedRawQueryScheduler.run(
           async () => {
+            evidence?.dispatch();
             const requestSignal = AbortSignal.any([
               signal,
               AbortSignal.timeout(RAW_REQUEST_TIMEOUT_MS)
@@ -274,12 +472,16 @@ export class HttpPrometheusClient implements PrometheusClient {
             const response = await fetch(`${this.baseUrl}/api/v1/query_range?${params}`, {
               signal: requestSignal
             });
-            return parsePrometheusResponse(await boundedResponseJson(response, requestSignal));
+            return parsePrometheusResponse(
+              await boundedResponseJson(response, requestSignal, false, evidence?.body)
+            );
           },
           "historical",
           signal
         );
+        evidence?.finish(samples);
       } catch (error) {
+        evidence?.finish([], error);
         if (String(error).includes("summary_limit_exceeded") && b - a > step) {
           const mid = a + Math.floor((b - a) / (2 * step)) * step;
           await append(a, mid);

@@ -44,7 +44,7 @@ describe("observer collector phase length", () => {
         startMs: start,
         endMs: start + 4000
       });
-      assert.deepEqual(acquisitions, [start, start + 2000]);
+      assert.deepEqual(acquisitions, [start, start + 1500, start + 3000]);
       assert.equal(quality.observed, 0);
       assert.ok(quality.longestGapSeconds! >= 4);
       await collector.collectPhase({ ...context, phase: "cooldown" }, 2, 1, new Set(), () => true, {
@@ -55,7 +55,7 @@ describe("observer collector phase length", () => {
         startMs: now,
         endMs: now
       });
-      assert.equal(acquisitions.length, 2);
+      assert.equal(acquisitions.length, 3);
     } finally {
       Date.now = originalNow;
       globalThis.setTimeout = originalSetTimeout;
@@ -194,4 +194,11 @@ describe("observer collector phase length", () => {
       globalThis.setTimeout = originalSetTimeout;
     }
   });
+});
+
+it("retains accumulated phase counts when an infrastructure check interrupts collection",async()=>{
+ const originalNow=Date.now,originalTimeout=globalThis.setTimeout;let now=1800000000000;Date.now=()=>now;(globalThis as any).setTimeout=(fn,delay=0)=>{now+=Number(delay);return originalTimeout(fn,0);};
+ const context={runId:"partial",experimentId:"ex",variantId:"v",repetition:1,phase:"measurement"};let checks=0;
+ const collector=new ObserverCollector([{id:"core",kind:"core",required:true,samplingIntervalSeconds:1}],context,{create:()=>({id:"core",kind:"core",ready:async()=>true,sample:async c=>[{metricName:"measured",value:1,timestamp:now/1000,source:"test",labels:{run_id:c.runId,experiment_id:c.experimentId,variant_id:c.variantId,repetition:"1",component:"observer",service:"core",phase:"measurement"}}]})});
+ try{await assert.rejects(collector.collectPhase(context,4,1,new Set(),()=>false,undefined,async()=>{if(++checks===2)throw Error("database_iops_policy_drift");}));const counts=collector.progress();assert.equal(counts.length,1);assert.equal(counts[0].phase,"measurement");assert.equal(counts[0].observed,1);assert.ok(counts[0].expected>=4);}finally{Date.now=originalNow;globalThis.setTimeout=originalTimeout;}
 });

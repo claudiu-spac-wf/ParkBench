@@ -39,3 +39,8 @@ export * from "./comparison-metric-selection";
 
 export * from "./database-analysis-report";
 export * from "./database-analysis-definitions";
+
+export * from "./database-setup";
+export * from "./measurement-diagnostics";
+
+export * from "./database-iops";
