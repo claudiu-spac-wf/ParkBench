@@ -57,6 +57,21 @@ function fixture() {
   };
 }
 describe("real summary orchestration primitives", () => {
+  it("uses recorded execution cadence instead of stale queued settings for summaries", async () => {
+    const f = fixture();
+    try {
+      Object.assign(f.run.environmentSnapshot, {
+        nativeScrapeAlignment: { contractVersion: "native-scrape-alignment.v1", cadenceMs: 10000 }
+      });
+      f.r.saveRun(f.run);
+      const service = new ComparisonSummaryService(f.r, f.storage, new MemoryPrometheusClient());
+      const prepared = await service.prepare(f.run, { origin: "historical_recompute" });
+      assert.equal(prepared.header.sampling.baseStepSeconds, 10);
+      assert.equal(prepared.header.sampling.sources.find((s) => s.job === "parkbench-runs")?.acquisitionSeconds, 10);
+      assert.equal(f.run.environmentSnapshot.sourceCadences.prometheusScrapeSeconds, 1);
+    } finally { f.close(); }
+  });
+
   it("carries recorded cAdvisor timestamp age into resource edge coverage", async () => {
     const f = fixture();
     try {

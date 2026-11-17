@@ -856,7 +856,7 @@
     {
       "id": 13,
       "title": "DB table reads (records/s)",
-      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -932,7 +932,7 @@
     {
       "id": 14,
       "title": "DB table reads (total)",
-      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. The additional Total sums every table and Other exactly once per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. The additional Total sums every table and Other exactly once per run; supported contributions remain visible and missing contributions mark the Total partial. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.\n\nPartial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -961,7 +961,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "noValue": "No data",
+          "noValue": "Unavailable",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            }
+          ],
           "min": 0
         },
         "overrides": []
@@ -987,7 +1007,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"read\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\"}",
-          "legendFormat": "{{run_id}} {{table}}",
+          "legendFormat": "{{coverage_note}} {{run_id}} {{table}}",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -999,7 +1019,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"read\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
-          "legendFormat": "{{run_id}} Total",
+          "legendFormat": "{{coverage_note}} {{run_id}} Total",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1009,7 +1029,7 @@
     {
       "id": 15,
       "title": "DB table writes (records/s)",
-      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1085,7 +1105,7 @@
     {
       "id": 16,
       "title": "DB table writes (total)",
-      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. The additional Total sums every table and Other exactly once per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "description": "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. The additional Total sums every table and Other exactly once per run; supported contributions remain visible and missing contributions mark the Total partial. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.\n\nPartial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1114,7 +1134,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "noValue": "No data",
+          "noValue": "Unavailable",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            }
+          ],
           "min": 0
         },
         "overrides": []
@@ -1140,7 +1180,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"write\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\"}",
-          "legendFormat": "{{run_id}} {{table}}",
+          "legendFormat": "{{coverage_note}} {{run_id}} {{table}}",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1152,7 +1192,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_table_rank{run_id=~\"$run_id\",phase=~\"$phase\",operation=\"write\",view=\"total\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
-          "legendFormat": "{{run_id}} Total",
+          "legendFormat": "{{coverage_note}} {{run_id}} Total",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1162,7 +1202,7 @@
     {
       "id": 17,
       "title": "DB index reads (blocks/s)",
-      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1230,7 +1270,7 @@
     {
       "id": 18,
       "title": "DB index reads (total)",
-      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. The additional Total sums all database series per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. The additional Total sums all database series per run; supported contributions remain visible and missing contributions mark the Total partial. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded.\n\nPartial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1251,7 +1291,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "suffix:blocks",
-          "noValue": "No data",
+          "noValue": "Unavailable",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            }
+          ],
           "min": 0
         },
         "overrides": []
@@ -1277,7 +1337,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_read_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
-          "legendFormat": "{{run_id}} {{database}}",
+          "legendFormat": "{{coverage_note}} {{run_id}} {{database}}",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1289,7 +1349,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_read_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
-          "legendFormat": "{{run_id}} Total",
+          "legendFormat": "{{coverage_note}} {{run_id}} Total",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1299,7 +1359,7 @@
     {
       "id": 19,
       "title": "DB index writes (blocks/s)",
-      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1367,7 +1427,7 @@
     {
       "id": 20,
       "title": "DB index writes (total)",
-      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. The additional Total sums all database series per run; unavailable contributions make the Total unavailable. Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "description": "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. The additional Total sums all database series per run; supported contributions remain visible and missing contributions mark the Total partial. Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded.\n\nPartial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1388,7 +1448,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "suffix:blocks",
-          "noValue": "No data",
+          "noValue": "Unavailable",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            }
+          ],
           "min": 0
         },
         "overrides": []
@@ -1414,7 +1494,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_written_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\"}",
-          "legendFormat": "{{run_id}} {{database}}",
+          "legendFormat": "{{coverage_note}} {{run_id}} {{database}}",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1426,7 +1506,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"index_blocks_written_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",aggregate=\"run\"}",
-          "legendFormat": "{{run_id}} Total",
+          "legendFormat": "{{coverage_note}} {{run_id}} Total",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1890,7 +1970,7 @@
         {
           "id": 29,
           "title": "Table operations per second",
-          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.",
+          "description": "Diagnostic readings over the visible range; rate windows may overlap phase boundaries.\n\nInstant rates use the observed continuous intervals in their lookback window when coverage is partial. Missing intervals are excluded; timeline charts retain gaps.",
           "datasource": {
             "type": "prometheus",
             "uid": "parkbench-runs"
@@ -1915,7 +1995,27 @@
           "fieldConfig": {
             "defaults": {
               "unit": "ops/s",
-              "noValue": "No data",
+              "noValue": "Unavailable",
+              "mappings": [
+                {
+                  "type": "special",
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "Unavailable"
+                    }
+                  }
+                },
+                {
+                  "type": "special",
+                  "options": {
+                    "match": "nan",
+                    "result": {
+                      "text": "Unavailable"
+                    }
+                  }
+                }
+              ],
               "min": 0
             },
             "overrides": []
@@ -1930,7 +2030,7 @@
                 "uid": "parkbench-runs"
               },
               "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",table=~\".+\"}",
-              "legendFormat": "{{run_id}} {{table}} {{operation}}",
+              "legendFormat": "{{coverage_note}} {{run_id}} {{table}} {{operation}}",
               "range": false,
               "instant": true,
               "format": "table"

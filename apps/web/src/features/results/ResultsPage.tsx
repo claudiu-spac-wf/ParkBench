@@ -1,3 +1,4 @@
+import { isArtifactVisible } from "../../../../../packages/contracts/src/artifacts";
 import React, { useEffect, useState } from "react";
 import { getArtifacts, getComparison, getRuns } from "./resultsApi";
 import { ComparisonView } from "./ComparisonView";
@@ -48,7 +49,7 @@ export function ResultsPage({ experimentId, runId }: { experimentId?: string; ru
       <a href="#history">Run history</a>
       {(artifacts.length > 0 || runArtifacts.length > 0) && (
         <ul>
-          {[...artifacts, ...runArtifacts].map((artifact) => (
+          {[...artifacts, ...runArtifacts].filter(isArtifactVisible).map((artifact) => (
             <li key={artifact.id}>
               {artifact.runId && <span>{artifact.runId}: </span>}
               <a href={artifact.downloadUrl} download>

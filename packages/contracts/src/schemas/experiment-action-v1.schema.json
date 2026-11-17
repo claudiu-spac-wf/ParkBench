@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://parkbench.local/contracts/experiment-action-v1.schema.json",
+  "title": "Experiment action request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "kind", "confirm", "expectedRevision"],
+  "properties": {
+    "contractVersion": {
+      "const": "experiment-action.v1"
+    },
+    "kind": {
+      "enum": ["RERUN", "REMOVE"]
+    },
+    "confirm": {
+      "const": true
+    },
+    "expectedRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "$defs": {
+    "retry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractVersion", "confirm"],
+      "properties": {
+        "contractVersion": {
+          "const": "experiment-action.v1"
+        },
+        "confirm": {
+          "const": true
+        }
+      }
+    }
+  }
+}

@@ -30,9 +30,9 @@ platform with:
 ./scripts/bootstrap.sh
 ```
 
-Bootstrap runs host and licensed-input preflight before `npm ci`, then installs
-locked dependencies, builds application assets before dependent images, builds
-both OpenEdge stages, loads the final generated runtime image references,
+Bootstrap runs host preflight, installs locked dependencies with `npm ci`, then
+runs licensed-input preflight and builds application assets before dependent
+images. It builds both OpenEdge stages, loads the final generated runtime image references,
 builds the platform support images, starts Compose, and waits for all six
 required services: control plane, web UI, Prometheus, Grafana, cAdvisor, and
 node exporter. It writes `.parkbench/host-environment.json`, the latest

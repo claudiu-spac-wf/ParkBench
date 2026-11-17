@@ -22,6 +22,27 @@ export class NativeCaptureClock {
           Math.floor((now - phase.startMs) / this.schedule.cadenceMs) * this.schedule.cadenceMs
       : undefined;
   }
+  /** Current unattempted slot, or the next phase/slot boundary. Missed slots
+   * are not replayed: a late acquisition must retain its real source time. */
+  nextCaptureAtMs(now: number, after?: number): number | undefined {
+    if (!this.schedule) this.schedule = this.read();
+    if (!Number.isFinite(now) || !this.schedule) return undefined;
+    for (const phase of this.schedule.phases) {
+      if (phase.endMs <= now) continue;
+      let slot =
+        now < phase.startMs
+          ? phase.startMs
+          : phase.startMs +
+            Math.floor((now - phase.startMs) / this.schedule.cadenceMs) * this.schedule.cadenceMs;
+      if (after !== undefined && slot <= after)
+        slot =
+          phase.startMs +
+          (Math.floor((after - phase.startMs) / this.schedule.cadenceMs) + 1) *
+            this.schedule.cadenceMs;
+      if (slot < phase.endMs) return slot;
+    }
+    return undefined;
+  }
   private read(): CaptureSchedule | undefined {
     if (!this.file || !this.runId) return undefined;
     let fd: number | undefined;

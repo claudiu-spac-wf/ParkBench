@@ -1,4 +1,14 @@
+import { assertReferencesReadable } from "./execution";
+import { assertCommandCurrent } from "./retired-commands";
 import crypto from "node:crypto";
+import {
+  actionFenced,
+  assertExecutionWrite,
+  ensureExecutionRevision,
+  executionRevision,
+  runExecutionRevision,
+  ensureRunExecutionRevision
+} from "./execution";
 import type { StatementSync } from "node:sqlite";
 import fs from "node:fs";
 import {
@@ -66,6 +76,7 @@ export class Repositories {
     now = Date.now()
   ): string | undefined {
     if (!this.getRun(runId)) throw new Error("run_not_found");
+    assertExecutionWrite(this.client.db, runId);
     const token = crypto.randomUUID(),
       time = new Date(now).toISOString();
     return this.summaryTransaction(() => {
@@ -85,6 +96,7 @@ export class Repositories {
     });
   }
   assertSummaryAttempt(runId: string, version: string, token: string, now = Date.now()): void {
+    assertExecutionWrite(this.client.db, runId);
     // This check runs for every streamed row. Reuse the native statement rather
     // than allocating thousands of statements awaiting garbage collection.
     this.summaryAttemptStatement ??= this.client.db.prepare(
@@ -362,7 +374,9 @@ export class Repositories {
       "experiments",
       "runs",
       "control_dashboard_contexts",
-      "control_comparisons"
+      "control_comparisons",
+      "comparison_unavailability",
+      "dashboard_unavailability"
     ]) {
       try {
         if (this.client.db.prepare(`SELECT 1 FROM ${table} WHERE id=? LIMIT 1`).get(id))
@@ -374,6 +388,7 @@ export class Repositories {
     return false;
   }
   saveEnvironment(environment: Record<string, unknown>): void {
+    assertExecutionWrite(this.client.db, String(environment.runId));
     const now = new Date().toISOString();
     this.client.db
       .prepare(
@@ -407,6 +422,7 @@ export class Repositories {
       .filter((record) => record.cleanupStatus !== "COMPLETE");
   }
   saveExperiment(experiment: Experiment): void {
+    experiment.executionRevision = ensureExecutionRevision(this.client.db, experiment.id);
     this.client.db
       .prepare("INSERT INTO experiments VALUES(?,?,?,?,?,?,?,?,?,?,?)")
       .run(
@@ -435,6 +451,7 @@ export class Repositories {
         .prepare("SELECT * FROM variants WHERE experiment_id=? ORDER BY rowid")
         .all(id) as any[]
     ).map((v) => ({
+      ...parse<Variant>(v.document),
       id: v.id,
       name: v.name,
       parameters: parse<Record<string, string | number | boolean>>(v.parameters)
@@ -446,6 +463,7 @@ export class Repositories {
     ).map((r) => r.id);
     return {
       id: row.id,
+      executionRevision: executionRevision(this.client.db, row.id),
       scenario: { id: row.scenario_id, version: row.scenario_version },
       comparisonMode: row.comparison_mode,
       baselineVariantId: row.baseline_variant_id ?? undefined,
@@ -479,6 +497,10 @@ export class Repositories {
       .run(status, startedAt ?? null, finishedAt ?? null, id);
   }
   saveRun(run: Run): void {
+    assertExecutionWrite(this.client.db, run.id, run.executionRevision);
+    run.executionRevision ??=
+      runExecutionRevision(this.client.db, run.id) ??
+      ensureExecutionRevision(this.client.db, run.experimentId);
     const environmentSnapshot = run.imageSnapshots
       ? { ...(run.environmentSnapshot ?? {}), imageSnapshots: run.imageSnapshots }
       : run.environmentSnapshot;
@@ -509,6 +531,7 @@ export class Repositories {
         json(run.observerHealth),
         json(run.phaseBoundaries)
       );
+    ensureRunExecutionRevision(this.client.db, run.id, run.experimentId);
   }
   getRun(id: string): Run | undefined {
     const row: any = this.client.db.prepare("SELECT * FROM runs WHERE id=?").get(id);
@@ -531,6 +554,9 @@ export class Repositories {
       Record<string, unknown> | undefined;
     return {
       id: row.id,
+      executionRevision:
+        runExecutionRevision(this.client.db, row.id) ??
+        executionRevision(this.client.db, row.experiment_id),
       name:
         typeof environmentSnapshot?.runName === "string" ? environmentSnapshot.runName : undefined,
       experimentId: row.experiment_id,
@@ -565,7 +591,11 @@ export class Repositories {
         "SELECT status_code,response FROM idempotency_keys WHERE operation=? AND idempotency_key=?"
       )
       .get(operation, key);
-    return row ? { statusCode: row.status_code, response: parse(row.response) } : undefined;
+    assertCommandCurrent(this.client.db, operation, key);
+    if (!row) return undefined;
+    const response = parse(row.response);
+    assertReferencesReadable(this.client.db, response);
+    return { statusCode: row.status_code, response };
   }
   saveIdempotency(operation: string, key: string, statusCode: number, response: unknown): void {
     this.client.db
@@ -575,6 +605,7 @@ export class Repositories {
       .run(operation, key, statusCode, json(response), new Date().toISOString());
   }
   saveEvent(event: Omit<LifecycleEvent, "id">): LifecycleEvent {
+    assertExecutionWrite(this.client.db, event.runId);
     const result: any = this.client.db
       .prepare(
         "INSERT INTO lifecycle_events(run_id,from_state,to_state,occurred_at,actor,reason,details) VALUES(?,?,?,?,?,?,?)"
@@ -607,6 +638,7 @@ export class Repositories {
     }));
   }
   saveArtifact(artifact: Artifact): void {
+    assertExecutionWrite(this.client.db, artifact.runId);
     this.client.db
       .prepare(
         "INSERT OR REPLACE INTO artifacts (id,run_id,kind,path,size_bytes,format,source_metadata,created_at,retained) VALUES(?,?,?,?,?,?,?,?,?)"
@@ -651,6 +683,7 @@ export class Repositories {
       cleanupResult?: string;
     }
   ): void {
+    assertExecutionWrite(this.client.db, runId);
     this.client.db
       .prepare(
         "INSERT OR REPLACE INTO resources(run_id,resource_type,resource_id,ownership_labels,created_at,deleted_at,cleanup_result) VALUES(?,?,?,?,?,?,?)"

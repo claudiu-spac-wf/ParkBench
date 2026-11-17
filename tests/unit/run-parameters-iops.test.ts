@@ -9,7 +9,7 @@ const request: any = {
   runName: "iops-matrix",
   scenario: { id: "fixture", version: "1" },
   dimensions: [
-    { name, values: ["hdd", "unlimited"] },
+    { name, values: ["hdd-t1", "unlimited"] },
     { name: "network.databaseLatencyMs", values: [0, 5] }
   ],
   repetitions: 2
@@ -20,14 +20,14 @@ test("IOPS is a real enum matrix dimension with one frozen condition per repetit
   assert.equal(new Set(cells.map((c) => c.ordinal)).size, 4);
   assert.deepEqual(
     cells.map((c) => c.databaseIops.presetId),
-    ["hdd", "hdd", "hdd", "hdd", "unlimited", "unlimited", "unlimited", "unlimited"]
+    ["hdd-t1", "hdd-t1", "hdd-t1", "hdd-t1", "unlimited", "unlimited", "unlimited", "unlimited"]
   );
   const omitted = expandMatrix(
     { ...request, dimensions: [], repetitions: 1 },
     PLATFORM_RUN_PARAMETER_DEFINITIONS
   );
   assert.equal(omitted[0].databaseIops.presetId, "unlimited");
-  for (const values of [[], ["bad"], [150], ["hdd", "hdd"]])
+  for (const values of [[], ["bad"], [150], ["hdd-t1", "hdd-t1"]])
     assert.throws(() =>
       expandMatrix(
         { ...request, dimensions: [{ name, values }] },
@@ -36,15 +36,15 @@ test("IOPS is a real enum matrix dimension with one frozen condition per repetit
     );
   assert.throws(() =>
     expandMatrix(
-      { ...request, fixedOverrides: { [name]: "hdd" } },
+      { ...request, fixedOverrides: { [name]: "hdd-t1" } },
       PLATFORM_RUN_PARAMETER_DEFINITIONS
     )
   );
 });
 test("platform enum round trips without becoming a broker argument", () => {
-  const p = parameterPlan({ [name]: "hdd" });
-  assert.equal(p.databaseIops?.presetId, "hdd");
-  assert.equal(readParameterPlan(p).databaseIops?.readIopsPerDevice, 150);
+  const p = parameterPlan({ [name]: "hdd-t1" });
+  assert.equal(p.databaseIops?.presetId, "hdd-t1");
+  assert.equal(readParameterPlan(p).databaseIops?.readIopsPerDevice, 1000);
   assert.deepEqual(p.databaseStartupArgs, []);
   assert.throws(() => validateVariant({ id: "x", name: "x", parameters: { [name]: "bogus" } }));
 });

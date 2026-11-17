@@ -1,5 +1,6 @@
 import { NativeCaptureStatus } from "../../../packages/observers/src/openedge-db/native-capture-status";
 import { NativeCaptureClock } from "../../../packages/observers/src/native-capture-clock";
+import { NativeCaptureScheduler } from "../../../packages/observers/src/native-capture-scheduler";
 import { createObserverHttpServer } from "../../../packages/observers/src/http-shutdown";
 import { nativeMeasurementInventory } from "../../../packages/observers/src/measurement-inventory";
 import {
@@ -44,6 +45,7 @@ const targets = (process.env.PARKBENCH_OBSERVER_TARGET_URLS ?? target ?? "")
   .map((value) => value.trim())
   .filter(Boolean);
 let diagnosticsWriter: MeasurementDiagnosticsWriter | undefined;
+let sourceScheduler: NativeCaptureScheduler | undefined;
 const diagnosticsRequested = Boolean(process.env.PARKBENCH_MEASUREMENT_DIAGNOSTICS);
 const recordEvidence = diagnosticsRequested
   ? (event: EvidenceInput) => diagnosticsWriter?.record(event)
@@ -73,12 +75,6 @@ async function initializeEvidence() {
     producerEvent("DIAGNOSTIC_WRITE", "STARTED", {
       startedAtMs: Date.now(),
       reasonCodes: ["producer_started"]
-    });
-    process.once("SIGTERM", () => {
-      void stopHttp().then(async () => {
-        await diagnosticsWriter?.close();
-        process.exit(0);
-      });
     });
   } catch {
     console.error(
@@ -400,7 +396,26 @@ const { server, close: stopHttp } = createObserverHttpServer(async (request, res
   response.end("not_found");
 });
 
-void initializeEvidence().then(() => server.listen(port, "0.0.0.0"));
+process.once("SIGTERM", () => {
+  void Promise.all([stopHttp(), sourceScheduler?.close()]).then(async () => {
+    await diagnosticsWriter?.close();
+    process.exit(0);
+  });
+});
+void initializeEvidence().then(() => {
+  server.listen(port, "0.0.0.0");
+  if (
+    kind === "openedge_db_v1" &&
+    process.env.PARKBENCH_PHASE_CLOCK_PATH &&
+    process.env.PARKBENCH_RUN_ID &&
+    process.env.PARKBENCH_OPENEDGE_DB_METRICS_ENABLED !== "false"
+  ) {
+    sourceScheduler = new NativeCaptureScheduler(nativeCaptureClock, (slot) =>
+      databaseCollector.metricsWithEvidence({ callerRole: "UNKNOWN", minimumCapturedAtMs: slot })
+    );
+    sourceScheduler.start();
+  }
+});
 
 let fileCollectionGeneration = 0;
 function fileMetrics(file?: string, response?: http.ServerResponse): string {

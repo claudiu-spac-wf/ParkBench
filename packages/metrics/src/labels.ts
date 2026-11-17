@@ -1,5 +1,6 @@
 import { MetricLabels, MetricPhase } from "../../contracts/src/metrics";
 const ALLOWED = new Set([
+  "execution_revision",
   "experiment_id",
   "run_id",
   "variant_id",

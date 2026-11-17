@@ -525,8 +525,9 @@ container lifecycle, defaults, errors and native validation.
 ### Simulate slower database storage
 
 Below **Database latency**, choose one or more **Database disk IOPS** presets:
-HDD (150), SATA SSD (90,000), Slow NVME (250,000), Fast NVME (1,000,000), or the
-default Unlimited. Each finite number is an independent read and write IOPS cap
+HDD T1/T2/T3 (1,000 / 2,000 / 3,000), SATA SSD T1/T2/T3
+(6,000 / 20,000 / 60,000), NVME T1/T2/T3 (128,000 / 256,000 / 400,000),
+or the default Unlimited. Each finite number is an independent read and write IOPS cap
 per resolved working-storage device. Multiple selections create separate matrix
 conditions; review the frozen caps in the preview before queuing.
 

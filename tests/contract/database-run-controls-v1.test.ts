@@ -28,7 +28,7 @@ test("P1 controls remain exposed alongside a scenario's restricted definitions",
     )!;
     assert.equal(buffers.minimum, 3);
     assert.equal(buffers.maximum, undefined);
-    assert.equal(buffers.multiUser.maximum.status,"not_specified");
+    assert.equal(buffers.multiUser.maximum.status, "not_specified");
   } finally {
     platform.close();
   }
@@ -278,4 +278,56 @@ test("fresh direct scheduling freezes server-owned named requirements without mu
   } finally {
     platform.close();
   }
+});
+
+test("additive capture evidence keeps legacy readable and rejects unavailable observation as health", async () => {
+  const { validateDatabaseRunControlsEvidence } =
+    await import("../../packages/compose-runner/src/database-run-controls-evidence");
+  const controls = resolveDatabaseRunControls();
+  const legacy: any = {
+    contractVersion: "db-run-controls-evidence.v1",
+    capturedAt: new Date().toISOString(),
+    verification: "matched",
+    writerHealth: "verified",
+    reason: "",
+    observed: {
+      contractVersion: "db-startup-state.v1",
+      capturedAt: new Date().toISOString(),
+      nativeClusterKiB: 512,
+      biBuffers: 64,
+      connectionCapacity: 20,
+      connectedCount: 1,
+      apwCount: 0,
+      biwCount: 0,
+      writers: []
+    }
+  };
+  assert.equal(validateDatabaseRunControlsEvidence(legacy, controls), legacy);
+  const capture = {
+    outcome: "TIMEOUT",
+    startedAt: new Date().toISOString(),
+    finishedAt: new Date().toISOString(),
+    durationMs: 15000,
+    exitCode: 124,
+    lastSuccessAt: null,
+    logRef: "startup-state.log"
+  };
+  assert.throws(
+    () => validateDatabaseRunControlsEvidence({ ...legacy, capture }, controls),
+    /database_writer_health_unavailable/
+  );
+  for (const invalid of [
+    { exitCode: 256 },
+    { lastSuccessAt: "bad" },
+    { logRef: "../secret" },
+    { durationMs: -1 }
+  ])
+    assert.throws(
+      () =>
+        validateDatabaseRunControlsEvidence(
+          { ...legacy, capture: { ...capture, ...invalid } },
+          controls
+        ),
+      /database_run_control_unapplied/
+    );
 });

@@ -1,3 +1,6 @@
+import { isArtifactVisible } from "../../../../packages/contracts/src/artifacts";
+import { saveSubmittedSchedule } from "../experiments/actions/saved-schedule";
+import { runActionFenced, actionFenced, executionRevision } from "../db/execution";
 import { validateDatabaseIopsCondition } from "../../../../packages/contracts/src/database-iops";
 import {
   DIAGNOSTIC_DEFAULTS,
@@ -69,6 +72,7 @@ import {
 import { validateScenario } from "../../../../packages/contracts/src/validator";
 import {
   createDashboardContext,
+  dashboardMetricPhase,
   deriveDashboardTimeRange
 } from "../comparisons/dashboard-context-service";
 import { resolveManagedInputPath } from "../catalog/managed-input-path";
@@ -158,6 +162,7 @@ export interface ControlUiRuntime {
 
 export class ControlUiService {
   private readonly queueOrdinals = new Map<string, number>();
+  private readonly dispatching = new Set<string>();
   private readonly retryTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly unsubscribeExperimentFinished: () => void;
   private queueEnabled = false;
@@ -175,7 +180,8 @@ export class ControlUiService {
     for (const experiment of this.runtime.controlRepository.listControlExperiments())
       this.queueOrdinals.set(experiment.id, experiment.queueOrdinal);
     for (const experiment of this.runtime.controlRepository.listControlExperiments())
-      this.restoreRetry(experiment.id);
+      if (!actionFenced(this.runtime.repositories.client.db, experiment.id))
+        this.restoreRetry(experiment.id);
   }
 
   close(): void {
@@ -791,6 +797,7 @@ export class ControlUiService {
           updatedAt: now()
         });
       }
+      saveSubmittedSchedule(this.runtime.repositories, experiment.id);
       const result = this.getExperiment(experiment.id)!;
       if (idempotencyKey)
         this.runtime.repositories.saveIdempotency("control-ui-submit", idempotencyKey, 202, result);
@@ -828,7 +835,9 @@ export class ControlUiService {
     queued: ControlRunView[];
     started?: string;
   }> {
-    const experiments = this.runtime.controlRepository.listControlExperiments();
+    const experiments = this.runtime.controlRepository
+      .listControlExperiments()
+      .filter((e) => !actionFenced(this.runtime.repositories.client.db, e.id));
     const active = experiments.find((experiment) =>
       ["RUNNING"].includes(this.syncExperimentStatus(experiment.id))
     );
@@ -851,9 +860,15 @@ export class ControlUiService {
       experiments.find((experiment) => this.syncExperimentStatus(experiment.id) === "QUEUED") ??
       experiments.find((experiment) => this.syncExperimentStatus(experiment.id) === "BLOCKED");
     if (next) {
-      if (process.env.PARKBENCH_TEMP_CAPACITY === "1") {
-        const existingRetryAt = this.runtime.controlRepository
+      const queuedRuns = () =>
+        this.runtime.controlRepository
           .listRunMetadata(next.id)
+          .filter(
+            (run) =>
+              !this.isTerminal(this.runtime.repositories.getRun(run.id)?.state ?? run.queueState)
+          );
+      if (process.env.PARKBENCH_TEMP_CAPACITY === "1") {
+        const existingRetryAt = queuedRuns()
           .map((run) => (run.nextRetryAt ? Date.parse(run.nextRetryAt) : undefined))
           .filter((value): value is number => value !== undefined && Number.isFinite(value))
           .sort((left, right) => left - right)[0];
@@ -861,12 +876,9 @@ export class ControlUiService {
           return { queued: this.listQueue() };
         const delay =
           QUEUE_RETRY_DELAYS_MS[
-            Math.min(
-              this.runtime.controlRepository.listRunMetadata(next.id)[0]?.retryCount ?? 0,
-              QUEUE_RETRY_DELAYS_MS.length - 1
-            )
+            Math.min(queuedRuns()[0]?.retryCount ?? 0, QUEUE_RETRY_DELAYS_MS.length - 1)
           ];
-        for (const queuedRun of this.runtime.controlRepository.listRunMetadata(next.id)) {
+        for (const queuedRun of queuedRuns()) {
           this.runtime.controlRepository.saveRunMetadata({
             runId: queuedRun.id,
             ...queuedRun,
@@ -881,18 +893,23 @@ export class ControlUiService {
         this.scheduleRetry(next.id, retryAt);
         return { queued: this.listQueue() };
       }
+      const scheduledRevision = executionRevision(this.runtime.repositories.client.db, next.id);
       try {
         await this.preflightExperiment(next);
       } catch (error) {
         if (this.closed) return { queued: [] };
+        if (
+          actionFenced(this.runtime.repositories.client.db, next.id) ||
+          executionRevision(this.runtime.repositories.client.db, next.id) !== scheduledRevision
+        )
+          return { queued: this.listQueue() };
         const reason = String(error);
         if (classifyQueueFailure(error) === "temporary_capacity") {
-          const currentRetry =
-            this.runtime.controlRepository.listRunMetadata(next.id)[0]?.retryCount ?? 0;
+          const currentRetry = queuedRuns()[0]?.retryCount ?? 0;
           const delay =
             QUEUE_RETRY_DELAYS_MS[Math.min(currentRetry, QUEUE_RETRY_DELAYS_MS.length - 1)];
           const retryAt = Date.now() + delay;
-          for (const queuedRun of this.runtime.controlRepository.listRunMetadata(next.id))
+          for (const queuedRun of queuedRuns())
             this.runtime.controlRepository.saveRunMetadata({
               runId: queuedRun.id,
               ...queuedRun,
@@ -906,7 +923,7 @@ export class ControlUiService {
           return { queued: this.listQueue() };
         }
         this.runtime.controlRepository.updateControlExperiment(next.id, { status: "BLOCKED" });
-        for (const queuedRun of this.runtime.controlRepository.listRunMetadata(next.id)) {
+        for (const queuedRun of queuedRuns()) {
           this.runtime.controlRepository.saveRunMetadata({
             runId: queuedRun.id,
             ...queuedRun,
@@ -919,7 +936,12 @@ export class ControlUiService {
         return { queued: this.listQueue() };
       }
       if (this.closed) return { queued: [] };
-      for (const queuedRun of this.runtime.controlRepository.listRunMetadata(next.id)) {
+      if (
+        actionFenced(this.runtime.repositories.client.db, next.id) ||
+        executionRevision(this.runtime.repositories.client.db, next.id) !== scheduledRevision
+      )
+        return { queued: this.listQueue() };
+      for (const queuedRun of queuedRuns()) {
         if (queuedRun.queueState !== "BLOCKED") continue;
         this.runtime.controlRepository.saveRunMetadata({
           runId: queuedRun.id,
@@ -939,10 +961,33 @@ export class ControlUiService {
     return { queued: this.listQueue() };
   }
 
+  isDispatching(experimentId: string): boolean {
+    return this.dispatching.has(experimentId);
+  }
+  pauseExperiment(experimentId: string): void {
+    clearTimeout(this.retryTimers.get(experimentId));
+    this.retryTimers.delete(experimentId);
+  }
   private async preflightExperiment(record: any): Promise<void> {
+    if (actionFenced(this.runtime.repositories.client.db, record.id))
+      throw new Error("experiment_action_in_progress");
+    this.dispatching.add(record.id);
+    try {
+      await this.preflightExperimentInputs(record);
+    } finally {
+      this.dispatching.delete(record.id);
+    }
+  }
+  private async preflightExperimentInputs(record: any): Promise<void> {
     await this.runtime.coordinator.prepareMeasurementBatch(record.id);
     const scenario = record.scenarioSnapshot as Scenario;
-    const firstRun = this.runtime.controlRepository.listRunMetadata(record.id)[0];
+    const savedRuns = this.runtime.repositories
+        .listRuns(record.id)
+        .filter((r) => !this.isTerminal(r.state)),
+      firstSnapshot = savedRuns[0]?.environmentSnapshot as any;
+    const firstRun = this.runtime.controlRepository
+      .listRunMetadata(record.id)
+      .find((r) => r.id === savedRuns[0]?.id);
     const inputs = this.runtime.repositories.getExperiment(record.id)?.inputs;
     if (!inputs) throw new Error("experiment_inputs_missing");
     if (!this.runtime.testMode)
@@ -955,6 +1000,9 @@ export class ControlUiService {
         {
           id: "preflight",
           name: "queue preflight",
+          databaseStartup: firstSnapshot?.databaseStartup,
+          databaseIops: firstSnapshot?.databaseIops,
+          databaseRunControls: firstSnapshot?.databaseRunControls,
           parameters: firstRun?.effectiveConfiguration ?? {}
         }
       ],
@@ -975,6 +1023,14 @@ export class ControlUiService {
       supportImages.observer
     ];
     if (images.some((image) => !image)) throw new Error("support_image_reference_required");
+    if (!this.runtime.testMode)
+      await this.runtime.coordinator.validateSavedDatabaseImage(inputs.databaseImage, {
+        finite: savedRuns.some(
+          (r) => (r.environmentSnapshot as any)?.databaseIops?.presetId !== "unlimited"
+        ),
+        writers: true,
+        setup: savedRuns.some((r) => (r.environmentSnapshot as any)?.databaseSetup?.steps?.length)
+      });
     if (!this.runtime.testMode && this.runtime.inspectImage) {
       const inspectable = await Promise.all(
         images.map((image) => this.runtime.inspectImage!(image))
@@ -1193,7 +1249,9 @@ export class ControlUiService {
           continue;
         if (filters.to && run?.finishedAt && Date.parse(run.finishedAt) > Date.parse(filters.to))
           continue;
-        const artifacts = this.runtime.repositories.listArtifacts(controlRun.id);
+        const artifacts = this.runtime.repositories
+          .listArtifacts(controlRun.id)
+          .filter(isArtifactVisible);
         result.push({
           ...view,
           scenario: experiment.request.scenario,
@@ -1265,7 +1323,7 @@ export class ControlUiService {
     if (!run || !metadata || !this.isTerminal(run.state)) return undefined;
     const experiment = this.runtime.controlRepository.getControlExperiment(metadata.experimentId);
     if (!experiment) return undefined;
-    const artifacts = this.runtime.repositories.listArtifacts(runId);
+    const artifacts = this.runtime.repositories.listArtifacts(runId).filter(isArtifactVisible);
     const view = this.syncRunStatus(metadata);
     const dashboard = this.ensureRunDashboard(run);
     return {
@@ -1304,7 +1362,7 @@ export class ControlUiService {
     if (!run || !metadata) return undefined;
     const experiment = this.runtime.controlRepository.getControlExperiment(metadata.experimentId);
     if (!experiment) return undefined;
-    const artifacts = this.runtime.repositories.listArtifacts(runId);
+    const artifacts = this.runtime.repositories.listArtifacts(runId).filter(isArtifactVisible);
     if (this.isTerminal(run.state)) this.ensureRunDashboard(run);
     const dashboards = this.runtime.controlRepository
       .listDashboards()
@@ -1334,7 +1392,7 @@ export class ControlUiService {
   async runDetail(runId: string): Promise<Record<string, unknown> | undefined> {
     const run = this.runtime.repositories.getRun(runId);
     if (!run) return undefined;
-    const artifacts = this.runtime.repositories.listArtifacts(runId);
+    const artifacts = this.runtime.repositories.listArtifacts(runId).filter(isArtifactVisible);
     const links: Array<{ label: string; url: string }> = artifacts.map((artifact) => ({
       label: artifact.kind,
       url: `/api/v1/runs/${runId}/artifacts/${artifact.id}`
@@ -1391,6 +1449,8 @@ export class ControlUiService {
     for (const id of ids) {
       const run = this.runtime.repositories.getRun(id);
       if (!run) throw new Error("comparison_run_not_found");
+      if (runActionFenced(this.runtime.repositories.client.db, run.id))
+        throw Error("experiment_action_in_progress");
       experimentIds.add(run.experimentId);
     }
     if (selection.experimentId && !this.hasExperiment(selection.experimentId))
@@ -1523,23 +1583,31 @@ export class ControlUiService {
     options: { cursor?: string; limit?: number } = {}
   ): any {
     const scenarios = new Map<string, ReturnType<typeof recordedScenario>>();
-    return buildComparison(
-      selection,
-      this.comparisonSummaryReader(),
-      (id) => this.runtime.repositories.getRun(id),
-      {
-        ...options,
-        scenario: (run) => {
-          const recorded = recordedScenario(run);
-          if (recorded) return recorded;
-          if (!scenarios.has(run.experimentId)) {
-            const experiment = this.runtime.repositories.getExperiment(run.experimentId);
-            scenarios.set(run.experimentId, experiment?.scenario);
+    return {
+      ...buildComparison(
+        selection,
+        this.comparisonSummaryReader(),
+        (id) => this.runtime.repositories.getRun(id),
+        {
+          ...options,
+          scenario: (run) => {
+            const recorded = recordedScenario(run);
+            if (recorded) return recorded;
+            if (!scenarios.has(run.experimentId)) {
+              const experiment = this.runtime.repositories.getExperiment(run.experimentId);
+              scenarios.set(run.experimentId, experiment?.scenario);
+            }
+            return scenarios.get(run.experimentId);
           }
-          return scenarios.get(run.experimentId);
         }
-      }
-    );
+      ),
+      ...((selection as any).unavailableMemberCount
+        ? {
+            unavailableMemberCount: (selection as any).unavailableMemberCount,
+            baselineRemoved: !!(selection as any).baselineRemoved
+          }
+        : {})
+    };
   }
 
   createDashboard(input: {
@@ -1554,6 +1622,8 @@ export class ControlUiService {
       .filter(Boolean) as Run[];
     if (input.baselineRunId && !input.runIds.includes(input.baselineRunId))
       throw new Error("dashboard_baseline_not_in_run_scope");
+    if (knownRuns.some((run) => runActionFenced(this.runtime.repositories.client.db, run.id)))
+      throw Error("experiment_action_in_progress");
     const experimentIds = [...new Set(knownRuns.map((run) => run.experimentId))];
     const requestedMetricScope = input.metricScope ?? ["workload", "pas", "database", "disk_io"];
     const scopedExperimentId =
@@ -1600,7 +1670,11 @@ export class ControlUiService {
   getDashboard(id: string): DashboardContext | undefined {
     const context = this.runtime.controlRepository.getDashboard(id);
     return context
-      ? { ...context, dashboardRefs: resolveDashboardReferences(context.dashboardRefs) }
+      ? { ...context,
+          phase: context.phase ? dashboardMetricPhase(context.phase) : undefined,
+          variables: { ...context.variables,
+            ...(context.variables.phase ? { phase: context.variables.phase.map(dashboardMetricPhase) } : {}) },
+          dashboardRefs: resolveDashboardReferences(context.dashboardRefs) }
       : undefined;
   }
 

@@ -149,8 +149,10 @@ export function parameterPlan(
         plan.resourceLimits.pas = numeric(key);
         break;
       case DATABASE_IOPS_PARAMETER:
-        plan.databaseIops = resolveDatabaseIops(value);
-        if(options.databaseIops && JSON.stringify(plan.databaseIops)!==JSON.stringify(options.databaseIops)) throw new Error("database_iops_invalid:snapshot_parameter_conflict");
+        plan.databaseIops = options.databaseIops
+          ? validateDatabaseIopsCondition(options.databaseIops)
+          : resolveDatabaseIops(value);
+        if(plan.databaseIops.presetId !== value) throw new Error("database_iops_invalid:snapshot_parameter_conflict");
         break;
       case "network.databaseLatencyMs":
         if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 1000)

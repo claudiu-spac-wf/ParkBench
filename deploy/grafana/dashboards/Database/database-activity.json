@@ -1648,7 +1648,7 @@
         {
           "id": 23,
           "title": "Full table CRUD operation detail",
-          "description": "Filtered to the selected run and phase.",
+          "description": "Filtered to the selected run and phase.\n\nInstant rates use the observed continuous intervals in their lookback window when coverage is partial. Missing intervals are excluded; timeline charts retain gaps.",
           "datasource": {
             "type": "prometheus",
             "uid": "parkbench-runs"
@@ -1673,7 +1673,27 @@
           "fieldConfig": {
             "defaults": {
               "unit": "ops/s",
-              "noValue": "No data",
+              "noValue": "Unavailable",
+              "mappings": [
+                {
+                  "type": "special",
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "Unavailable"
+                    }
+                  }
+                },
+                {
+                  "type": "special",
+                  "options": {
+                    "match": "nan",
+                    "result": {
+                      "text": "Unavailable"
+                    }
+                  }
+                }
+              ],
               "min": 0
             },
             "overrides": []
@@ -1697,7 +1717,7 @@
                 "uid": "parkbench-runs"
               },
               "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",table=~\"$table\",operation=~\"read|create|update|delete\"}",
-              "legendFormat": "{{run_id}} {{table}} {{operation}}",
+              "legendFormat": "{{coverage_note}} {{run_id}} {{table}} {{operation}}",
               "range": false,
               "instant": true,
               "format": "table"
@@ -1709,7 +1729,7 @@
                 "uid": "parkbench-runs"
               },
               "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"table_operations_total\",view=\"rate\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",rate_window_ms=\"60000\",table=~\"$table\",operation=~\"os_read\"}",
-              "legendFormat": "{{run_id}} {{table}} {{operation}}",
+              "legendFormat": "{{coverage_note}} {{run_id}} {{table}} {{operation}}",
               "range": false,
               "instant": true,
               "format": "table"

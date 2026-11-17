@@ -27,3 +27,8 @@ export interface Artifact {
   createdAt: string;
   retained: boolean;
 }
+
+/** Presentation policy only: diagnostics remain in storage/cleanup inventories. */
+export function isArtifactVisible(artifact: { kind: string }): boolean {
+  return !["diagnostic", "diagnostics"].includes(artifact.kind.toLowerCase());
+}

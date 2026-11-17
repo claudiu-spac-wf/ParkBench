@@ -159,3 +159,53 @@ export const getDashboardContext = (id: string) =>
   api<any>(`/dashboards/context/${encodeURIComponent(id)}`);
 export const getHistory = (query = "") => api<any>(`/history/runs${query ? `?${query}` : ""}`);
 export const getHistoryDetail = (id: string) => api<any>(`/history/runs/${encodeURIComponent(id)}`);
+
+export const getExperimentActions = (id: string) =>
+  api<any>(`/experiments/${encodeURIComponent(id)}/actions`);
+export const getRunActions = (id: string) => api<any>(`/runs/${encodeURIComponent(id)}/actions`);
+export const submitRunAction = (id: string, expectedRevision: string, key: string) =>
+  api<import("../../../../packages/contracts/src/experiment-action").ActionView>(
+    `/runs/${encodeURIComponent(id)}/actions`,
+    {
+      method: "POST",
+      headers: { "Idempotency-Key": key },
+      body: JSON.stringify({
+        contractVersion: "experiment-action.v1",
+        kind: "RERUN",
+        confirm: true,
+        expectedRevision
+      })
+    }
+  );
+export const getExperimentAction = (id: string) =>
+  api<import("../../../../packages/contracts/src/experiment-action").ActionView>(
+    `/experiment-actions/${encodeURIComponent(id)}`
+  );
+export const submitExperimentAction = (
+  id: string,
+  kind: "RERUN" | "REMOVE",
+  expectedRevision: string,
+  key: string
+) =>
+  api<import("../../../../packages/contracts/src/experiment-action").ActionView>(
+    `/experiments/${encodeURIComponent(id)}/actions`,
+    {
+      method: "POST",
+      headers: { "Idempotency-Key": key },
+      body: JSON.stringify({
+        contractVersion: "experiment-action.v1",
+        kind,
+        confirm: true,
+        expectedRevision
+      })
+    }
+  );
+export const retryExperimentAction = (id: string, key: string) =>
+  api<import("../../../../packages/contracts/src/experiment-action").ActionView>(
+    `/experiment-actions/${encodeURIComponent(id)}/retry`,
+    {
+      method: "POST",
+      headers: { "Idempotency-Key": key },
+      body: JSON.stringify({ contractVersion: "experiment-action.v1", confirm: true })
+    }
+  );

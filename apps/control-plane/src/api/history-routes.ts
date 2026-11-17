@@ -34,6 +34,7 @@ export function registerHistoryRoutes(app: any, platform: Platform): void {
     );
     return {
       contractVersion: "control-ui.v1",
+      actions: platform.experimentActions.listPending(),
       ...page
     };
   });
@@ -45,6 +46,7 @@ export function registerHistoryRoutes(app: any, platform: Platform): void {
       );
       return {
         ...detail,
+        actions: platform.experimentActions.eligibility((detail.run as any).experimentId),
         artifacts,
         diagnostics: artifacts.filter((a) => a.kind === "diagnostics")
       };

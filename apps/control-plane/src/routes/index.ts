@@ -1,3 +1,4 @@
+import { isArtifactVisible } from "../../../../packages/contracts/src/artifacts";
 import { diagnosticDownloadPath } from "../measurement-diagnostics/producer-files";
 import { registerDatabaseSetupRoutes } from "../api/database-setup-routes";
 import { registerReportRoutes } from "../api/report-routes";
@@ -335,7 +336,11 @@ export function registerRoutes(app: any, platform: Platform): void {
   });
   app.get("/api/v1/experiments/:experimentId", async (request: any, reply) => {
     const controlExperiment = platform.controlUi.getExperiment(request.params.experimentId);
-    if (controlExperiment) return controlExperiment;
+    if (controlExperiment)
+      return {
+        ...controlExperiment,
+        actions: platform.experimentActions.eligibility(request.params.experimentId)
+      };
     const experiment = platform.repositories.getExperiment(request.params.experimentId);
     if (!experiment) return sendError(reply, new Error("experiment_not_found"), "not_found", 404);
     return experiment;
@@ -488,7 +493,14 @@ export function registerRoutes(app: any, platform: Platform): void {
     if (!run) return sendError(reply, new Error("run_not_found"), "not_found", 404);
     return {
       artifacts: (
-        await platform.measurementRetention.projectArtifacts(platform.artifacts.list(run.id))
+        await platform.measurementRetention.projectArtifacts(
+          platform.artifacts
+            .list(run.id)
+            .filter(
+              (artifact) =>
+                request.query?.includeDiagnostics === "true" || isArtifactVisible(artifact)
+            )
+        )
       ).map((artifact) => ({
         ...artifact,
         downloadUrl: `/api/v1/runs/${run.id}/artifacts/${artifact.id}`
@@ -569,7 +581,10 @@ export function registerRoutes(app: any, platform: Platform): void {
     savedSummaries: new SavedSummaryQueries(platform.controlRepository.summaryReader(), (id) =>
       platform.summaryWorker?.schedule(id)
     ),
-    timelines: repositoryTimelineSource(platform.repositories)
+    timelines: repositoryTimelineSource(platform.repositories, (id) => {
+      const run = platform.repositories.getRun(id);
+      return !run || !platform.experimentActions.repository.isFenced(run.experimentId);
+    })
   });
 }
 function resolveScenario(platform: Platform, input: any): any {
@@ -635,6 +650,11 @@ function escapeLabelFilter(value: unknown): string {
 }
 function sendError(reply: any, error: any, code: string, status = 400) {
   const requestIdValue = requestId();
+  if (
+    /unavailable_experiment_rerun|dashboard_context_execution_replaced/.test(error?.message ?? "")
+  )
+    status = 410;
+  if (error?.message === "experiment_action_in_progress") status = 409;
   reply.code(status);
   return {
     error: {

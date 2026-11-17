@@ -11,12 +11,26 @@ function datasourceRef(kind: DatasourceKind) {
   return { type: "prometheus", uid: DATASOURCE_UIDS[kind] };
 }
 
+function nativeTotal(expression: string): boolean {
+  return /parkbench_(?:db_diagnostic|table_rank)\{/.test(expression) && expression.includes('view="total"');
+}
+function nativeSnapshot(panel: Panel, target: Panel["targets"][number]): boolean {
+  return /parkbench_(?:db_diagnostic|table_rank)\{/.test(target.expr) &&
+    (nativeTotal(target.expr) || Boolean(target.instant) || panel.visual === "table");
+}
+
 function fieldDefaults(panel: Panel) {
   const convention = unitFor(panel.category);
   const defaults: Record<string, unknown> = {
     unit: panel.unit ?? convention.unit,
     noValue: "No data"
   };
+  if (panel.targets.some((target) => nativeSnapshot(panel, target))) {
+    defaults.noValue = "Unavailable";
+    defaults.mappings = ["null", "nan"].map((match) => ({
+      type: "special", options: { match, result: { text: "Unavailable" } }
+    }));
+  }
   if (convention.min !== undefined) defaults.min = convention.min;
   if (convention.max !== undefined) defaults.max = convention.max;
   if (panel.visual === "timeseries")
@@ -35,6 +49,10 @@ function fieldDefaults(panel: Panel) {
 
 function describe(panel: Panel): string | undefined {
   const parts = [panel.description, panel.note].filter(Boolean);
+  if (panel.targets.some((target) => nativeTotal(target.expr)))
+    parts.push("Partial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.");
+  if (panel.targets.some((target) => nativeSnapshot(panel, target) && !nativeTotal(target.expr)))
+    parts.push("Instant rates use the observed continuous intervals in their lookback window when coverage is partial. Missing intervals are excluded; timeline charts retain gaps.");
   return parts.length ? parts.join("\n\n") : undefined;
 }
 
@@ -65,7 +83,8 @@ export function emitPanel(
     refId: String.fromCharCode(65 + index),
     datasource: datasourceRef(target.datasource ?? datasource),
     expr: target.expr,
-    legendFormat: target.legendFormat,
+    legendFormat: nativeSnapshot(panel, target)
+      ? "{{coverage_note}} " + target.legendFormat : target.legendFormat,
     range: !target.instant,
     instant: Boolean(target.instant),
     ...(target.instant ? { format: target.format ?? "time_series" } : {})

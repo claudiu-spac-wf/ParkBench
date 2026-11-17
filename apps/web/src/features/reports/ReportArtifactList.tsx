@@ -1,3 +1,4 @@
+import { isArtifactVisible } from "../../../../../packages/contracts/src/artifacts";
 import React, { useState } from "react";
 import { ReportArtifact } from "../../../../../packages/contracts/src/database-analysis-report";
 import { reportArtifactDownloadUrl } from "./reportArtifactDownloadUrl";
@@ -9,6 +10,7 @@ export function ReportArtifactList({
   artifacts: ReportArtifact[];
 }) {
   const [errors, setErrors] = useState({} as Record<string, string>);
+  artifacts = artifacts.filter(isArtifactVisible);
   async function download(a: ReportArtifact, e: React.MouseEvent) {
     e.preventDefault();
     try {

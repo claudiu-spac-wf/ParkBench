@@ -19,6 +19,8 @@ export type MeasurementValidity = "PENDING" | "VALID" | "INCOMPLETE" | "UNAVAILA
 export type FailureKind =
   "infrastructure" | "threshold" | "cancellation" | "observer" | "export" | "interruption";
 export const RUN_FAILURE_CODES = [
+  "loadgen_exited_early",
+  "loadgen_health_unavailable",
   "database_iops_unsupported",
   "database_iops_device_unresolved",
   "database_iops_policy_conflict",
@@ -48,6 +50,7 @@ export const RUN_FAILURE_CODES = [
   "database_writer_start_failed",
   "database_run_control_unapplied",
   "database_writer_lost",
+  "database_writer_health_unavailable",
   "named_latch_evidence_missing",
   "database_setup_script_unavailable",
   "database_setup_unavailable",
@@ -87,6 +90,7 @@ export interface CompletenessResult {
   }>;
 }
 export interface Run {
+  executionRevision?: string;
   id: string;
   name?: string;
   experimentId: string;

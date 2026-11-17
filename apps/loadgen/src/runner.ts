@@ -5,10 +5,7 @@ import { OperationSelector } from "./operation-selector";
 import { LoadgenHttpClient } from "./http-client";
 import { buildSummary } from "./summary";
 import { writeSummary } from "./artifacts";
-import {
-  cancellationRequested,
-  signalCancellation
-} from "../../control-plane/src/runs/cancellation";
+import { cancellationRequested } from "../../control-plane/src/runs/cancellation";
 import { phaseWindow, LoadPhase } from "./phases";
 import { runWorker } from "./workers";
 import {
@@ -37,7 +34,6 @@ export async function runLoadgen(config: {
   const seed =
     config.workloadSeed ?? mixSeed(config.scenario.workload.load.seed ?? 1, config.runId);
   const results: any[] = [];
-  let timeoutHit = false;
   const liveSamples = new Map<string, any>();
   const metricsServer = process.env.PARKBENCH_METRICS_PORT
     ? await startMetricsServer(() => [...liveSamples.values()])
@@ -164,10 +160,8 @@ export async function runLoadgen(config: {
             result.phase = phase;
             phaseCompletions += 1;
             workerCompletions += 1;
-            if (result.timeout) {
-              timeoutHit = true;
-              if (config.shutdownFile) signalCancellation(config.shutdownFile);
-            }
+            // A request failure is evidence, not a global stop request. Keep
+            // applying the scheduled load; the CLI retains the failed verdict.
             const stats = operationStats.get(result.operation) ?? new OperationMetricAccumulator();
             stats.record(result);
             operationStats.set(result.operation, stats);
@@ -207,11 +201,9 @@ export async function runLoadgen(config: {
     finishedAt: new Date().toISOString(),
     phaseDurationsSeconds: phaseDurations,
     results,
-    shutdownReason: timeoutHit
-      ? "timeout"
-      : cancellationRequested(config.shutdownFile ?? "")
-        ? "cancelled"
-        : "phase-complete"
+    shutdownReason: cancellationRequested(config.shutdownFile ?? "")
+      ? "cancelled"
+      : "phase-complete"
   });
   writeSummary(config.summaryPath, summary);
   if (

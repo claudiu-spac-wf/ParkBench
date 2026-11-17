@@ -1,3 +1,5 @@
+import { requireDatabaseStartupCapabilities } from "./database-startup-capabilities";
+import { DATABASE_IOPS_PARAMETER } from "../../contracts/src/database-iops";
 import { resolveFreshStartupFiles } from "./input-checks";
 import { canonicalParameterValues } from "../../contracts/src/matrix-expansion";
 import { validateScenarioParameterValues } from "../../contracts/src/scenario-parameter-validation";
@@ -31,6 +33,7 @@ export interface PreflightEnvironment {
   warnings: string[];
 }
 export interface PreflightOptions {
+  databaseImageLabels?: Record<string, string>;
   /** Internal queued-run validation: startup was frozen by a controller preview. Never set for new API requests. */
   frozenDatabaseStartup?: boolean;
   databaseCapabilities?: DatabaseRunControlCapabilities;
@@ -51,6 +54,14 @@ export function validateExperimentRequest(
   options: PreflightOptions = {}
 ): PreflightEnvironment {
   const parsed = validateScenario(scenario);
+  if (options.databaseImageLabels)
+    requireDatabaseStartupCapabilities(options.databaseImageLabels, {
+      finite: request.variants.some(
+        (v) => v.databaseIops?.presetId !== undefined && v.databaseIops.presetId !== "unlimited"
+      ),
+      writers: true,
+      setup: request.variants.some((v) => !!v.databaseSetup?.steps?.length)
+    });
   parsed.observers.forEach((observer) => options.observerValidate?.(observer));
   if (parsed.id !== request.scenario.id || parsed.version !== request.scenario.version)
     throw new Error("scenario_reference_mismatch");
@@ -101,8 +112,15 @@ export function validateExperimentRequest(
         effective,
         options.databaseCapabilities ?? {}
       );
+      const validatedEffective = { ...effective };
+      if (
+        options.frozenDatabaseStartup &&
+        variant.databaseIops &&
+        validatedEffective[DATABASE_IOPS_PARAMETER] === variant.databaseIops.presetId
+      )
+        delete validatedEffective[DATABASE_IOPS_PARAMETER];
       validateDatabaseParameterConfiguration(
-        effective,
+        validatedEffective,
         databaseParameterOptions(options.databaseCapabilities)
       );
       validateDatabaseParameterPaths(effective, startup?.databaseName ?? "parkbench");

@@ -1,3 +1,4 @@
+import { onExperimentAction } from "../../shared/experiment-action-events";
 import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
 import {
   DEFAULT_COMPARISON_METRICS,
@@ -72,6 +73,28 @@ export function ComparisonPage({
   const [downloadStatus, setDownloadStatus] = useState("");
   const downloadController = useRef(undefined as AbortController | undefined);
 
+  const discardOldExecution = () => {
+    resultRequestId.current++;
+    metricRequest.current++;
+    resultLoader.current.cancel();
+    metricLoader.current.cancel();
+    downloadController.current?.abort();
+    setComparison(undefined);
+    setSelectionPage(undefined);
+    setRunDetails([]);
+    setMetricRows([]);
+    setBaseline("");
+    setVariants([]);
+    setBaselineQuality(undefined);
+  };
+  useEffect(
+    () =>
+      onExperimentAction(() => {
+        discardOldExecution();
+        setError("An experiment changed. Create a new comparison to use current results.");
+      }),
+    []
+  );
   const [metricSelection, setMetricSelection] = useState(
     structuredClone(DEFAULT_COMPARISON_METRICS) as MetricSelection[]
   );
@@ -344,6 +367,13 @@ export function ComparisonPage({
       if (requestId === resultRequestId.current) {
         const message = (reason as Error).message;
         setError(message);
+        if (
+          (reason as any).code === "comparison_unavailable_experiment_rerun" ||
+          message.includes("rerun")
+        ) {
+          discardOldExecution();
+          return;
+        }
         setBaselineQuality(
           (current) =>
             current && {
@@ -482,7 +512,11 @@ export function ComparisonPage({
       {error && (
         <WorkflowState
           state="error"
-          message={error}
+          message={
+            error.includes("unavailable_experiment_rerun")
+              ? "This saved comparison is permanently unavailable because one or more of its runs were rerun. Create a new comparison to use the current results."
+              : error
+          }
           action={
             errorAction === "experiments"
               ? "Retry experiments"
@@ -646,6 +680,14 @@ export function ComparisonPage({
       {comparison && (
         <section className="panel">
           <h2>Comparison summary</h2>
+          {comparison.unavailableMemberCount > 0 && (
+            <p role="status">
+              {comparison.unavailableMemberCount} unavailable members were removed.{" "}
+              {comparison.baselineRemoved
+                ? "The baseline was removed; differences are unavailable. Choose a baseline in a new comparison."
+                : "Surviving results are retained."}
+            </p>
+          )}
           <MetricSelectionPanel
             selection={metricSelection}
             onChange={changeMetrics}
@@ -783,7 +825,10 @@ export function ComparisonPage({
                     />
                   </>
                 )}
-                <DatabaseIopsSummary snapshot={detail?.environmentSnapshot??run.context} runId={run.runId}/>
+                <DatabaseIopsSummary
+                  snapshot={detail?.environmentSnapshot ?? run.context}
+                  runId={run.runId}
+                />
                 <section aria-label={`Parameters for ${run.runId}`}>
                   <h3>Parameters</h3>
                   {parameters.entries.length > 0 && (

@@ -9,11 +9,13 @@ import { FakeRunOrchestrator } from "../../packages/compose-runner/src";
 import { DatabaseIopsError } from "../../packages/contracts/src/database-iops";
 async function execute(phase?: string, race?: "cancel-first" | "drift-first", setup = false) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "iops-lifecycle-"));
-  let p: any;
   let runId: string;
   class Recording extends FakeRunOrchestrator {
     async waitForDatabaseSetup(bundle: any, _cancel: any, progress: any) {
       this.calls.push("waitForDatabaseSetup");
+      assert.equal(this.calls.includes("applyDatabaseIops"), false);
+      if (phase === "setup-failed") throw new Error("database_setup_failed");
+      if (phase === "setup-slow") await new Promise((resolve) => setTimeout(resolve, 1200));
       const { manifest } = bundle.databaseSetup;
       for (const [i, step] of manifest.sequence.steps.entries()) {
         for (const [j] of step.optionSets.entries()) {
@@ -48,6 +50,7 @@ async function execute(phase?: string, race?: "cancel-first" | "drift-first", se
         await import("../../packages/compose-runner/src/database-setup-evidence");
       const e = readDatabaseSetupEvidence(manifest);
       progress(e);
+      if (phase === "setup-cancelled") p.coordinator.cancel(runId);
       return e;
     }
     async startRemainingServices() {
@@ -57,8 +60,18 @@ async function execute(phase?: string, race?: "cancel-first" | "drift-first", se
     override async applyDatabaseIops(
       ...args: Parameters<FakeRunOrchestrator["applyDatabaseIops"]>
     ) {
-      assert.ok(this.calls.includes("ready"));
-      if (setup) assert.ok(this.calls.includes("waitForDatabaseSetup"));
+      assert.ok(this.calls.includes("iops-startup-held"));
+      assert.equal(this.calls.includes("ready"), false);
+      if (setup) {
+        assert.equal(this.calls.includes("waitForDatabaseSetup"), true);
+        assert.equal(
+          p.repositories.getRun(runId).environmentSnapshot.databaseSetupEvidence.state,
+          "SUCCEEDED"
+        );
+        const manifest = args[0].databaseSetup!.manifest;
+        assert.ok(fs.existsSync(path.join(manifest.paths.control, "normal-start-release")));
+      }
+      assert.ok(args[0].databaseIopsDeadline! > Date.now());
       const e = await super.applyDatabaseIops(...args);
       const saved = p.repositories.getRun(runId);
       const summary = saved.environmentSnapshot.databaseIopsEvidence;
@@ -97,8 +110,10 @@ async function execute(phase?: string, race?: "cancel-first" | "drift-first", se
       return super.stopWorkload();
     }
   }
+  const previousBudget = process.env.PARKBENCH_OPENEDGE_READINESS_TIMEOUT_MS;
+  if (phase === "setup-slow") process.env.PARKBENCH_OPENEDGE_READINESS_TIMEOUT_MS = "1000";
   const o = new Recording();
-  p = createPlatform(
+  const p = createPlatform(
     {
       host: "127.0.0.1",
       port: 0,
@@ -156,6 +171,8 @@ async function execute(phase?: string, race?: "cancel-first" | "drift-first", se
     const run = await p.coordinator.executeRun(p.repositories.getRun(runId));
     return { run, calls: o.calls };
   } finally {
+    if (previousBudget === undefined) delete process.env.PARKBENCH_OPENEDGE_READINESS_TIMEOUT_MS;
+    else process.env.PARKBENCH_OPENEDGE_READINESS_TIMEOUT_MS = previousBudget;
     p.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -165,7 +182,14 @@ test("IOPS intent, constrained readiness and verification precede workload relea
   assert.notEqual(run.state, "FAILED");
   assert.equal(run.environmentSnapshot.databaseIopsEvidence.verification.status, "MATCHED");
   assert.ok(calls.indexOf("applyDatabaseIops") < calls.indexOf("start-workload"));
-  assert.ok(calls.filter((c) => c === "ready").length >= 2);
+  assert.equal(calls.filter((c) => c === "ready").length, 1);
+  assert.ok(calls.indexOf("iops-startup-held") < calls.indexOf("applyDatabaseIops"));
+  assert.ok(calls.indexOf("applyDatabaseIops") < calls.indexOf("iops-startup-release"));
+  assert.ok(calls.indexOf("iops-startup-release") < calls.indexOf("ready"));
+  assert.equal(
+    run.environmentSnapshot.databaseIopsEvidence.applicationTiming,
+    "AFTER_SETUP_BEFORE_DATABASE_STARTUP"
+  );
 });
 for (const phase of ["warmup", "measurement", "cooldown"])
   test(`confirmed ${phase} drift fails with partial evidence and no reapply`, async () => {
@@ -202,13 +226,15 @@ test("unverified finite policy never starts workload", async () => {
   assert.equal(run.state, "FAILED");
   assert.equal(run.failureCode, "database_iops_unconfirmed");
   assert.ok(!calls.includes("start-workload"));
+  assert.ok(!calls.includes("iops-startup-release"));
   assert.equal(run.environmentSnapshot.databaseIopsEvidence.verification.status, "UNAVAILABLE");
 });
 
-test("all declared setup completes before applying finite caps", async () => {
+test("all declared setup completes before finite caps and normal readiness", async () => {
   const { run, calls } = await execute(undefined, undefined, true);
   assert.notEqual(run.state, "FAILED");
-  assert.ok(calls.indexOf("waitForDatabaseSetup") < calls.indexOf("applyDatabaseIops"));
+  assert.ok(calls.indexOf("waitForDatabaseSetup") < calls.indexOf("iops-startup-held"));
+  assert.ok(calls.indexOf("iops-startup-release") < calls.indexOf("startRemainingServices"));
   assert.equal(run.environmentSnapshot.databaseSetup.steps.length, 2);
 });
 
@@ -260,7 +286,7 @@ test("cancellation during asynchronous admission cannot resurrect a queued finit
     let entered: () => void, release: () => void;
     const admitted = new Promise<void>((r) => (entered = r)),
       gate = new Promise<void>((r) => (release = r));
-    (p.coordinator as any).diagnosticsService=()=>service;
+    (p.coordinator as any).diagnosticsService = () => service;
     service.begin = async (r: any) => {
       const result = await original(r);
       entered();
@@ -280,4 +306,18 @@ test("cancellation during asynchronous admission cannot resurrect a queued finit
     p.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+for (const phase of ["setup-failed", "setup-cancelled"])
+  test(`${phase} never applies limits or releases normal startup`, async () => {
+    const { run, calls } = await execute(phase, undefined, true);
+    assert.equal(run.state, phase === "setup-cancelled" ? "CANCELLED" : "FAILED");
+    assert.ok(!calls.includes("applyDatabaseIops"));
+    assert.ok(!calls.includes("iops-startup-release"));
+    assert.ok(!calls.includes("startRemainingServices"));
+  });
+test("long setup retains a fresh finite startup budget", async () => {
+  const { run, calls } = await execute("setup-slow", undefined, true);
+  assert.notEqual(run.state, "FAILED", run.failureReason);
+  assert.ok(calls.indexOf("waitForDatabaseSetup") < calls.indexOf("applyDatabaseIops"));
 });

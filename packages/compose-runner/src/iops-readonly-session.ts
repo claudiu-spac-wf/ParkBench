@@ -71,7 +71,7 @@ export class IopsReadonlySession {
       if (status !== "0")
         return this.fail(
           status === "29"
-            ? "stacked_or_partitioned_backing_requires_verified_adapter"
+            ? "stacked_or_unresolved_partition_backing"
             : "owned_readonly_probe_unavailable"
         );
       clearTimeout(pending.timer);

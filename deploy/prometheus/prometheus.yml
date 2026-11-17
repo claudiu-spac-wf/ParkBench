@@ -44,6 +44,9 @@ scrape_configs:
       - source_labels: [container_label_parkbench_run_id]
         target_label: run_id
         action: keepequal
+      - source_labels: [container_label_parkbench_execution_revision]
+        target_label: execution_revision
+        action: keepequal
       - source_labels: [container_label_parkbench_managed]
         regex: "true"
         action: keep

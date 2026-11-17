@@ -1,3 +1,4 @@
+import { ExperimentActions } from "../../shared/ExperimentActions";
 import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
 import { DatabaseSetupSummary } from "../experiments/DatabaseSetupFields";
 import { RunControlsSummary } from "../experiments/RunControlsFields";
@@ -123,6 +124,14 @@ export function QueueDashboardPage() {
             <span>{queue.items?.length ?? 0} nonterminal runs</span>
           </div>
         )}
+        {Array.from(new Set<string>((queue.items ?? []).map((r: any) => r.experimentId))).map(
+          (id: string) => (
+            <section key={id} aria-label={`Actions for ${id}`}>
+              <p className="mono">Experiment {id}</p>
+              <ExperimentActions experimentId={id} onComplete={() => refresh()} />
+            </section>
+          )
+        )}
         <table aria-label="Nonterminal run activity">
           <thead>
             <tr>
@@ -150,7 +159,7 @@ export function QueueDashboardPage() {
                   {(run.snapshot?.databaseStartup?.parameters ?? [])
                     .map((item: any) => `${item.name}=${item.displayValue} (${item.source})`)
                     .join(", ") || "Database defaults"}
-                  <DatabaseIopsSummary snapshot={run.snapshot} runId={run.id}/>
+                  <DatabaseIopsSummary snapshot={run.snapshot} runId={run.id} />
                   <DatabaseSetupSummary setup={run.snapshot?.databaseSetup} />
                   {run.databaseSetup && (
                     <p>

@@ -10,12 +10,38 @@ export interface ClassifiedRunError {
 }
 
 const failureReasons: Record<RunFailureCode, { kind: FailureKind; reason: string }> = {
-  database_iops_unsupported: { kind: "infrastructure", reason: "The Docker host cannot apply verified database IOPS limits." },
-  database_iops_device_unresolved: { kind: "infrastructure", reason: "Database working-storage devices could not be resolved safely." },
-  database_iops_policy_conflict: { kind: "infrastructure", reason: "Existing IOPS rules conflict with this run." },
-  database_iops_apply_failed: { kind: "infrastructure", reason: "Database IOPS application or intent persistence failed." },
-  database_iops_unconfirmed: { kind: "infrastructure", reason: "Effective database IOPS policy could not be verified." },
-  database_iops_policy_drift: { kind: "infrastructure", reason: "Database IOPS policy changed during the workload." },
+  loadgen_exited_early: {
+    kind: "infrastructure",
+    reason: "The load generator exited before the scheduled workload finished."
+  },
+  loadgen_health_unavailable: {
+    kind: "infrastructure",
+    reason: "The run-owned load generator could not be confirmed running."
+  },
+  database_iops_unsupported: {
+    kind: "infrastructure",
+    reason: "The Docker host cannot apply verified database IOPS limits."
+  },
+  database_iops_device_unresolved: {
+    kind: "infrastructure",
+    reason: "Database working-storage devices could not be resolved safely."
+  },
+  database_iops_policy_conflict: {
+    kind: "infrastructure",
+    reason: "Existing IOPS rules conflict with this run."
+  },
+  database_iops_apply_failed: {
+    kind: "infrastructure",
+    reason: "Database IOPS application or intent persistence failed."
+  },
+  database_iops_unconfirmed: {
+    kind: "infrastructure",
+    reason: "Effective database IOPS policy could not be verified."
+  },
+  database_iops_policy_drift: {
+    kind: "infrastructure",
+    reason: "Database IOPS policy changed during the workload."
+  },
 
   database_setup_script_unavailable: {
     kind: "infrastructure",
@@ -66,6 +92,10 @@ const failureReasons: Record<RunFailureCode, { kind: FailureKind; reason: string
   database_run_control_unapplied: {
     kind: "infrastructure",
     reason: "observed database configuration does not match the frozen run controls"
+  },
+  database_writer_health_unavailable: {
+    kind: "infrastructure",
+    reason: "current database writer health could not be verified; inspect capture diagnostics"
   },
   database_writer_lost: {
     kind: "infrastructure",
@@ -144,6 +174,18 @@ const failureReasons: Record<RunFailureCode, { kind: FailureKind; reason: string
 export function classifyRunError(error: unknown): ClassifiedRunError | undefined {
   const message = String(error).slice(0, 4096);
   let failureCode: RunFailureCode | undefined;
+  if (message.includes("loadgen_exited_early"))
+    return {
+      failureKind: "infrastructure",
+      failureCode: "loadgen_exited_early",
+      failureReason: failureReasons.loadgen_exited_early.reason
+    };
+  if (message.includes("loadgen_health_unavailable"))
+    return {
+      failureKind: "infrastructure",
+      failureCode: "loadgen_health_unavailable",
+      failureReason: failureReasons.loadgen_health_unavailable.reason
+    };
   const controlCode = (
     [
       ...DATABASE_SETUP_FAILURE_CODES,
@@ -154,6 +196,7 @@ export function classifyRunError(error: unknown): ClassifiedRunError | undefined
       "database_writer_start_failed",
       "database_run_control_unapplied",
       "database_writer_lost",
+      "database_writer_health_unavailable",
       "named_latch_evidence_missing"
     ] as RunFailureCode[]
   ).find((code) => message.includes(code));

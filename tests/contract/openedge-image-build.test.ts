@@ -54,7 +54,7 @@ describe("OpenEdge image-build contract", () => {
       (match) => match[1]
     );
     for (const source of copySources) {
-      assert.equal(fs.existsSync(path.join(contexts.observer, source)), true, source);
+      assert.ok(fs.globSync(source, { cwd: contexts.observer }).length > 0, source);
     }
     assert.equal(fs.existsSync(path.join(contexts.observer, "scripts/lib/load-env.cjs")), true);
     assert.match(dockerfile, /RUN npm ci --omit=dev/);
@@ -64,7 +64,7 @@ describe("OpenEdge image-build contract", () => {
       (match) => match[1]
     );
     for (const source of dbCopySources) {
-      assert.equal(fs.existsSync(path.join(contexts.db, source)), true, source);
+      assert.ok(fs.globSync(source, { cwd: contexts.db }).length > 0, source);
     }
     assert.ok(dbDockerfile.includes("microdnf install -y tar gzip"));
     // Feature 014: the DB image carries no seed; runs mount one and copy it (copy-seed.sh).

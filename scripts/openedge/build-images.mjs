@@ -317,7 +317,7 @@ export function createContexts(options, staged, archive) {
   copy(path.join(repoRoot, "docker/openedge-db/Dockerfile"), path.join(db, "Dockerfile"));
   copy(path.join(repoRoot, "docker/openedge-db/entrypoint.sh"), path.join(db, "entrypoint.sh"));
   copy(path.join(repoRoot, "docker/openedge-db/copy-seed.sh"), path.join(db, "copy-seed.sh"));
-  for (const file of ["prepare-controls.sh", "controls-lifecycle.sh", "compile-startup-state.p"])
+  for (const file of ["prepare-controls.sh", "controls-lifecycle.sh", "startup-gate.sh", "compile-startup-state.p"])
     copy(path.join(repoRoot, "docker/openedge-db", file), path.join(db, file));
   copy(
     path.join(repoRoot, "openedge/observers/db/parkbench-db-startup-state.p"),

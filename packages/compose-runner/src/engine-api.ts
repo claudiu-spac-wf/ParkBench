@@ -243,7 +243,7 @@ export class EngineApi {
         throw new DatabaseIopsError(
           "database_iops_unsupported",
           undefined,
-          "stacked_or_partitioned_backing_requires_verified_adapter"
+          "stacked_or_unresolved_partition_backing"
         );
       throw new DatabaseIopsError(
         "database_iops_unconfirmed",

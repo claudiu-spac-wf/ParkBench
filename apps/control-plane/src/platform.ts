@@ -1,3 +1,13 @@
+import { inspectDatabaseStartupGate } from "../../../packages/compose-runner/src/database-iops-startup-gate";
+import { prometheusStorageBounds } from "./experiments/actions/prometheus-storage-bounds";
+import { ExperimentActionService } from "./experiments/actions/service";
+import {
+  HttpExperimentMetricAdmin,
+  MemoryExperimentMetricAdmin,
+  ExperimentMetricAdmin
+} from "../../../packages/metrics/src/prometheus-admin";
+import { prometheusDurationSeconds } from "../../../packages/contracts/src/config";
+import { runActionFenced, assertExecutionWrite, executionScope } from "./db/execution";
 import { CADVISOR_DISK_SNAPSHOT_PROFILE } from "../../../packages/metrics/src/cadvisor-disk-snapshots";
 import { MeasurementTraceRetention } from "./measurement-diagnostics/retention";
 import { persistSetupEvidence, reconcileSetupResources } from "./database-setup/evidence";
@@ -68,6 +78,7 @@ import { CatalogBulkActions } from "./catalog/bulk-actions";
 import { requirePlatformEnvironment } from "../../../packages/contracts/src/local-env";
 import { RunMetricsAvailability } from "./runs/metrics-availability";
 export interface Platform {
+  experimentActions: ExperimentActionService;
   measurementRetention: MeasurementTraceRetention;
   reports: ReportService;
   hostDispatcher: HostDispatcher;
@@ -98,9 +109,10 @@ export interface Platform {
   supportsObserverKind: (kind: string) => boolean;
   validateObserverDeclaration: (declaration: any) => void;
   startupRecovery?: Promise<number>;
-  close(): void;
+  close(): Promise<void>;
 }
 export interface PlatformOptions {
+  experimentMetricAdmin?: ExperimentMetricAdmin;
   reportRunner?: AnalysisRunner;
   testMode?: boolean;
   inputRoot?: string;
@@ -144,6 +156,7 @@ export function createTargetDiscovery(
 export function createPlatform(config = loadConfig(), options: PlatformOptions = {}): Platform {
   const testMode = options.testMode === true;
   let platformClosed = false;
+  let closePromise: Promise<void> | undefined;
   if (!testMode) requirePlatformEnvironment();
   const migrationCandidates = [
     path.join(__dirname, "db/migrations/001_foundation.sql"),
@@ -174,6 +187,11 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
   database.migrate(migration);
   const repositories = new Repositories(database);
   const storage = new ArtifactStorage(config.artifactRoot);
+  storage.authorizeWrite = (relative) => {
+    const id = relative.split(/[\\/]/)[0];
+    const scope = executionScope.getStore();
+    assertExecutionWrite(database.db, id, scope?.runId === id ? scope.revision : undefined);
+  };
   const artifacts = new ArtifactService(storage, repositories);
   const measurementRetention = new MeasurementTraceRetention({
     artifactRoot: config.artifactRoot,
@@ -216,6 +234,24 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     new PrometheusMetricBuffer((event) =>
       diagnosticCoordinator?.recordMeasurementPublication(event)
     );
+  const authorizeSample = (
+    sample: import("../../../packages/contracts/src/metrics").MetricSample
+  ) => {
+    const run = repositories.getRun(sample.labels.run_id);
+    if (!run || runActionFenced(database.db, run.id)) return undefined;
+    const scope = executionScope.getStore();
+    const revision =
+      sample.labels.execution_revision ?? (scope?.runId === run.id ? scope.revision : undefined);
+    if ((!testMode && !revision) || (revision && revision !== run.executionRevision))
+      return undefined;
+    return { ...sample, labels: { ...sample.labels, execution_revision: run.executionRevision } };
+  };
+  observerMetrics.authorizeSample = authorizeSample;
+  if (prometheus instanceof MemoryPrometheusClient) {
+    const append = prometheus.append.bind(prometheus);
+    prometheus.append = (samples) =>
+      append(samples.map(authorizeSample).filter((s): s is NonNullable<typeof s> => !!s));
+  }
   const supportImages = options.supportImages ?? {
     loadgen: process.env.PARKBENCH_LOADGEN_IMAGE ?? (testMode ? "parkbench/loadgen:fixture" : ""),
     observer:
@@ -501,6 +537,7 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
       if (!scenario) throw new Error("cleanup_context_missing");
       const bundle =
         snapshot.databaseSetupBundle ??
+        snapshot.databaseStartupBundle ??
         generateRunCompose(
           run.id,
           run.experimentId,
@@ -508,6 +545,8 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
           { db: inputs.databaseImage, pas: inputs.pasImage },
           {
             ...inputs,
+            executionRevision: run.executionRevision,
+            projectName: run.composeProject,
             databaseIops: snapshot.databaseIops,
             variantId: run.variantId,
             measurementDiagnostics: snapshot.measurementDiagnosticsMount,
@@ -520,6 +559,26 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
           }
         );
       if (stage === "beforeMetrics") {
+        if (bundle.databaseIopsStartupGate) {
+          const gate = bundle.databaseIopsStartupGate;
+          if (fs.existsSync(gate.directory))
+            storage.writeAtomic(
+              path.join(run.id, "runtime", path.basename(gate.directory), "cancel"),
+              "cancel\n"
+            );
+          run.environmentSnapshot = {
+            ...run.environmentSnapshot,
+            databaseIopsStartupRecovery: {
+              state: "STOP_REQUIRED",
+              ...inspectDatabaseStartupGate(
+                gate,
+                !!snapshot.databaseIopsEvidence?.startupGate?.releaseIntentAt
+              ),
+              checkedAt: new Date().toISOString()
+            }
+          };
+          repositories.saveRun(run);
+        }
         await coordinator.recoverDatabaseIops(run, bundle);
         if (bundle.databaseSetup) {
           if (fs.existsSync(bundle.databaseSetup.manifest.paths.control))
@@ -565,6 +624,31 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     },
     () => bootstrap.retryPendingCleanup()
   );
+  const experimentActions = new ExperimentActionService({
+    repositories,
+    controlUi,
+    coordinator,
+    summaryWorker,
+    observerMetrics,
+    targetDiscovery,
+    metricAdmin:
+      options.experimentMetricAdmin ??
+      (prometheus instanceof MemoryPrometheusClient
+        ? new MemoryExperimentMetricAdmin(prometheus)
+        : new HttpExperimentMetricAdmin(
+            config.prometheusUrl,
+            prometheusDurationSeconds(config.prometheusRetention) ?? 365 * 86400,
+            fetch,
+            prometheusStorageBounds
+          )),
+    storage,
+    config,
+    metricsAvailability,
+    testMode,
+    supportImages,
+    hostDispatcher
+  });
+  experimentActions.recover();
   const startupRecovery = reconciler.run().then(async (count) => {
     if (platformClosed) return count;
     const oldClaim = startupHostClaim;
@@ -591,6 +675,7 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     return count;
   });
   return {
+    experimentActions,
     measurementRetention,
     reports,
     hostDispatcher,
@@ -622,12 +707,13 @@ export function createPlatform(config = loadConfig(), options: PlatformOptions =
     startupRecovery,
     summaryWorker,
     close: () => {
+      if (closePromise) return closePromise;
       platformClosed = true;
       reports.close();
       hostDispatcher.pause();
       controlUi.close();
       summaryWorker.stop();
-      database.close();
+      return (closePromise = experimentActions.close().finally(() => database.close()));
     }
   };
 }

@@ -71,7 +71,7 @@ test(
     const options = await request("GET", "/api/v1/ui-options");
     assert.equal(
       options.databaseIopsCatalog?.contractVersion,
-      "database-iops-presets.v1",
+      "database-iops-presets.v2",
       "deploy updated controller first"
     );
     const assets = await request("GET", "/api/v1/catalog/assets?category=scenarios&pageSize=250");
@@ -225,7 +225,7 @@ test(
           const snapshot = run.environmentSnapshot;
           assert.equal(
             snapshot.databaseIops?.presetId,
-            driftPhase ? "sata-ssd" : snapshot.databaseIops?.presetId
+            driftPhase ? "sata-ssd-t3" : snapshot.databaseIops?.presetId
           );
           assert.equal(e.condition.presetId, snapshot.databaseIops.presetId);
           const detail = await request("GET", `/api/v1/history/runs/${id}`);
@@ -300,7 +300,7 @@ test(
       throw Error("native_iops_run_deadline");
     };
     try {
-      const missing = ["unlimited", "sata-ssd"].filter(
+      const missing = ["unlimited", "sata-ssd-t3"].filter(
         (preset) => !results.normal.some((r) => r.condition.presetId === preset)
       );
       if (missing.length) {
@@ -309,7 +309,7 @@ test(
       }
       for (const phase of ["warmup", "measurement", "cooldown"]) {
         if (results.drift.some((r) => r.injection?.phase === phase)) continue;
-        const [id] = await schedule(`drift-${phase}`, ["sata-ssd"]);
+        const [id] = await schedule(`drift-${phase}`, ["sata-ssd-t3"]);
         await waitRun(id, phase);
       }
       await guardIdle();

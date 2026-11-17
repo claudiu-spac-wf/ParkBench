@@ -310,3 +310,96 @@ for commands. The bounded acceptance set is one finite/Unlimited pair, three
 owned phase-drift injections and a separate 4KiB physical-I/O fixture. A skipped
 native prerequisite is incomplete acceptance. No host cache drops or global
 resource cleanup are part of these tests.
+
+
+## Rerun or remove an experiment
+
+Use **Rerun experiment** or **Remove experiment** on History, Queue or an experiment's
+run/detail view. The dialog names the parent experiment and total run count. Cancel
+or Escape before acceptance changes nothing. Rerun permanently deletes the old
+execution data, then queues the exact saved schedule under the same IDs/names.
+Changes to workload files, `startup.pf` or the database seed are not restored and may
+make results inaccurate. Every saved comparison containing a rerun member becomes
+permanently unavailable, including old dashboard/export links; explicitly create
+a new comparison after replacement results are ready.
+
+Remove permanently deletes the experiment, its runs and owned data from history.
+Surviving mixed comparisons retain unrelated members with an anonymous unavailable
+member count. A removed baseline is not automatically replaced. Private inputs,
+independent analysis reports, shared services and unrelated experiment data remain.
+All target metric samples are erased; Prometheus may retain empty series-label
+metadata until its normal storage lifecycle removes it.
+
+Accepted actions continue when the dialog closes or the browser refreshes. Reopen
+progress from History/Queue. A destructive failure remains visible and fenced;
+**Retry** resumes the same durable action and deletion scope. The controller restores
+pending actions before ordinary queue/recovery work. Validation rejection leaves
+old data intact. Do not bypass a failed action by manually clearing its journal or
+starting its runs. Completion returns a generic, target-free receipt for 24 hours;
+the original idempotency key can retrieve it even after removal.
+
+History selected run details and run detail pages also provide **Rerun this run**.
+This resets only the selected terminal run with its original ID/name/settings;
+other runs retain their source results and revisions. Wait until the parent has
+no active execution or dispatch. The confirmation names one run and repeats the
+mutable-input and comparison warnings. Comparisons containing that run become
+permanently unavailable; other comparisons remain usable. Parent aggregate
+results are invalidated and derived again from current runs. Whole removal still
+affects the entire experiment.
+
+Use GET/POST `/api/v1/runs/:runId/actions` for individual RERUN with the selected
+run's reviewed revision, the same request schema and shared progress/retry routes.
+A completed individual rerun changes the parent confirmation version, so refresh
+any previously opened whole-experiment confirmation. It keeps the full original
+schedule; an incomplete sibling schedule does not block a valid selected run.
+
+The controller API provides GET/POST `/api/v1/experiments/:id/actions`, GET
+`/api/v1/experiment-actions/:actionId` and POST
+`/api/v1/experiment-actions/:actionId/retry`. Admission requires explicit confirmation,
+the reviewed execution revision and an `Idempotency-Key`; it returns 202 with
+`Location` and no-store progress. Retry preserves the original action and private
+replacement revision. See the feature 026 contract for exact bodies/errors.
+
+For finite IOPS, seed copying, repair, preparation and every setup script complete
+uncapped. The controller verifies successful setup and temporary-broker/child-process
+shutdown before authorizing progress to a fresh run/revision/nonce gate. Only then
+are limits applied and independently verified before primary benchmark database
+startup. New images require `database-iops-startup.v2`; v1 images cannot claim this
+ordering. Gate clocks begin after setup, so long utilities do not consume the normal
+startup budget. Evidence records `AFTER_SETUP_BEFORE_DATABASE_STARTUP`. Historical
+`BEFORE_DATABASE_STARTUP` retains its older repair/setup-capped meaning, and absent
+timing remains unrecorded. No failed/cancelled setup applies a finite policy or
+starts normal benchmark services.
+
+Writer diagnostics distinguish demonstrated writer/process loss
+(`database_writer_lost`) from unavailable current observation
+(`database_writer_health_unavailable`). Capture exit/timeout/duration, last-good
+observation and bounded PID/start checks remain available with partial results.
+Both failures prevent valid measurements. Planned shutdown must not overwrite an
+already accepted cause.
+
+Feature validation commands and native gates are in
+[feature 026 quickstart](../../ParkBenchPlanning/specs/026-rerun-remove-experiments/quickstart.md).
+The deletion proof uses an owned disposable TSDB with `PARKBENCH_RUN_EXPERIMENT_DELETION_TESTS=1`.
+Writer confirmation/faults require both `PARKBENCH_RUN_OPENEDGE_TESTS=1` and
+`PARKBENCH_RUN_IOPS_TESTS=1`; the full original workload and quality criteria remain
+required. A skipped or incomplete campaign does not establish native reliability.
+
+
+Loadgen request timeouts are recorded as failures and lower-bound latencies without writing the shared cancellation marker. Other requests and later phases continue to apply the scheduled load. A timeout in any phase still yields the existing infrastructure exit20 after completion; this change does not turn timed-out work into valid results or extend its timeout. External cancellation retains precedence. During the workload the controller records exact-owner loadgen state and fails early with `loadgen_exited_early` or `loadgen_health_unavailable` if execution disappears. An exit at the end of the entire schedule is handled by final exit classification; stopped load is never silently restarted midway.
+
+Diagnostic artifacts are retained internally but hidden from product run/history/setup/report file lists and download links, including the IOPS diagnostic attachment. Normal summaries, CSV/source downloads and failure/policy status remain visible. Explicit operator tools request `/api/v1/runs/:runId/artifacts?includeDiagnostics=true`; the diagnostic campaign does so automatically. Retention, budgets, file creation, direct operator downloads and ownership-scoped cleanup remain intact.
+
+
+### DB activity is blank despite retained native samples
+
+Check the run's saved `environmentSnapshot.nativeScrapeAlignment.cadenceMs` against `sourceCadences.prometheusScrapeSeconds`. A run queued before a platform cadence change may retain older scheduled settings. Native chart rates/freshness and summary rebuilds use the recorded execution scrape cadence first, then the saved source cadence for older runs without alignment evidence. They also respect slower native refresh; chart resolution and gaps between observed samples never establish acquisition cadence.
+
+New executions capture runtime source settings before collection. Existing historical charts recover directly from retained samples and recorded execution timing; no metric rewrite or rerun is needed. Actual acquisition gaps remain unavailable, and displaying DB metrics does not change a failed/incomplete run's validity. Missing samples already lost to scraping or retention cannot be reconstructed.
+
+
+### Diagnostic dashboards with missing measurements
+
+Native diagnostic totals (including named latch naps, table/index totals and their run totals) retain supported contributions when measurements are missing. A `[partial]` prefix means the value sums only observed continuous intervals; missing acquisitions, unavailable points and uncovered edges are excluded without interpolation. Separate instances/epochs are reduced before summing. A supported zero remains zero; no supported interval displays `Unavailable`. These partial values are not complete-run totals.
+
+Instant diagnostic rate tables similarly show a partial average over supported intervals in their lookback when full coverage is missing. They evaluate inside the last selected phase rather than at its exclusive end. Time-series rates retain their strict gaps. Saved summaries, completeness and run validity remain unchanged; diagnostic display does not validate an incomplete benchmark.

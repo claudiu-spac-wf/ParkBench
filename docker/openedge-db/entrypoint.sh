@@ -49,6 +49,14 @@ case "$PARKBENCH_DB_INIT_MODE" in
     ;;
   *) echo "db_init_mode_invalid:$PARKBENCH_DB_INIT_MODE" >&2; exit 41 ;;
 esac
+if [ -n "${PARKBENCH_IOPS_GATE_NONCE:-}" ]; then
+  # Prepare all owned working paths before setup and later device inspection.
+  if [ -f /run/parkbench/broker-directories ]; then
+    while IFS= read -r directory || [ -n "$directory" ]; do
+      case "$directory" in "$database_dir"|"$database_dir"/*) mkdir -p "$directory" ;; *) echo database_iops_device_unresolved:working_directory >&2; exit 56 ;; esac
+    done < /run/parkbench/broker-directories
+  fi
+fi
 printf '%s\n' "${DB_NAME}" > "$database_dir/.parkbench-db-name"
 
 if [ -n "${PARKBENCH_DATABASE_RUN_CONTROLS:-}" ]; then
@@ -61,6 +69,14 @@ if [ -n "${PARKBENCH_SETUP_ATTEMPT_ID:-}" ]; then
   printf '%s\n' "${PARKBENCH_RUN_ID:-legacy-owned}" > .parkbench-broker-used
   /usr/local/lib/parkbench/setup/run-setup.sh execute
   /usr/local/lib/parkbench/setup/run-setup.sh wait
+fi
+
+# Setup includes its temporary broker shutdown and all custom child processes.
+# Keep those utilities uncapped; the primary benchmark broker starts only after
+# the controller verifies the selected finite policy and releases this gate.
+if [ -n "${PARKBENCH_IOPS_GATE_NONCE:-}" ]; then
+  PARKBENCH_IOPS_GATE_STARTED_AT=$(date +%s); export PARKBENCH_IOPS_GATE_STARTED_AT
+  /usr/local/bin/parkbench-db-startup-gate.sh
 fi
 
 # The upstream init.sh recreates a sample database and its startup script only
@@ -105,6 +121,16 @@ done
 if [ -n "${PARKBENCH_DATABASE_RUN_CONTROLS:-}" ]; then
   /usr/local/bin/parkbench-db-controls-lifecycle.sh "$database_dir" "$DB_NAME" &
   supervisor_pid=$!
+  if [ -n "${PARKBENCH_IOPS_GATE_NONCE:-}" ]; then
+    ready_deadline=$(($(date +%s) + ${PARKBENCH_IOPS_GATE_TIMEOUT_SECONDS:-300}))
+    until [ -f .parkbench-controls-ready ]; do
+      kill -0 "$supervisor_pid" 2>/dev/null || { wait "$supervisor_pid"; exit 55; }
+      [ "$(date +%s)" -lt "$ready_deadline" ] || { echo database_writer_start_failed >&2; exit 55; }
+      sleep 0.1
+    done
+    printf '%s:%s:%s\n' "$PARKBENCH_RUN_ID" "$PARKBENCH_EXECUTION_REVISION" "$PARKBENCH_IOPS_GATE_NONCE" > "$PARKBENCH_IOPS_GATE_DIR/database-started.tmp"
+    mv "$PARKBENCH_IOPS_GATE_DIR/database-started.tmp" "$PARKBENCH_IOPS_GATE_DIR/database-started"
+  fi
   wait "$supervisor_pid"
 else
   tail -f /dev/null &

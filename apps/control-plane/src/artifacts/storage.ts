@@ -8,6 +8,7 @@ import { SummaryArtifact, completedSummaryArtifact } from "./manifest";
 import fs from "node:fs";
 import path from "node:path";
 export class ArtifactStorage {
+  authorizeWrite?: (relativePath: string) => void;
   constructor(public readonly root: string) {
     fs.mkdirSync(root, { recursive: true });
   }
@@ -19,6 +20,7 @@ export class ArtifactStorage {
     return result;
   }
   write(relativePath: string, contents: string | Buffer): { path: string; sizeBytes: number } {
+    this.authorizeWrite?.(relativePath);
     const target = this.safePath(relativePath);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, contents);
@@ -28,6 +30,7 @@ export class ArtifactStorage {
     relativePath: string,
     contents: string | Buffer
   ): { path: string; sizeBytes: number } {
+    this.authorizeWrite?.(relativePath);
     const target = this.safePath(relativePath);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     const temporary = target + "." + crypto.randomUUID() + ".tmp";
@@ -38,6 +41,7 @@ export class ArtifactStorage {
       fs.fsyncSync(fd);
       fs.closeSync(fd);
       fd = undefined;
+      this.authorizeWrite?.(relativePath);
       fs.renameSync(temporary, target);
       const dir = fs.openSync(path.dirname(target), "r");
       try {
@@ -62,18 +66,22 @@ export class ArtifactStorage {
     const relativePath = `${header.run.id}/summaries/${header.metricDefinitionsVersion}/${token}/comparison-summary.v1.json`,
       target = this.safePath(relativePath),
       directory = path.dirname(target);
+    this.authorizeWrite?.(relativePath);
     const validator = new SummaryStreamValidator(header, header.run.id);
     let handle: fs.promises.FileHandle | undefined;
     try {
       await fs.promises.mkdir(path.dirname(directory), { recursive: true });
+      this.authorizeWrite?.(relativePath);
       // An attempt directory is allocated once. A second writer cannot overwrite it.
       await fs.promises.mkdir(directory);
+      this.authorizeWrite?.(relativePath);
       handle = await fs.promises.open(path.join(directory, "comparison-summary.v1.json.tmp"), "wx");
       const prefix = JSON.stringify(header).slice(0, -1) + ',"rows":[';
       await handle.writeFile(prefix);
       let first = true;
       for await (const row of rows) {
         signal?.throwIfAborted();
+        this.authorizeWrite?.(relativePath);
         validator.append(row);
         await handle.writeFile((first ? "" : ",") + JSON.stringify(row));
         first = false;
@@ -84,6 +92,7 @@ export class ArtifactStorage {
       await handle.sync();
       await handle.close();
       handle = undefined;
+      this.authorizeWrite?.(relativePath);
       await fs.promises.rename(path.join(directory, "comparison-summary.v1.json.tmp"), target);
       const dirHandle = await fs.promises.open(directory, "r");
       try {

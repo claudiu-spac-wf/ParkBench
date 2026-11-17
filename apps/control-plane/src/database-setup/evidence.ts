@@ -21,8 +21,10 @@ export type ResourceIntent = {
 /** Intent objects deliberately carry no createdAt. Creation is observed separately. */
 export function reconcileSetupResources(run: Run, actual: RunResource[]): RunResource[] {
   const result = [...actual];
-  for (const intent of (run.environmentSnapshot?.databaseSetupResourceIntents ??
-    []) as ResourceIntent[]) {
+  for (const intent of [
+    ...((run.environmentSnapshot?.databaseSetupResourceIntents ?? []) as ResourceIntent[]),
+    ...((run.environmentSnapshot?.databaseStartupResourceIntents ?? []) as ResourceIntent[])
+  ]) {
     if (!result.some((r) => r.resourceType === intent.type && r.resourceId === intent.name))
       result.push({
         resourceType: intent.type as RunResource["resourceType"],

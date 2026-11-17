@@ -471,6 +471,7 @@ export function createGrafanaDatasource(deps: GrafanaDatasourceDeps) {
             end: fullEnd,
             step: Math.max(1000, step),
             instant: view === "total",
+            endSnapshot: instant,
             shift: (t) => (mode === "aligned" ? t.measurementStart! - ALIGNED_ANCHOR_MS : 0)
           });
           const result = rankCanonicalTables(raw, view, operation, instant, start, end, () => {

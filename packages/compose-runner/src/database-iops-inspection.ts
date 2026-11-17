@@ -9,9 +9,40 @@ import {
 import { EngineApi } from "./engine-api";
 import { IopsSnapshot } from "./database-iops";
 import { IopsReadonlySession, openIopsReadonlySession } from "./iops-readonly-session";
+/** Resolve a partition only through its daemon sysfs parent, never a guessed disk name. */
+export const IOPS_BLOCK_PROBE_SCRIPT = String.raw`
+probe_block() {
+ dev=$1
+ sys="/proc/1/root/sys/dev/block/$dev"
+ test -r "$sys/uevent" || return 0
+ policy=$dev
+ if test -r "$sys/partition"; then
+  parent=$(readlink -f "$sys/..") || exit 29
+  read -r policy < "$parent/dev"
+  test "$(readlink -f "/proc/1/root/sys/dev/block/$policy")" = "$parent" || exit 29
+  test ! -r "$parent/partition" || exit 29
+  read -r start < "$sys/start"
+  read -r size < "$sys/size"
+  printf 'PARTITION\t%s\t%s\t%s\t%s\n' "$dev" "$policy" "$start" "$size"
+ fi
+ previous=""
+ for node in "$dev" "$policy"; do
+  if test "$node" = "$previous"; then continue; fi
+  previous=$node
+  sys="/proc/1/root/sys/dev/block/$node"
+  for slave in "$sys"/slaves/*; do test ! -e "$slave" || exit 29; done
+  name=""; generation=""
+  while IFS='=' read -r key value; do case "$key" in DEVNAME) name=$value;; DISKSEQ) generation=$value;; esac; done < "$sys/uevent"
+  test -n "$name" && test -b "/proc/1/root/dev/$name" || exit 26
+  block=$(stat -c '%t:%T' "/proc/1/root/dev/$name")
+  printf 'DEVICE\t%s\t/dev/%s\t%s\t%s\n' "$node" "$name" "$block" "$generation"
+ done
+}
+`;
 /** Fixed, read-only host program. All variable values are positional arguments, never shell code. */
 export const IOPS_PROBE_SCRIPT = String.raw`
 set -eu
+${IOPS_BLOCK_PROBE_SCRIPT}
 pid=$1
 owner=$2
 root=$3
@@ -48,15 +79,7 @@ while IFS= read -r line; do
  if test "$use" = true; then
   printf 'MOUNT\t%s\n' "$line"
   dev=$3
-  if test -r "/proc/1/root/sys/dev/block/$dev/uevent"; then
-   test ! -r "/proc/1/root/sys/dev/block/$dev/partition" || exit 29
-   for slave in /proc/1/root/sys/dev/block/"$dev"/slaves/*; do test ! -e "$slave" || exit 29; done
-   name=""; generation=""
-   while IFS='=' read -r key value; do case "$key" in DEVNAME) name=$value;; DISKSEQ) generation=$value;; esac; done < "/proc/1/root/sys/dev/block/$dev/uevent"
-   test -n "$name" && test -b "/proc/1/root/dev/$name" || exit 26
-   block=$(stat -c '%t:%T' "/proc/1/root/dev/$name")
-   printf 'DEVICE\t%s\t/dev/%s\t%s\t%s\n' "$dev" "$name" "$block" "$generation"
-  fi
+  probe_block "$dev"
  fi
 done < "/proc/$pid/mountinfo"
 `;
@@ -86,6 +109,7 @@ export function parseIopsProbe(
     throw new DatabaseIopsError("database_iops_unconfirmed", undefined, "cgroup_owner_unconfirmed");
   const kernel: IopsSnapshot["kernel"] = {};
   const nodes = new Map<string, { path: string; generation?: string }>();
+  const partitions = new Map<string, { parent: string; start: string; size: string }>();
   const mounts: Array<{ id: string; device: string; point: string; filesystem: string }> = [];
   for (const row of rows) {
     const [tag, ...parts] = row.split("\t");
@@ -122,7 +146,40 @@ export function parseIopsProbe(
           undefined,
           "block_node_mismatch"
         );
-      nodes.set(device, { path, ...(generation ? { generation } : {}) });
+      const node = { path, ...(generation ? { generation } : {}) };
+      if (nodes.has(device) && JSON.stringify(nodes.get(device)) !== JSON.stringify(node))
+        throw new DatabaseIopsError(
+          "database_iops_device_unresolved",
+          undefined,
+          "block_identity_changed"
+        );
+      nodes.set(device, node);
+    } else if (tag === "PARTITION") {
+      const [device, parent, start, size] = parts;
+      if (
+        parts.length !== 4 ||
+        !/^\d+:\d+$/.test(device) ||
+        !/^\d+:\d+$/.test(parent) ||
+        device === parent ||
+        !/^(0|[1-9][0-9]{0,19})$/.test(start) ||
+        !/^[1-9][0-9]{0,19}$/.test(size)
+      )
+        throw new DatabaseIopsError(
+          "database_iops_device_unresolved",
+          undefined,
+          "partition_identity_invalid"
+        );
+      const partition = { parent, start, size };
+      if (
+        partitions.has(device) &&
+        JSON.stringify(partitions.get(device)) !== JSON.stringify(partition)
+      )
+        throw new DatabaseIopsError(
+          "database_iops_device_unresolved",
+          undefined,
+          "partition_identity_changed"
+        );
+      partitions.set(device, partition);
     } else if (tag === "MOUNT") {
       const line = parts.join("\t"),
         split = line.split(" - "),
@@ -138,6 +195,14 @@ export function parseIopsProbe(
       });
     }
   }
+  for (const [device, partition] of partitions) {
+    if (!nodes.has(device) || !nodes.has(partition.parent) || partitions.has(partition.parent))
+      throw new DatabaseIopsError(
+        "database_iops_device_unresolved",
+        undefined,
+        "partition_parent_unconfirmed"
+      );
+  }
   const base = mounts
     .filter((m) => workingRoot === m.point || workingRoot.startsWith(m.point + "/"))
     .sort((a, b) => b.point.length - a.point.length)[0];
@@ -150,7 +215,9 @@ export function parseIopsProbe(
   const selected = [base, ...mounts.filter((m) => m.point.startsWith(workingRoot + "/"))];
   const devices = new Map<string, DatabaseIopsDevice>();
   for (const m of selected) {
-    const node = nodes.get(m.device);
+    const partition = partitions.get(m.device);
+    const device = partition?.parent ?? m.device;
+    const node = nodes.get(device);
     if (
       !node ||
       !["ext4", "xfs", "btrfs", "f2fs"].includes(m.filesystem) ||
@@ -161,8 +228,8 @@ export function parseIopsProbe(
         undefined,
         "working_backing_or_writeback_unsupported"
       );
-    const d = devices.get(m.device) ?? {
-      id: m.device,
+    const d: DatabaseIopsDevice = devices.get(device) ?? {
+      id: device,
       path: node.path,
       generation: node.generation,
       filesystem: m.filesystem,
@@ -172,7 +239,18 @@ export function parseIopsProbe(
     const p = m === base ? workingRoot : m.point;
     if (!d.paths.includes(p)) d.paths.push(p);
     d.mountId = [...new Set([...d.mountId.split("|"), m.id])].sort().join("|");
-    devices.set(m.device, d);
+    if (partition) {
+      d.partitions ??= [];
+      if (!d.partitions.some((p) => p.id === m.device))
+        d.partitions.push({
+          id: m.device,
+          path: nodes.get(m.device)!.path,
+          start: partition.start,
+          size: partition.size
+        });
+      d.partitions.sort((a, b) => a.id.localeCompare(b.id));
+    }
+    devices.set(device, d);
   }
   const coverage = validateDatabaseIopsCoverage({
     owner,

@@ -1,3 +1,6 @@
+import { requireDatabaseStartupCapabilities } from "../../../../packages/compose-runner/src/database-startup-capabilities";
+import { createDatabaseStartupGate } from "../../../../packages/compose-runner/src/database-iops-startup-gate";
+import { assertExecutionWrite, executionScope } from "../db/execution";
 import {
   DatabaseIopsEvidence,
   validateDatabaseIopsEvidence,
@@ -727,6 +730,12 @@ export class RunCoordinator {
   }
 
   startExperiment(experimentId: string): void {
+    if (
+      this.repositories.client.db
+        .prepare("SELECT 1 FROM experiment_actions WHERE experiment_id=? AND holds_fence=1")
+        .get(experimentId)
+    )
+      throw new Error("experiment_action_in_progress");
     if (this.activeExperiment && this.activeExperiment !== experimentId)
       throw new Error("one_active_experiment_limit");
     if (this.activeExperiment === experimentId) return;
@@ -738,7 +747,7 @@ export class RunCoordinator {
       experimentId,
       "RUNNING",
       undefined,
-      new Date().toISOString()
+      experiment.startedAt ?? new Date().toISOString()
     );
     this.activeExperiment = experimentId;
     // Persistence failures must not become an unhandled detached rejection.
@@ -789,7 +798,49 @@ export class RunCoordinator {
     }
   }
 
+  async validateSavedDatabaseImage(
+    image: string,
+    requirements: { finite: boolean; writers: boolean; setup: boolean }
+  ): Promise<void> {
+    const info: any = await this.options.orchestrator.inspectImageDetails?.(image);
+    requireDatabaseStartupCapabilities(info?.Config?.Labels, requirements);
+  }
+  isExperimentActive(experimentId: string): boolean {
+    return (
+      this.activeExperiment === experimentId ||
+      [...this.activeRuns.keys(), ...this.diagnostics.keys()].some(
+        (id) => this.repositories.getRun(id)?.experimentId === experimentId
+      )
+    );
+  }
+  forgetExperiment(experimentId: string): void {
+    if (this.isExperimentActive(experimentId)) throw new Error("experiment_active");
+    for (const run of this.repositories.listRuns(experimentId)) {
+      this.cancellationRequests.delete(run.id);
+      this.behavior.delete(run.id);
+    }
+  }
   async executeRun(run: Run, behavior: RunBehavior = {}): Promise<Run> {
+    assertExecutionWrite(this.repositories.client.db, run.id, run.executionRevision);
+    return executionScope.run({ runId: run.id, revision: run.executionRevision! }, () =>
+      this.executeRunScoped(run, behavior)
+    );
+  }
+  private async verifyWorkload(run: Run, bundle: ComposeBundle, endMs: number): Promise<void> {
+    const observed = await this.options.orchestrator.checkWorkload?.(bundle);
+    if (!observed || this.cancellationRequests.has(run.id)) return;
+    run.environmentSnapshot = { ...run.environmentSnapshot, loadgenState: observed };
+    if (observed.state === "running") return;
+    if (observed.state === "exited" && this.options.phaseScale !== 0 && Date.now() >= endMs) return;
+    if (observed.exitCode !== undefined)
+      run.environmentSnapshot.loadgenExitCode = observed.exitCode;
+    this.repositories.saveRun(run);
+    throw Error(
+      observed.state === "exited" ? "loadgen_exited_early" : "loadgen_health_unavailable"
+    );
+  }
+
+  private async executeRunScoped(run: Run, behavior: RunBehavior): Promise<Run> {
     if (isTerminal(run.state)) return run;
     if ((run.environmentSnapshot as any)?.resolvedMeasurementDiagnostics) {
       try {
@@ -910,6 +961,25 @@ export class RunCoordinator {
         pendingDatabaseIops(frozenIops),
         "verified_adapter_required"
       );
+    const startupTimeoutMs = Number.parseInt(
+      process.env.PARKBENCH_OPENEDGE_READINESS_TIMEOUT_MS ?? "300000",
+      10
+    );
+    if (
+      !Number.isSafeInteger(startupTimeoutMs) ||
+      startupTimeoutMs < 1000 ||
+      startupTimeoutMs > 86400000
+    )
+      throw Error("openedge_readiness_timeout_invalid");
+    const startupGate =
+      frozenIops?.presetId !== undefined && frozenIops.presetId !== "unlimited"
+        ? createDatabaseStartupGate(
+            run.id,
+            run.executionRevision!,
+            path.join(this.artifacts.storage.root, run.id, "runtime"),
+            startupTimeoutMs
+          )
+        : undefined;
     const setup = (run.environmentSnapshot as any)?.databaseSetup;
     const setupPlan = setup?.steps?.length
       ? compileDatabaseSetup({
@@ -928,6 +998,9 @@ export class RunCoordinator {
       scenario,
       { db: inputs.databaseImage, pas: inputs.pasImage },
       {
+        executionRevision: run.executionRevision,
+        projectName: run.composeProject,
+        databaseIopsStartupGate: startupGate,
         measurementDiagnostics: this.diagnostics.get(run.id)?.nativeMount,
         databaseSetup: setupPlan?.manifest,
         seed: inputs.seed,
@@ -982,12 +1055,50 @@ export class RunCoordinator {
       };
       this.repositories.saveRun(run);
     }
+    if (startupGate) {
+      fs.mkdirSync(startupGate.directory, { recursive: true, mode: 0o777 });
+      fs.chmodSync(startupGate.directory, 0o777);
+      run.environmentSnapshot = {
+        ...run.environmentSnapshot,
+        databaseIopsStartupGate: startupGate,
+        databaseStartupBundle: structuredClone(bundle),
+        databaseStartupResourceIntents: bundle.resources.map((r) => ({
+          ...r,
+          registeredAt: new Date().toISOString()
+        }))
+      };
+      this.repositories.saveRun(run);
+    }
     this.activeRuns.set(run.id, bundle);
     let collector: ObserverCollector | undefined;
-    let resources: Awaited<ReturnType<RunOrchestrator["provision"]>> = setupPlan
-      ? reconcileSetupResources(run, [])
-      : [];
+    let resources: Awaited<ReturnType<RunOrchestrator["provision"]>> =
+      setupPlan || startupGate ? reconcileSetupResources(run, []) : [];
     run.startedAt = new Date().toISOString();
+    // A queued run may execute after the operator changes platform cadence.
+    // Record the settings actually used by this execution, not scheduling time.
+    const sourceCadences = (run.environmentSnapshot as any)?.sourceCadences ?? {};
+    run.environmentSnapshot = {
+      ...run.environmentSnapshot,
+      sourceCadences: {
+        ...sourceCadences,
+        nativeDatabaseRefreshSeconds: Math.max(
+          1, Number(process.env.PARKBENCH_OPENEDGE_DB_OBSERVER_REFRESH_MS ?? 5000) / 1000
+        ),
+        prometheusScrapeSeconds:
+          this.options.observerSamplingIntervalSeconds ?? sourceCadences.prometheusScrapeSeconds ?? 5,
+        cadvisorHousekeepingSeconds:
+          this.options.cadvisorHousekeepingSeconds ?? sourceCadences.cadvisorHousekeepingSeconds ?? 1,
+        cadvisorDiskAccountingProfile:
+          this.options.cadvisorDiskAccountingProfile ?? sourceCadences.cadvisorDiskAccountingProfile,
+        observers: scenario.observers.map((observer) => ({
+          id: observer.id,
+          kind: observer.kind,
+          stepSeconds: this.options.observerSamplingIntervalSeconds ?? observer.samplingIntervalSeconds,
+          publisher: ["openedge_pas_v1", "openedge_db_v1"].includes(observer.kind)
+            ? "endpoint" : "controller"
+        }))
+      }
+    };
     this.repositories.saveRun(run);
     try {
       this.writeRunArtifacts(run, scenario, bundle);
@@ -1007,7 +1118,8 @@ export class RunCoordinator {
         this.cancellationRequests.has(run.id)
       );
       provisioned.forEach((resource) => this.repositories.saveResource(run.id, resource));
-      resources = setupPlan ? reconcileSetupResources(run, provisioned) : provisioned;
+      resources =
+        setupPlan || startupGate ? reconcileSetupResources(run, provisioned) : provisioned;
       if (setupPlan) {
         const orchestrator = this.options.orchestrator;
         if (!orchestrator.waitForDatabaseSetup || !orchestrator.startRemainingServices)
@@ -1046,7 +1158,56 @@ export class RunCoordinator {
           }
         };
         this.repositories.saveRun(run);
-        await orchestrator.startRemainingServices(bundle, () =>
+      }
+      if (startupGate) {
+        const orchestrator = this.options.orchestrator,
+          cancelled = () => this.cancellationRequests.has(run.id),
+          deadline = Date.now() + startupTimeoutMs;
+        if (
+          !orchestrator.waitForDatabaseStartupGate ||
+          !orchestrator.releaseDatabaseStartupGate ||
+          !orchestrator.startRemainingServices
+        )
+          throw new DatabaseIopsError(
+            "database_iops_unsupported",
+            undefined,
+            "startup_gate_runner_required"
+          );
+        await orchestrator.waitForDatabaseStartupGate(bundle, deadline, cancelled);
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          databaseIopsStartupGate: structuredClone(startupGate)
+        };
+        this.repositories.saveRun(run);
+        await this.initializeDatabaseIops(run, bundle, deadline);
+        const verified = await orchestrator.checkDatabaseIops!(
+          bundle,
+          bundle.databaseIopsEvidence!,
+          "startup_release",
+          cancelled
+        );
+        if (verified.verification.status !== "MATCHED")
+          throw new DatabaseIopsError(
+            "database_iops_unconfirmed",
+            verified,
+            "startup_gate_policy_unverified"
+          );
+        verified.applicationTiming = "AFTER_SETUP_BEFORE_DATABASE_STARTUP";
+        verified.startupGate = {
+          executionRevision: startupGate.executionRevision,
+          nonce: startupGate.nonce,
+          heldAt: startupGate.heldAt,
+          releaseIntentAt: new Date().toISOString()
+        };
+        this.persistDatabaseIops(run, bundle, verified);
+        await orchestrator.releaseDatabaseStartupGate(bundle, deadline, cancelled, () =>
+          assertExecutionWrite(this.repositories.client.db, run.id, run.executionRevision)
+        );
+        verified.startupGate.releasePublishedAt = startupGate.releasePublishedAt;
+        this.persistDatabaseIops(run, bundle, verified);
+      }
+      if (setupPlan || startupGate) {
+        await this.options.orchestrator.startRemainingServices!(bundle, () =>
           this.cancellationRequests.has(run.id)
         );
         for (const resource of resources) {
@@ -1064,6 +1225,7 @@ export class RunCoordinator {
       }
       const targetLabels = (component: string, service: string) => {
         const { phase, ...labels } = buildRunLabels({
+          execution_revision: run.executionRevision,
           experiment_id: run.experimentId,
           run_id: run.id,
           variant_id: run.variantId,
@@ -1200,79 +1362,29 @@ export class RunCoordinator {
       machine.transition(run, "PAS_READY", "PAS readiness probe passed");
       await this.captureStartupParameters(run, bundle);
       await this.applyDatabaseLatency(run, bundle, scenario);
-      if (bundle.databaseIops) {
-        bundle.databaseIopsDeadline = readinessDeadline;
-        const cancelled = () => this.cancellationRequests.has(run.id);
+      if (bundle.databaseIops && !bundle.databaseIopsStartupGate)
+        await this.initializeDatabaseIops(run, bundle, readinessDeadline);
+      if (bundle.databaseIopsStartupGate && bundle.databaseIopsEvidence) {
+        const gate = bundle.databaseIopsStartupGate,
+          consumed = path.join(gate.directory, "consumed");
         if (
-          bundle.databaseIops.presetId !== "unlimited" &&
-          (!this.options.orchestrator.applyDatabaseIops ||
-            !this.options.orchestrator.checkDatabaseIops)
-        )
-          throw new DatabaseIopsError(
-            "database_iops_unsupported",
-            pendingDatabaseIops(bundle.databaseIops),
-            "verified_adapter_required"
-          );
-        this.persistDatabaseIops(run, bundle, {
-          ...pendingDatabaseIops(bundle.databaseIops),
-          stage: bundle.databaseIops.presetId === "unlimited" ? "VERIFYING" : "DISCOVERING"
-        });
-        const evidence = this.options.orchestrator.applyDatabaseIops
-          ? await this.options.orchestrator.applyDatabaseIops(
-              bundle,
-              bundle.databaseIops,
-              cancelled,
-              async (intent) => {
-                if (
-                  intent.runId !== run.id ||
-                  intent.experimentId !== run.experimentId ||
-                  intent.variantId !== run.variantId
-                )
-                  throw new DatabaseIopsError(
-                    "database_iops_apply_failed",
-                    undefined,
-                    "intent_run_attribution_mismatch"
-                  );
-                if (cancelled()) throw Error("run_cancelled");
-                if (Date.now() >= readinessDeadline)
-                  throw new DatabaseIopsError(
-                    "database_iops_apply_failed",
-                    undefined,
-                    "startup_deadline"
-                  );
-                const pending = {
-                  ...pendingDatabaseIops(intent.condition),
-                  stage: "PERSISTING_INTENT" as const,
-                  applicationOutcome: "PENDING" as const,
-                  owner: intent.owner,
-                  coverage: intent.coverage,
-                  applicationIntent: intent
-                };
-                this.persistDatabaseIops(run, bundle, pending);
-              }
-            )
-          : {
-              ...pendingDatabaseIops(bundle.databaseIops),
-              stage: "VERIFIED" as const,
-              mode: "none" as const,
-              verification: { status: "NO_ADDED_CAP" as const, checks: 0 }
-            };
-        if (
-          bundle.databaseIops.presetId !== "unlimited" &&
-          (evidence.verification.status !== "MATCHED" ||
-            (!this.options.testMode && evidence.mode !== "native"))
+          !fs.existsSync(consumed) ||
+          fs.readFileSync(consumed, "utf8") !==
+            `${gate.runId}:${gate.executionRevision}:${gate.nonce}\n`
         )
           throw new DatabaseIopsError(
             "database_iops_unconfirmed",
-            evidence,
-            "finite_policy_not_verified"
+            bundle.databaseIopsEvidence,
+            "startup_gate_consumption_unconfirmed"
           );
-        this.persistDatabaseIops(run, bundle, evidence);
-        if (bundle.databaseIops.presetId !== "unlimited") {
-          const remaining = readinessDeadline - Date.now();
-          if (remaining <= 0) throw Error("run_readiness_timeout:database_iops");
-          await this.options.orchestrator.waitForReady(bundle, scenario, remaining, cancelled);
-        }
+        gate.consumedAt = new Date(fs.statSync(consumed).mtimeMs).toISOString();
+        bundle.databaseIopsEvidence.startupGate = {
+          ...bundle.databaseIopsEvidence.startupGate,
+          executionRevision: gate.executionRevision,
+          nonce: gate.nonce,
+          consumedAt: gate.consumedAt
+        };
+        this.persistDatabaseIops(run, bundle, bundle.databaseIopsEvidence);
       }
 
       if (this.cancellationRequests.has(run.id))
@@ -1489,6 +1601,8 @@ export class RunCoordinator {
             this.options.testMode && this.options.phaseScale === 0 ? undefined : timing,
             async () => {
               if (this.cancellationRequests.has(run.id)) return;
+              await this.verifyWorkload(run, bundle, schedule.at(-1)!.endMs);
+              if (this.cancellationRequests.has(run.id)) return;
               await this.verifyDatabaseIops(run, bundle, phase);
               const evidence = await this.options.orchestrator.checkDatabaseRunControls?.(bundle);
               if (evidence)
@@ -1627,6 +1741,27 @@ export class RunCoordinator {
           ...run.environmentSnapshot,
           databaseRunControlEvidence: structuredClone(error.evidence)
         };
+      if (/loadgen_exited_early|loadgen_health_unavailable/.test(String(error))) {
+        const boundary =
+          run.phaseBoundaries?.[
+            run.phase === "measuring"
+              ? "measurement"
+              : run.phase === "warming_up"
+                ? "warmup"
+                : (run.phase ?? "")
+          ];
+        if (boundary && !boundary.finishedAt) boundary.finishedAt = new Date().toISOString();
+        const measurement = run.phaseBoundaries?.measurement;
+        run.environmentSnapshot = {
+          ...run.environmentSnapshot,
+          observerCollection: { counts: collector?.progress() ?? [], health: run.observerHealth },
+          measurementWindow: {
+            start: measurement?.startedAt ?? null,
+            end: measurement?.finishedAt ?? null,
+            state: measurement ? "interrupted" : "not_started"
+          }
+        };
+      }
       if (
         this.cancellationRequests.has(run.id) &&
         bundle.databaseIopsEvidence?.terminationDecision?.cause !== "POLICY_DRIFT"
@@ -1758,6 +1893,8 @@ export class RunCoordinator {
     const bundle = this.activeRuns.get(runId);
     if (bundle?.databaseSetup)
       signalCancellation(path.join(bundle.databaseSetup.manifest.paths.control, "cancel"));
+    if (bundle?.databaseIopsStartupGate)
+      signalCancellation(path.join(bundle.databaseIopsStartupGate.directory, "cancel"));
     if (bundle?.shutdownPath) signalCancellation(bundle.shutdownPath);
     return run;
   }
@@ -2187,6 +2324,79 @@ export class RunCoordinator {
     this.persistDatabaseIops(run, bundle, evidence);
   }
 
+  private async initializeDatabaseIops(
+    run: Run,
+    bundle: ComposeBundle,
+    readinessDeadline: number
+  ): Promise<void> {
+    if (!bundle.databaseIops) return;
+    bundle.databaseIopsDeadline = readinessDeadline;
+    const cancelled = () => this.cancellationRequests.has(run.id);
+    if (
+      bundle.databaseIops.presetId !== "unlimited" &&
+      (!this.options.orchestrator.applyDatabaseIops || !this.options.orchestrator.checkDatabaseIops)
+    )
+      throw new DatabaseIopsError(
+        "database_iops_unsupported",
+        pendingDatabaseIops(bundle.databaseIops),
+        "verified_adapter_required"
+      );
+    this.persistDatabaseIops(run, bundle, {
+      ...pendingDatabaseIops(bundle.databaseIops),
+      stage: bundle.databaseIops.presetId === "unlimited" ? "VERIFYING" : "DISCOVERING"
+    });
+    const evidence = this.options.orchestrator.applyDatabaseIops
+      ? await this.options.orchestrator.applyDatabaseIops(
+          bundle,
+          bundle.databaseIops,
+          cancelled,
+          async (intent) => {
+            if (
+              intent.runId !== run.id ||
+              intent.experimentId !== run.experimentId ||
+              intent.variantId !== run.variantId
+            )
+              throw new DatabaseIopsError(
+                "database_iops_apply_failed",
+                undefined,
+                "intent_run_attribution_mismatch"
+              );
+            if (cancelled()) throw Error("run_cancelled");
+            if (Date.now() >= readinessDeadline)
+              throw new DatabaseIopsError(
+                "database_iops_apply_failed",
+                undefined,
+                "startup_deadline"
+              );
+            const pending = {
+              ...pendingDatabaseIops(intent.condition),
+              stage: "PERSISTING_INTENT" as const,
+              applicationOutcome: "PENDING" as const,
+              owner: intent.owner,
+              coverage: intent.coverage,
+              applicationIntent: intent
+            };
+            this.persistDatabaseIops(run, bundle, pending);
+          }
+        )
+      : {
+          ...pendingDatabaseIops(bundle.databaseIops),
+          stage: "VERIFIED" as const,
+          mode: "none" as const,
+          verification: { status: "NO_ADDED_CAP" as const, checks: 0 }
+        };
+    if (
+      bundle.databaseIops.presetId !== "unlimited" &&
+      (evidence.verification.status !== "MATCHED" ||
+        (!this.options.testMode && evidence.mode !== "native"))
+    )
+      throw new DatabaseIopsError(
+        "database_iops_unconfirmed",
+        evidence,
+        "finite_policy_not_verified"
+      );
+    this.persistDatabaseIops(run, bundle, evidence);
+  }
   private persistDatabaseIops(
     run: Run,
     bundle: ComposeBundle,

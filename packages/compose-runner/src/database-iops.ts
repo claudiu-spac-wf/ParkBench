@@ -81,7 +81,8 @@ export async function applyIopsPolicy({
   cancelled,
   persistIntent,
   deadline,
-  ownedPrevious
+  ownedPrevious,
+  startupIdentity
 }: {
   api: Pick<EngineApi, "requireFinite" | "updateIops">;
   inspect: (deadline: number) => Promise<IopsSnapshot>;
@@ -93,6 +94,7 @@ export async function applyIopsPolicy({
   persistIntent: PersistIopsIntent;
   deadline: number;
   ownedPrevious?: DatabaseIopsApplicationIntent;
+  startupIdentity?: { executionRevision: string; startupNonce: string };
 }): Promise<DatabaseIopsEvidence> {
   if (cancelled()) throw Error("run_cancelled");
   if (condition.presetId === "unlimited" && !ownedPrevious) return unlimitedDatabaseIops();
@@ -150,6 +152,7 @@ export async function applyIopsPolicy({
     e.applicationIntent = validateDatabaseIopsIntent({
       contractVersion: "database-iops-application-intent.v1",
       attemptId: crypto.randomUUID(),
+      ...startupIdentity,
       experimentId,
       runId,
       variantId,

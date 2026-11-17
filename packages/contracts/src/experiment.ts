@@ -43,6 +43,7 @@ export interface ExperimentScheduleV2Request {
 export type ExperimentStatus =
   "QUEUED" | "RUNNING" | "SUCCEEDED" | "PARTIAL" | "FAILED" | "CANCELLED" | "INTERRUPTED";
 export interface Experiment extends ExperimentRequest {
+  executionRevision?: string;
   id: string;
   status: ExperimentStatus;
   runIds: string[];

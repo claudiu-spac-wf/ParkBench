@@ -304,13 +304,20 @@ operator environment setting is required.
 
 | Preset | Read IOPS per backing device | Write IOPS per backing device |
 | --- | ---: | ---: |
-| HDD | 150 | 150 |
-| SATA SSD | 90,000 | 90,000 |
-| Slow NVME | 250,000 | 250,000 |
-| Fast NVME | 1,000,000 | 1,000,000 |
+| HDD T1 | 1,000 | 1,000 |
+| HDD T2 | 2,000 | 2,000 |
+| HDD T3 | 3,000 | 3,000 |
+| SATA SSD T1 | 6,000 | 6,000 |
+| SATA SSD T2 | 20,000 | 20,000 |
+| SATA SSD T3 | 60,000 | 60,000 |
+| NVME T1 | 128,000 | 128,000 |
+| NVME T2 | 256,000 | 256,000 |
+| NVME T3 | 400,000 | 400,000 |
 | Unlimited | No ParkBench cap | No ParkBench cap |
 
-The catalog revision is `database-iops-presets.v1`. Saved runs retain their
+The offered catalog revision is `database-iops-presets.v2`. Revision 1 remains
+supported for saved conditions, including queued work, with its original labels
+and caps; retired presets are absent from new scheduling options. Saved runs retain their
 revision, label and numeric caps even if a later catalog changes. Historical runs
 without these fields display **Not recorded**. The numbers are simulation ceilings;
 higher presets do not promise that the host can deliver their named speed.
@@ -319,11 +326,16 @@ device, covering database data, BI, AI and temporary paths. Cached application
 operations are not physical IOPS. These controls add neither seek latency nor a
 bandwidth ceiling and do not override limits imposed by the host or parent cgroup.
 
-Compose still creates and cleans the run services. All seed copying and declared
-setup steps finish uncapped. Before warmup, the controller uses the local Docker
-Engine HTTP API directly to update only `BlkioDeviceReadIOps` and
-`BlkioDeviceWriteIOps`, then checks Docker configuration, the owned kernel policy
-and database readiness. Finite presets require Engine API **1.55 or newer**, a
+Compose still creates and cleans the run services. Seed copying, native repair,
+preparation and every setup script finish uncapped, including custom child-process
+drain and temporary maintenance-broker shutdown. For finite presets the database
+then waits at a fresh run/revision/nonce gate before primary benchmark broker startup. The controller
+persists an owned application intent, updates only `BlkioDeviceReadIOps` and
+`BlkioDeviceWriteIOps` through the local Docker Engine API, and independently
+verifies Docker configuration and the owned kernel policy before durable release.
+Only benchmark database startup and subsequent execution run under the selected limits.
+Long setup receives its own stage before the startup gate budget begins. Readiness
+follows release; an unverified policy never releases the database. Finite presets require Engine API **1.55 or newer**, a
 matching local Unix daemon, cgroup v2, an available platform host-PID reader and
 unambiguous owned working volumes with enforceable block-device attribution.
 Fresh Unlimited runs require no finite-update capability and remove no foreign
@@ -333,7 +345,40 @@ The initial adapter has been validated on Docker Desktop/WSL2 with cgroup v2,
 ext4 and a directly mapped whole block device. It recognizes local ext4, xfs,
 btrfs and f2fs mounts only when their actual block nodes and identities resolve;
 those other filesystems have not received the same native acceptance test.
-Network/overlay working storage, partitions, stacked devices, escaped symlinks,
+Partition-backed local filesystems are resolved through daemon sysfs to their
+verified whole-disk parent. The Engine policy and owned cgroup verification use
+that parent device; partition number, block node, start and size remain recorded
+in coverage and are rechecked at runtime. Partitions on the same disk share one
+per-container directional cap. No disk-wide or host cgroup policy is changed.
+Stacked parents (for example device-mapper/RAID) remain unsupported.
+Network/overlay working storage, unresolved partitions, stacked devices, escaped symlinks,
 ambiguous owners or unsupported namespaces fail finite admission with a diagnostic
 instead of guessing a device. There is no hardcoded disk name or privileged
 host-cgroup write.
+
+
+## Experiment rerun and removal prerequisites
+
+The existing History, Queue and experiment/run detail controls act on the whole
+experiment. Active experiments cannot be rerun or removed. Rerun requires terminal
+runs and a complete saved schedule; removal also permits inactive queued or blocked
+work and does not require a rerunnable schedule. Public experiment/run IDs and names
+survive rerun. Frozen saved phase lengths, matrix cells, input references and numeric
+IOPS caps are reused. Mutable workload files, `startup.pf` and seed contents are not
+version-restored; the confirmation warns that results may be inaccurate.
+
+Prometheus must expose its admin API to the locally bound controller, using
+`--web.enable-admin-api` in the platform Compose configuration. cAdvisor must
+export `parkbench.execution_revision` in its explicit container-label allowlist.
+The controller verifies an actual labelled native probe and invalidates that proof
+when cAdvisor changes. Trusted run discovery carries the same private revision.
+The configured Prometheus HTTP server must match the inspected local TSDB and its
+retained time bounds. Recording rules are rejected because derived ownership
+cannot be established by this adapter. Missing capabilities block deletion before
+old data is lost. No additional database or cleanup service is introduced.
+
+New native database images expose `org.parkbench.database-iops-startup` with value
+`database-iops-startup.v2` and `org.parkbench.writer-supervision` with value
+`writer-supervision.v1`. Rebuild using the existing image workflow; old images fail
+new native prevalidation with an actionable capability error. Historical image and
+timing evidence remains readable. Unlimited adds no finite IOPS policy or gate.

@@ -7,6 +7,8 @@ seed_dir=$1
 database_workdir=$2
 db_name=$3
 
+started=$(date +%s)
+if [ "${4:-}" != --repair-copied ]; then
 if [ ! -d "$seed_dir" ]; then
   echo "seed_missing" >&2
   exit 44
@@ -83,9 +85,23 @@ if [ "$restored_already" -eq 1 ]; then
   exit 0
 fi
 
-started=$(date +%s)
 # Plain recursive copy: the seed bind mount may be owned by another user, so ownership is not preserved.
 cp -R "$seed_dir/." "$database_workdir/"
+
+if [ -n "${PARKBENCH_RUN_ID:-}" ]; then
+  printf '%s\n' "$PARKBENCH_RUN_ID" "$db_name" "${PARKBENCH_SEED_IDENTITY:-}" > "$database_workdir/.parkbench-seed-identity"
+fi
+: > "$database_workdir/.parkbench-seed-copied"
+if [ "${PARKBENCH_DEFER_SEED_REPAIR:-false}" = true ]; then
+  echo "seed_copy_seconds=$(($(date +%s) - started))"
+  exit 0
+fi
+else
+  expected_identity=$(printf '%s\n' "${PARKBENCH_RUN_ID:-}" "$db_name" "${PARKBENCH_SEED_IDENTITY:-}")
+  if [ ! -f "$database_workdir/.parkbench-seed-copied" ] || [ ! -f "$database_workdir/.parkbench-seed-identity" ] || [ "$(cat "$database_workdir/.parkbench-seed-identity")" != "$expected_identity" ]; then
+    echo database_iops_apply_failed:copied_seed_identity >&2; exit 56
+  fi
+fi
 
 # The control area records absolute extent paths from wherever the seed was loaded. Point
 # every extent at this run's directory; the seed's own .st keeps its relative "." paths.

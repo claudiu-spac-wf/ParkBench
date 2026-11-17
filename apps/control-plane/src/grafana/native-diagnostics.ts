@@ -1,5 +1,6 @@
 import { recordChartDecision } from "../measurement-diagnostics/chart-evidence";
 import { orderRankedSeries } from "./table-ranking";
+import { diagnosticCounterTotal, diagnosticCounterRate, sumDiagnosticTotals, totalCoverageLabels, TOTAL_COVERAGE_LABELS, type DiagnosticTotal } from "./diagnostic-totals";
 import catalog from "../../../../packages/contracts/src/openedge-db-metric-catalog.json";
 import type { RunTimeline } from "./run-timeline";
 export type NativeMatrix = {
@@ -222,7 +223,7 @@ export function aggregateNamedLatchTotals<
   for (const row of rows) {
     const labels = Object.fromEntries(
       Object.entries(row.metric).filter(
-        ([k]) => !["latch_id", "database_epoch", "availability"].includes(k)
+        ([k]) => !["latch_id", "database_epoch", "availability", ...TOTAL_COVERAGE_LABELS].includes(k)
       )
     );
     const key = JSON.stringify(Object.entries(labels).sort(([a], [b]) => a.localeCompare(b)));
@@ -245,9 +246,11 @@ export function aggregateNamedLatchTotals<
     const vectors = group.map((row) => (row.value ? [row.value] : row.values!));
     const values = vectors[0].map(([time], index) => {
       const parts = vectors.map((v) => v[index]);
-      const valid = parts.every((p) => p && p[0] === time && Number.isFinite(Number(p[1])));
-      const total = valid ? parts.reduce((sum, p) => sum + Number(p[1]), 0) : NaN;
-      return [time, Number.isFinite(total) ? String(total) : "NaN"];
+      const total = parts.every((p) => p && p[0] === time)
+        ? sumDiagnosticTotals(parts.map((p, i) => ({ value: p[1], coverage: group[i].metric.coverage_status })))
+        : { value: null, coverage: "unavailable" as const };
+      Object.assign(metric, totalCoverageLabels(total.coverage));
+      return [time, total.value === null ? "NaN" : String(total.value)];
     });
     metric.availability = values.some((v) => v[1] !== "NaN") ? "available" : "unavailable";
     return { ...first, metric, ...(first.value ? { value: values[0] } : { values }) } as T;
@@ -442,6 +445,8 @@ export function createNativeDiagnostics(options: {
     end: number;
     step: number;
     instant: boolean;
+    /** A ranked instant table still needs its full range to select membership. */
+    endSnapshot?: boolean;
     shift: (timeline: RunTimeline) => number;
     budget?: NativeQueryBudget;
   }) {
@@ -463,7 +468,11 @@ export function createNativeDiagnostics(options: {
         input.timelines.map(async (timeline) => {
           budget.check();
           const shift = input.shift(timeline),
-            cadence = timeline.nativeRefreshSeconds ?? 5,
+            // Stored observations cannot arrive faster than acquisition or scraping.
+            cadence = Math.max(
+              timeline.nativeRefreshSeconds ?? 5,
+              timeline.prometheusScrapeSeconds ?? 0
+            ),
             // Grafana's output grid can be finer than native collection. Four samples
             // keep left-open counter ranges usable despite normal acquisition jitter.
             rateWindow = Math.min(limits.windowMs, Math.max(descriptor.rateWindow, cadence * 4000));
@@ -481,6 +490,7 @@ export function createNativeDiagnostics(options: {
             timeline.runId,
             descriptor,
             timeline.nativePublisher,
+            cadence,
             timeline.continuousMetrics,
             timeline.phases,
             start,
@@ -527,7 +537,15 @@ export function createNativeDiagnostics(options: {
           const rows = selected.map((series) => {
             budget.check();
             const points = series.values;
-            const at = (time: number): number | null => {
+            let snapshotCoverage: DiagnosticTotal["coverage"] | undefined =
+              descriptor.view !== "total" && (input.instant || input.endSnapshot)
+                ? "unavailable" : undefined;
+            const at = (time: number, last = false): number | null => {
+              // Instant detail tables describe the last selected phase. Its
+              // right edge is exclusive; evaluating exactly there would instead
+              // select cooldown/idle and hide every measurement value.
+              if ((input.instant || (input.endSnapshot && last)) && windows.length)
+                time = Math.min(time, windows.at(-1)!.end - 0.001);
               if (
                 time < (descriptor.start + shift) / 1000 ||
                 time > (descriptor.end + shift) / 1000
@@ -537,6 +555,13 @@ export function createNativeDiagnostics(options: {
               if (descriptor.view === "rate") {
                 const span = windows.find((w) => time >= w.start && time <= w.end);
                 if (!span) return null;
+                if (input.instant || (input.endSnapshot && last)) {
+                  const rate = diagnosticCounterRate(points,
+                    Math.max(span.start, time - rateWindow / 1000), time, cadence,
+                    () => budget.check());
+                  snapshotCoverage = rate.coverage;
+                  return rate.value;
+                }
                 return (
                   counterWindow(
                     points,
@@ -552,26 +577,29 @@ export function createNativeDiagnostics(options: {
                 if (p[0] > time) break;
                 point = p;
               }
-              return point && time - point[0] <= cadence * 1.5 ? point[1] : null;
+              const value = point && time - point[0] <= cadence * 1.5 ? point[1] : null;
+              if (input.instant || (input.endSnapshot && last))
+                snapshotCoverage = value === null ? "unavailable" : "complete";
+              return value;
             };
-            let total: number | null = null;
-            if (descriptor.view === "total")
+            let total: DiagnosticTotal = { value: null, coverage: "unavailable" };
+            if (descriptor.view === "total") {
+              const contributions: DiagnosticTotal[] = [];
               for (const window of observedTotalWindows(windows, points, timeline)) {
                 budget.check();
                 if (window.end <= window.start) continue;
-                const value = counterWindow(
+                const value = diagnosticCounterTotal(
                   points,
                   window.start,
                   window.end,
                   cadence,
-                  window.includeStart || descriptor.metric.startsWith("latch_named_")
+                  window.includeStart || descriptor.metric.startsWith("latch_named_"),
+                  () => budget.check()
                 );
-                if (!value) {
-                  total = null;
-                  break;
-                }
-                total = (total ?? 0) + value.increase;
+                contributions.push(value);
               }
+              total = sumDiagnosticTotals(contributions);
+            }
             const count = input.instant
               ? 1
               : Math.floor((input.end - input.start) / input.step) + 1;
@@ -579,15 +607,19 @@ export function createNativeDiagnostics(options: {
             const times = input.instant
               ? [input.end]
               : Array.from({ length: count }, (_, i) => input.start + i * input.step);
-            const values = times.map((t) => {
+            const values = times.map((t, index) => {
               budget.check();
-              const value = descriptor.view === "total" ? total : at((t + shift) / 1000);
+              const value = descriptor.view === "total"
+                ? total.value
+                : at((t + shift) / 1000, index === times.length - 1);
               return [t / 1000, value === null ? "NaN" : String(value)];
             });
             return {
               metric: {
                 ...series.metric,
                 diagnostic: descriptor.metric,
+                ...(descriptor.view === "total" ? totalCoverageLabels(total.coverage) : {}),
+                ...(snapshotCoverage ? totalCoverageLabels(snapshotCoverage) : {}),
                 availability: values.some(([, v]) => v !== "NaN") ? "available" : "unavailable"
               },
               ...(input.instant ? { value: values[0] } : { values })

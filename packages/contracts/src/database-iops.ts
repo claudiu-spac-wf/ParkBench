@@ -16,14 +16,30 @@ export const DATABASE_IOPS_FAILURE_CODES = [
   "database_iops_policy_drift"
 ] as const;
 export type DatabaseIopsFailureCode = (typeof DATABASE_IOPS_FAILURE_CODES)[number];
-export type DatabaseIopsPresetId = "hdd" | "sata-ssd" | "slow-nvme" | "fast-nvme" | "unlimited";
+export type DatabaseIopsPresetId =
+  | "hdd-t1"
+  | "hdd-t2"
+  | "hdd-t3"
+  | "sata-ssd-t1"
+  | "sata-ssd-t2"
+  | "sata-ssd-t3"
+  | "nvme-t1"
+  | "nvme-t2"
+  | "nvme-t3"
+  | "unlimited"
+  // Retained revision 1 conditions remain readable and executable with their original caps.
+  | "hdd"
+  | "sata-ssd"
+  | "slow-nvme"
+  | "fast-nvme";
+export type DatabaseIopsCatalogVersion = "database-iops-presets.v1" | "database-iops-presets.v2";
 export interface DatabaseIopsPreset {
   id: DatabaseIopsPresetId;
   label: string;
   readIopsPerDevice: number | null;
   writeIopsPerDevice: number | null;
 }
-export const DATABASE_IOPS_CATALOG = freeze({
+export const LEGACY_DATABASE_IOPS_CATALOG = freeze({
   contractVersion: "database-iops-presets.v1" as const,
   defaultPresetId: "unlimited" as const,
   presets: [
@@ -39,9 +55,30 @@ export const DATABASE_IOPS_CATALOG = freeze({
     writeIopsPerDevice: rate as number | null
   }))
 });
+export const DATABASE_IOPS_CATALOG = freeze({
+  contractVersion: "database-iops-presets.v2" as const,
+  defaultPresetId: "unlimited" as const,
+  presets: [
+    ["hdd-t1", "HDD T1", 1000],
+    ["hdd-t2", "HDD T2", 2000],
+    ["hdd-t3", "HDD T3", 3000],
+    ["sata-ssd-t1", "SATA SSD T1", 6000],
+    ["sata-ssd-t2", "SATA SSD T2", 20000],
+    ["sata-ssd-t3", "SATA SSD T3", 60000],
+    ["nvme-t1", "NVME T1", 128000],
+    ["nvme-t2", "NVME T2", 256000],
+    ["nvme-t3", "NVME T3", 400000],
+    ["unlimited", "Unlimited", null]
+  ].map(([id, label, rate]) => ({
+    id: id as DatabaseIopsPresetId,
+    label: label as string,
+    readIopsPerDevice: rate as number | null,
+    writeIopsPerDevice: rate as number | null
+  }))
+});
 export interface DatabaseIopsCondition {
   contractVersion: "database-iops-condition.v1";
-  catalogVersion: "database-iops-presets.v1";
+  catalogVersion: DatabaseIopsCatalogVersion;
   presetId: DatabaseIopsPresetId;
   label: string;
   readIopsPerDevice: number | null;
@@ -62,6 +99,8 @@ export interface DatabaseIopsDevice {
   filesystem: string;
   mountId: string;
   generation?: string;
+  /** Verified filesystem partitions sharing this whole-disk policy. Absent on legacy/direct disks. */
+  partitions?: Array<{ id: string; path: string; start: string; size: string }>;
   paths: string[];
 }
 export interface DatabaseIopsCoverage {
@@ -80,6 +119,8 @@ export interface IopsRules {
   write: IopsRule[];
 }
 export interface DatabaseIopsApplicationIntent {
+  executionRevision?: string;
+  startupNonce?: string;
   contractVersion: "database-iops-application-intent.v1";
   attemptId: string;
   experimentId: string;
@@ -107,6 +148,15 @@ export type IopsStage =
 export type IopsVerificationStatus =
   "PENDING" | "MATCHED" | "NO_ADDED_CAP" | "MISMATCH" | "UNAVAILABLE";
 export interface DatabaseIopsEvidence {
+  applicationTiming?: "BEFORE_DATABASE_STARTUP" | "AFTER_DATABASE_PREPARATION" | "AFTER_SETUP_BEFORE_DATABASE_STARTUP";
+  startupGate?: {
+    executionRevision: string;
+    nonce: string;
+    heldAt?: string;
+    releaseIntentAt?: string;
+    releasePublishedAt?: string;
+    consumedAt?: string;
+  };
   contractVersion: "database-iops-evidence.v1";
   condition: DatabaseIopsCondition;
   stage: IopsStage;
@@ -177,12 +227,26 @@ function timestamp(v: any, what: string): void {
 function id(v: any, what: string): void {
   if (typeof v !== "string" || !v || v.length > 512 || /[\x00-\x1f]/.test(v)) invalid(what);
 }
-export function resolveDatabaseIops(value: unknown = "unlimited"): DatabaseIopsCondition {
-  const p = DATABASE_IOPS_CATALOG.presets.find((p) => p.id === value);
+export function resolveDatabaseIops(
+  value: unknown = "unlimited",
+  catalogVersion?: DatabaseIopsCatalogVersion
+): DatabaseIopsCondition {
+  const catalog =
+    catalogVersion === "database-iops-presets.v1"
+      ? LEGACY_DATABASE_IOPS_CATALOG
+      : catalogVersion === "database-iops-presets.v2" ||
+          (catalogVersion === undefined &&
+            DATABASE_IOPS_CATALOG.presets.some((p) => p.id === value))
+        ? DATABASE_IOPS_CATALOG
+        : catalogVersion === undefined
+          ? LEGACY_DATABASE_IOPS_CATALOG
+          : undefined;
+  if (!catalog) invalid("catalog_revision");
+  const p = catalog.presets.find((p) => p.id === value);
   if (!p) invalid("preset");
   return freeze({
     contractVersion: "database-iops-condition.v1",
-    catalogVersion: DATABASE_IOPS_CATALOG.contractVersion,
+    catalogVersion: catalog.contractVersion,
     presetId: p.id,
     label: p.label,
     readIopsPerDevice: p.readIopsPerDevice,
@@ -192,7 +256,7 @@ export function resolveDatabaseIops(value: unknown = "unlimited"): DatabaseIopsC
 export function validateDatabaseIopsCondition(value: unknown): DatabaseIopsCondition {
   record(value, "condition");
   const v = value as DatabaseIopsCondition;
-  const expected = resolveDatabaseIops(v.presetId);
+  const expected = resolveDatabaseIops(v.presetId, v.catalogVersion);
   if (
     Object.keys(v).length !== Object.keys(expected).length ||
     Object.entries(expected).some(([k, x]) => v[k] !== x)
@@ -227,6 +291,7 @@ export function validateDatabaseIopsCoverage(v: DatabaseIopsCoverage): DatabaseI
   const keys = new Set<string>();
   const devicePaths = new Set<string>();
   let paths = 0;
+  const partitionIds = new Set<string>();
   for (const d of v.devices) {
     record(d, "device");
     if (!/^\d+:\d+$/.test(d.id) || d.id.startsWith("0:") || keys.has(d.id))
@@ -242,6 +307,41 @@ export function validateDatabaseIopsCoverage(v: DatabaseIopsCoverage): DatabaseI
     id(d.filesystem, "filesystem");
     id(d.mountId, "mount");
     if (d.generation !== undefined) id(d.generation, "generation");
+    if (d.partitions !== undefined) {
+      if (
+        !Array.isArray(d.partitions) ||
+        !d.partitions.length ||
+        d.partitions.length > DATABASE_IOPS_LIMITS.paths
+      )
+        invalid("partition_capacity");
+      for (const p of d.partitions) {
+        record(p, "partition");
+        if (
+          !/^\d+:\d+$/.test(p.id) ||
+          p.id.startsWith("0:") ||
+          p.id === d.id ||
+          partitionIds.has(p.id)
+        )
+          invalid("partition_identity");
+        partitionIds.add(p.id);
+        if (
+          typeof p.path !== "string" ||
+          !/^\/dev\/[a-zA-Z0-9_./-]+$/.test(p.path) ||
+          p.path.split("/").includes("..") ||
+          devicePaths.has(p.path)
+        )
+          invalid("partition_path");
+        devicePaths.add(p.path);
+        if (
+          typeof p.start !== "string" ||
+          !/^(0|[1-9][0-9]{0,19})$/.test(p.start) ||
+          typeof p.size !== "string" ||
+          !/^[1-9][0-9]{0,19}$/.test(p.size)
+        )
+          invalid("partition_geometry");
+        if (++paths > DATABASE_IOPS_LIMITS.paths) invalid("path_capacity");
+      }
+    }
     if (!Array.isArray(d.paths) || !d.paths.length) invalid("device_paths");
     for (const p of d.paths) {
       if (
@@ -254,6 +354,7 @@ export function validateDatabaseIopsCoverage(v: DatabaseIopsCoverage): DatabaseI
       paths++;
     }
   }
+  if ([...partitionIds].some((p) => keys.has(p))) invalid("partition_parent_identity");
   if (paths > DATABASE_IOPS_LIMITS.paths) invalid("path_capacity");
   return v;
 }
@@ -308,6 +409,10 @@ export function validateDatabaseIopsIntent(
   record(v, "intent");
   if (v.contractVersion !== "database-iops-application-intent.v1") invalid("intent_version");
   for (const k of ["attemptId", "experimentId", "runId", "variantId"]) id(v[k], k);
+  if (v.executionRevision !== undefined || v.startupNonce !== undefined) {
+    id(v.executionRevision, "executionRevision");
+    id(v.startupNonce, "startupNonce");
+  }
   timestamp(v.preparedAt, "preparedAt");
   validateDatabaseIopsCondition(v.condition);
   validateDatabaseIopsCoverage(v.coverage);
@@ -333,6 +438,17 @@ export function validateDatabaseIopsEvidence(v: DatabaseIopsEvidence): DatabaseI
   record(v, "evidence");
   if (v.contractVersion !== "database-iops-evidence.v1") invalid("evidence_version");
   validateDatabaseIopsCondition(v.condition);
+  if (
+    v.applicationTiming !== undefined &&
+    !["BEFORE_DATABASE_STARTUP", "AFTER_DATABASE_PREPARATION", "AFTER_SETUP_BEFORE_DATABASE_STARTUP"].includes(v.applicationTiming)
+  )
+    invalid("application_timing");
+  if (v.startupGate) {
+    id(v.startupGate.executionRevision, "executionRevision");
+    id(v.startupGate.nonce, "startupNonce");
+    for (const k of ["heldAt", "releaseIntentAt", "releasePublishedAt", "consumedAt"])
+      if (v.startupGate[k] !== undefined) timestamp(v.startupGate[k], k);
+  }
   if (
     ![
       "PREPARING",
@@ -419,6 +535,8 @@ export function databaseIopsSummary(e: DatabaseIopsEvidence) {
   const { observed, ...verification } = e.verification;
   const value = {
     contractVersion: e.contractVersion,
+    applicationTiming: e.applicationTiming,
+    startupGate: e.startupGate,
     condition: e.condition,
     stage: e.stage,
     mode: e.mode,

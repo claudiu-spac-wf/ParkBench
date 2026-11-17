@@ -127,13 +127,13 @@ test("all managed and nested native targets retain readable explicit legends wit
           /^activity\.table_/.test(panel.parkbench.panelId)
         )
           assert.equal(
-            target.legendFormat,
+            target.legendFormat.replace(/^\{\{coverage_note\}\} /, ""),
             target.expr.includes('aggregate="run"') ? "{{run_id}} Total" : "{{run_id}} {{table}}",
             context
           );
         if (/^rs\.index_/.test(panel.parkbench.panelId)) {
           assert.equal(
-            target.legendFormat,
+            target.legendFormat.replace(/^\{\{coverage_note\}\} /, ""),
             target.expr.includes('aggregate="run"')
               ? "{{run_id}} Total"
               : "{{run_id}} {{database}}",
@@ -146,7 +146,7 @@ test("all managed and nested native targets retain readable explicit legends wit
           );
         }
         if (panel.title === "Full table CRUD operation detail") {
-          assert.equal(target.legendFormat, "{{run_id}} {{table}} {{operation}}", context);
+          assert.equal(target.legendFormat.replace(/^\{\{coverage_note\}\} /, ""), "{{run_id}} {{table}} {{operation}}", context);
           assert.equal(target.instant, true, context);
           assert.equal(target.format, "table", context);
         }
@@ -165,7 +165,7 @@ test("only the four Run Summary total panels add one labeled per-run total targe
       const total = panels.find((p) => p.parkbench.panelId === `rs.${entity}_${operation}_total`);
       const rate = panels.find((p) => p.parkbench.panelId === `rs.${entity}_${operation}_rate`);
       assert.equal(total.targets.length, 2);
-      assert.equal(total.targets[1].legendFormat, "{{run_id}} Total");
+      assert.equal(total.targets[1].legendFormat, "{{coverage_note}} {{run_id}} Total");
       assert.equal(total.targets[1].instant, true);
       assert.equal(total.targets[1].expr, total.targets[0].expr.replace(/}$/, ',aggregate="run"}'));
       assert.equal(rate.targets.length, 1);

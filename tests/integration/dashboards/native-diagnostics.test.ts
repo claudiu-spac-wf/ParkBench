@@ -640,7 +640,7 @@ it("retains the observed startup anchor despite scrape jitter in all four Run Su
           ? String(metric === "write" ? 210 : 70)
           : condition === "zero"
             ? "0"
-            : "NaN";
+            : String((condition === "gap" ? 50 : condition === "null-anchor" ? 60 : 30) * (metric === "write" ? 3 : 1));
       assert.equal(rows[0].value[1], expected, condition + ": " + metric);
       assert.equal(rows[0].metric.database_epoch, "opaque-jitter");
       const totalQuery = query.replace(/}$/, ',aggregate="run"}');
@@ -652,7 +652,9 @@ it("retains the observed startup anchor despite scrape jitter in all four Run Su
         start:String(timeline.startedAt / 1000),end:String(timeline.endedAt / 1000),step:"5"}),false);
       assert.equal(rangeResponse.status, 400, "run totals are instant-only");
       assert.deepEqual((totalResponse.body as any).data.result, [{
-        metric: { run_id: runId, aggregation: "run_total" },
+        metric: { run_id: runId, aggregation: "run_total",
+          coverage_status: ["covered", "zero"].includes(condition) ? "complete" : "partial",
+          coverage_note: ["covered", "zero"].includes(condition) ? "" : " [partial]" },
         value: [timeline.endedAt / 1000, expected]
       }]);
       const repeated = await proxy.dataQuery(new URLSearchParams({ query, time: String(timeline.endedAt / 1000) }), true);

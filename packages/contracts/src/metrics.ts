@@ -3,6 +3,7 @@ import openEdgeDbMetricCatalog from "./openedge-db-metric-catalog.json";
 export type MetricType = "counter" | "gauge" | "histogram" | "info";
 export type MetricPhase = "warmup" | "measurement" | "cooldown" | "idle";
 export interface MetricLabels {
+  execution_revision?: string;
   experiment_id: string;
   run_id: string;
   variant_id: string;

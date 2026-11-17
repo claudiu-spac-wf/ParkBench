@@ -27,10 +27,7 @@
       "minLength": 1
     },
     "loadSeed": {
-      "type": [
-        "number",
-        "string"
-      ]
+      "type": ["number", "string"]
     },
     "capturedAt": {
       "type": "string",
@@ -78,14 +75,17 @@
     },
     "databaseRunControls": {
       "type": "object",
-      "required": [
-        "contractVersion"
-      ],
+      "required": ["contractVersion"],
       "properties": {
         "contractVersion": {
           "const": "db-run-controls.v1"
         }
       }
+    },
+    "executionRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
     }
   }
 }

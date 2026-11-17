@@ -1,3 +1,4 @@
+import { ExperimentActions } from "../../shared/ExperimentActions";
 import { DatabaseParameterCatalog } from "./DatabaseParameterCatalog";
 import { getUiOptions } from "../../shared/control-ui-client";
 import React, { useEffect, useState } from "react";
@@ -331,6 +332,7 @@ export function ExperimentPage() {
         Submit experiment
       </button>
       {preflightResult && <p role="status">Preflight passed; experiment submission accepted.</p>}
+      {result?.id && <ExperimentActions experimentId={result.id} />}
       {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
       <a href="#history">Run history</a>
     </main>

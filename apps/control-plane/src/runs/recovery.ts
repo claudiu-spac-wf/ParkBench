@@ -1,3 +1,4 @@
+import { actionFenced } from "../db/execution";
 import { Repositories } from "../db/repositories";
 import { RunStateMachine } from "./state-machine";
 import { Finalizer } from "./finalizer";
@@ -21,7 +22,11 @@ export function reconcileInterruptedRuns(repositories: Repositories): number {
   let count = 0;
   for (const run of repositories
     .findNonterminalRuns()
-    .filter((candidate) => candidate.state !== "QUEUED")) {
+    .filter(
+      (candidate) =>
+        candidate.state !== "QUEUED" &&
+        !actionFenced(repositories.client.db, candidate.experimentId)
+    )) {
     const machine = new RunStateMachine(repositories);
     const terminalState = acceptedRecoveryState(run);
     machine.transition(
@@ -45,7 +50,11 @@ export async function reconcileInterruptedRunsWithExport(
   let count = 0;
   for (const run of repositories
     .findNonterminalRuns()
-    .filter((candidate) => candidate.state !== "QUEUED")) {
+    .filter(
+      (candidate) =>
+        candidate.state !== "QUEUED" &&
+        !actionFenced(repositories.client.db, candidate.experimentId)
+    )) {
     const machine = new RunStateMachine(repositories);
     const terminalState = acceptedRecoveryState(run);
     machine.transition(
@@ -79,7 +88,9 @@ export async function retryPendingCleanup(
   cleanup: (run: Run, stage: "beforeMetrics" | "cleanup") => Promise<void>
 ): Promise<number> {
   let count = 0;
-  for (const run of repositories.findRunsNeedingCleanup()) {
+  for (const run of repositories
+    .findRunsNeedingCleanup()
+    .filter((r) => !actionFenced(repositories.client.db, r.experimentId))) {
     try {
       await cleanup(run, "cleanup");
       run.cleanupStatus = "COMPLETE";

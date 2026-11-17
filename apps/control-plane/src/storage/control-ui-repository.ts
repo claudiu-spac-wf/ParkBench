@@ -1,3 +1,5 @@
+import { assertReferencesReadable } from "../db/execution";
+import { assertCommandCurrent } from "../db/retired-commands";
 import { Repositories } from "../db/repositories";
 import type { SummaryReader } from "../../../../packages/contracts/src/comparison";
 import { DatabaseClient } from "../db/client";
@@ -156,7 +158,11 @@ export class ControlUiRepository {
         "SELECT status_code,response FROM control_command_results WHERE operation=? AND idempotency_key=?"
       )
       .get(operation, idempotencyKey);
-    return row ? { statusCode: row.status_code, response: parse(row.response) } : undefined;
+    assertCommandCurrent(this.database.db, operation, idempotencyKey);
+    if (!row) return undefined;
+    const response = parse(row.response);
+    assertReferencesReadable(this.database.db, response);
+    return { statusCode: row.status_code, response };
   }
 
   savePreview(preview: {
@@ -417,6 +423,9 @@ export class ControlUiRepository {
     const conditions = [
       "r.state IN ('SUCCEEDED','THRESHOLD_FAILED','FAILED','CANCELLED','INCOMPLETE','INTERRUPTED')"
     ];
+    conditions.push(
+      "NOT EXISTS (SELECT 1 FROM experiment_actions a WHERE a.experiment_id=r.experiment_id AND a.holds_fence=1 AND (json_extract(a.document,'$.runId') IS NULL OR json_extract(a.document,'$.runId')=r.id))"
+    );
     const parameters: Array<string | number> = [];
     if (filters.experiment) {
       conditions.push("e.experiment_id = ?");
@@ -533,11 +542,25 @@ export class ControlUiRepository {
   }
 
   getComparison(id: string): ComparisonView | undefined {
+    const notice: any = this.database.db
+      .prepare("SELECT reason FROM comparison_unavailability WHERE id=?")
+      .get(id);
+    if (notice) throw Error(notice.reason);
     const row: any = this.database.db
       .prepare("SELECT * FROM control_comparisons WHERE id=?")
       .get(id);
     if (!row) return undefined;
     return {
+      ...(() => {
+        const m: any = this.database.db
+          .prepare(
+            "SELECT member_count,baseline_removed FROM comparison_removed_members WHERE id=?"
+          )
+          .get(row.id);
+        return m
+          ? { unavailableMemberCount: m.member_count, baselineRemoved: !!m.baseline_removed }
+          : {};
+      })(),
       id: row.id,
       experimentId: row.experiment_id ?? undefined,
       baselineRunId: row.baseline_run_id ?? undefined,
@@ -593,6 +616,10 @@ export class ControlUiRepository {
   }
 
   getDashboard(id: string): DashboardContext | undefined {
+    const notice: any = this.database.db
+      .prepare("SELECT reason FROM dashboard_unavailability WHERE id=?")
+      .get(id);
+    if (notice) throw Error(notice.reason);
     const row: any = this.database.db
       .prepare("SELECT * FROM control_dashboard_contexts WHERE id=?")
       .get(id);

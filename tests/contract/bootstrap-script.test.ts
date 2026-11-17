@@ -49,8 +49,8 @@ describe("bootstrap script", () => {
     const source = fs.readFileSync(bootstrapPath, "utf8");
     const steps = [
       "run_stage host_preflight",
-      "run_stage input_preflight",
       "run_stage dependency_install npm-dependencies npm ci",
+      "run_stage input_preflight",
       'run_stage application_build parkbench-application "$SCRIPT_DIR/build.sh"',
       "run_stage openedge_generic generic-openedge-images npm run openedge:build -- --image-stage generic",
       "run_stage openedge_final final-openedge-image npm run openedge:build -- --image-stage final",

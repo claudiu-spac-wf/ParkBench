@@ -940,7 +940,7 @@
     {
       "id": 14,
       "title": "Named latch waits (total naps)",
-      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.",
+      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.\n\nPartial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -961,7 +961,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "suffix:naps",
-          "noValue": "No data",
+          "noValue": "Unavailable",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            }
+          ],
           "min": 0
         },
         "overrides": []
@@ -987,7 +1007,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_named_waits_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",group=\"name_type\"}",
-          "legendFormat": "{{run_id}} {{latch_name}} ({{latch_type}})",
+          "legendFormat": "{{coverage_note}} {{run_id}} {{latch_name}} ({{latch_type}})",
           "range": false,
           "instant": true,
           "format": "time_series"
@@ -1065,7 +1085,7 @@
     {
       "id": 16,
       "title": "Named latch wait-or-spin duration (seconds)",
-      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.",
+      "description": "Native _Latch-Wait counts naps; _Latch-WaitT is wait-or-spin time. Each native instance and database epoch is reduced separately over the selected run phases. Unsupported duration is unavailable. Aggregate families are separate and are never added to these values.\n\nPartial totals sum only observed continuous counter intervals. Missing intervals and edges are excluded without interpolation; a partial label indicates incomplete coverage. Unavailable means no supported interval, not zero. Run validity and saved summaries remain unchanged.",
       "datasource": {
         "type": "prometheus",
         "uid": "parkbench-runs"
@@ -1086,7 +1106,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "s",
-          "noValue": "No data",
+          "noValue": "Unavailable",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "Unavailable"
+                }
+              }
+            }
+          ],
           "min": 0
         },
         "overrides": []
@@ -1112,7 +1152,7 @@
             "uid": "parkbench-runs"
           },
           "expr": "parkbench_db_diagnostic{run_id=~\"$run_id\",metric=\"latch_named_wait_or_spin_duration_seconds_total\",view=\"total\",phase=\"$phase\",window_start=\"$__from\",window_end=\"$__to\",group=\"name_type\"}",
-          "legendFormat": "{{run_id}} {{latch_name}} ({{latch_type}})",
+          "legendFormat": "{{coverage_note}} {{run_id}} {{latch_name}} ({{latch_type}})",
           "range": false,
           "instant": true,
           "format": "time_series"

@@ -75,6 +75,10 @@ it("production coordinator completes readiness once and collects adjacent phases
       short as any
     );
     runId = experiment.runIds[0];
+    const queued = platform.repositories.getRun(runId)!;
+    (queued.environmentSnapshot as any).sourceCadences.prometheusScrapeSeconds = 999;
+    (queued.environmentSnapshot as any).sourceCadences.observers.forEach((o: any) => o.stepSeconds = 999);
+    platform.repositories.saveRun(queued);
     const run = await platform.coordinator.executeRun(
       platform.repositories.getRun(experiment.runIds[0])!
     );
@@ -104,6 +108,9 @@ it("production coordinator completes readiness once and collects adjacent phases
     assert.ok(labels.every((label) => !Object.hasOwn(label, "phase")));
     assert.equal(run.cleanupStatus, "COMPLETE");
     assert.equal((run.environmentSnapshot as any).metricsCollectionMode, "continuous");
+    const cadences = (run.environmentSnapshot as any).sourceCadences;
+    assert.equal(cadences.prometheusScrapeSeconds, 0.05);
+    assert.ok(cadences.observers.every((o: any) => o.stepSeconds === 0.05));
     const clock = actualClock;
     assert.ok(clock, "capture the actual clock before owned runtime cleanup");
     assert.equal(clock.contractVersion, "run-phase-clock.v1");

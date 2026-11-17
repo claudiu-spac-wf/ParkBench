@@ -1,5 +1,6 @@
 import { METRIC_DEFINITIONS_VERSION } from "../../../../packages/contracts/src/run-summary";
 import { historicalSummaryInput } from "../../../../packages/metrics/src/historical-summary-input";
+import { runActionFenced } from "../db/execution";
 import { Repositories } from "../db/repositories";
 import { ComparisonSummaryService } from "./comparison-summary-service";
 const terminal = new Set([
@@ -15,6 +16,7 @@ export class HistoricalSummaryWorker {
   private queue: Array<{ runId: string; token: string }> = [];
   private queued = new Set<string>();
   private active = false;
+  private activeRunId?: string;
   private closed = false;
   private controller?: AbortController;
   private waiters: Array<() => void> = [];
@@ -27,7 +29,12 @@ export class HistoricalSummaryWorker {
   schedule(runId: string): void {
     if (this.closed || this.queued.has(runId)) return;
     const run = this.repositories.getRun(runId);
-    if (!run || !terminal.has(run.state)) return;
+    if (
+      !run ||
+      !terminal.has(run.state) ||
+      runActionFenced(this.repositories.client.db, run.id)
+    )
+      return;
     const cache = this.repositories.getSummaryCache(runId);
     if (cache?.status === "READY" || (cache?.status === "LEGACY" && !cache.retryable)) return;
     if (
@@ -72,6 +79,18 @@ export class HistoricalSummaryWorker {
     if (!this.active && !this.queue.length) return Promise.resolve();
     return new Promise((resolve) => this.waiters.push(resolve));
   }
+  async cancelRuns(runIds: string[]): Promise<void> {
+    const ids = new Set(runIds);
+    this.queue = this.queue.filter((x) => !ids.has(x.runId));
+    for (const id of ids) this.queued.delete(id);
+    if (this.activeRunId && ids.has(this.activeRunId))
+      this.controller?.abort(new Error("experiment_action_in_progress"));
+    const deadline = Date.now() + 20000;
+    while (this.activeRunId && ids.has(this.activeRunId)) {
+      if (Date.now() > deadline) throw new Error("experiment_quiescence_unconfirmed");
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+  }
   stop() {
     this.closed = true;
     clearInterval(this.recoveryTimer);
@@ -89,10 +108,11 @@ export class HistoricalSummaryWorker {
       while (this.queue.length && !this.closed) {
         const item = this.queue.shift()!,
           run = this.repositories.getRun(item.runId);
+        this.activeRunId = item.runId;
         this.controller = new AbortController();
         let token = item.token;
         try {
-          if (!run) continue;
+          if (!run || runActionFenced(this.repositories.client.db, run.id)) continue;
           const cache = this.repositories.getSummaryCache(run.id);
           if (cache?.status === "READY") continue;
           if (cache?.attemptToken !== token || cache.leaseUntil <= Date.now()) {
@@ -147,6 +167,7 @@ export class HistoricalSummaryWorker {
         } finally {
           this.queued.delete(item.runId);
           this.controller = undefined;
+          this.activeRunId = undefined;
         }
       }
     } finally {

@@ -53,6 +53,7 @@ export interface RunSummaryHeader {
   observedTableCount?: number;
 }
 export interface RunContext {
+  executionRevision?: string;
   contractVersion: "run-context.v1";
   runId: string;
   scenario: Record<string, unknown>;

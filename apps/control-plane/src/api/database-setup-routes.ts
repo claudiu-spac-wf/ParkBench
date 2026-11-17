@@ -1,3 +1,4 @@
+import { isArtifactVisible } from "../../../../packages/contracts/src/artifacts";
 import { discoverSetupScripts } from "../database-setup/scripts";
 import { Platform } from "../platform";
 import { currentSetupEvidence } from "../database-setup/evidence";
@@ -13,7 +14,7 @@ export function registerDatabaseSetupRoutes(app: any, platform: Platform) {
       configuration: run.environmentSnapshot?.databaseSetup ?? null,
       artifacts: platform.repositories
         .listArtifacts(run.id)
-        .filter((a) => a.sourceMetadata?.databaseSetup)
+        .filter((a) => isArtifactVisible(a) && a.sourceMetadata?.databaseSetup)
         .map((a) => ({ id: a.id, path: a.path, url: `/api/v1/runs/${run.id}/artifacts/${a.id}` }))
     };
   });

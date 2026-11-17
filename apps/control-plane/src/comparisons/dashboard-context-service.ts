@@ -4,6 +4,13 @@ import { Run } from "../../../../packages/contracts/src/run";
 
 const allowedVariables = new Set(["run_id", "experiment_id", "phase"]);
 
+/** Lifecycle names in older saved contexts differ from metric phase labels. */
+export function dashboardMetricPhase(phase: string): string {
+  return phase.split("|").map((value) =>
+    value === "measuring" ? "measurement" : value === "warming_up" ? "warmup" : value
+  ).join("|");
+}
+
 export function deriveDashboardTimeRange(
   runs: Array<Pick<Run, "startedAt" | "measuringAt" | "finishedAt" | "phaseBoundaries">>
 ): { from: string; to: string } | undefined {
@@ -43,7 +50,8 @@ export function createDashboardContext(input: {
   const variables: Record<string, string[]> = { run_id: runIds };
   if (input.experimentIds?.length) variables.experiment_id = [...new Set(input.experimentIds)];
   else if (input.experimentId) variables.experiment_id = [input.experimentId];
-  if (input.phase) variables.phase = [input.phase];
+  const phase = input.phase ? dashboardMetricPhase(input.phase) : undefined;
+  if (phase) variables.phase = [phase];
   if ([...Object.keys(variables)].some((key) => !allowedVariables.has(key)))
     throw new Error("dashboard_variable_forbidden");
   return {
@@ -51,7 +59,7 @@ export function createDashboardContext(input: {
     experimentId: input.experimentId,
     runIds,
     baselineRunId: input.baselineRunId,
-    phase: input.phase,
+    phase,
     metricScope: input.metricScope ?? ["workload", "pas", "database", "disk_io"],
     dashboardRefs: [
       {

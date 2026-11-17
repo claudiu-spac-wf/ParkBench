@@ -101,6 +101,7 @@ services:
         ENVIRON["PARKBENCH_PROMETHEUS_SCRAPE_INTERVAL"] substr($0, position + length(marker));
         print}' /etc/prometheus/prometheus.yml > /tmp/parkbench-prometheus.yml
         && exec /bin/prometheus --config.file=/tmp/parkbench-prometheus.yml
+        --web.enable-admin-api
         --storage.tsdb.path=/prometheus
         --storage.tsdb.retention.time=${PARKBENCH_PROMETHEUS_RETENTION:-7d}
     environment:
@@ -155,7 +156,7 @@ services:
       # Export only measurement ownership metadata. Docker Desktop/Compose labels
       # otherwise expand every resource sample, including empty label values.
       - --store_container_labels=false
-      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service,com.docker.compose.container-number,parkbench.managed,parkbench.run_id,parkbench.experiment_id,parkbench.variant_id,parkbench.repetition,parkbench.component
+      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service,com.docker.compose.container-number,parkbench.managed,parkbench.run_id,parkbench.experiment_id,parkbench.variant_id,parkbench.repetition,parkbench.component,parkbench.execution_revision
       - --docker=unix:///rootfs/run/docker.sock
       - --containerd=/rootfs/run/containerd/containerd.sock
       - --disable_metrics=advtcp,cpu_topology,cpuset,hugetlb,memory_numa,referenced_memory,resctrl,sched,tcp,udp

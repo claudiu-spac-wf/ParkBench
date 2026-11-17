@@ -27,7 +27,7 @@ test("preview pagination and idempotent submission freeze the same IOPS conditio
       runName: "iops-scheduling",
       scenario: { id: scenario.id, version: scenario.version },
       dimensions: [
-        { name: "storage.databaseIopsPreset", values: ["hdd", "unlimited"] },
+        { name: "storage.databaseIopsPreset", values: ["hdd-t1", "unlimited"] },
         { name: "network.databaseLatencyMs", values: [0, 5] }
       ],
       repetitions: 2
@@ -35,7 +35,7 @@ test("preview pagination and idempotent submission freeze the same IOPS conditio
     const first = p.controlUi.preview(request, undefined, 3);
     assert.equal(first.cellCount, 4);
     assert.equal(first.runCount, 8);
-    assert.equal(first.cells.items[0].databaseIops?.readIopsPerDevice, 150);
+    assert.equal(first.cells.items[0].databaseIops?.readIopsPerDevice, 1000);
     let page = first;
     while (page.cells.hasMore)
       page = p.controlUi.previewCells(first.previewId, page.cells.nextPageToken, 3);

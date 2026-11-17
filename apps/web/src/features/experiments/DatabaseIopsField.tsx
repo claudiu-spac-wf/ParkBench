@@ -34,10 +34,11 @@ export function DatabaseIopsField({
       <span className="database-iops-label" id={id + "-label"}>
         Database disk IOPS{" "}
         <FieldHelp label="Database disk IOPS">
-          Each backing device gets separate read and write ceilings. Copy and setup finish before
-          limits are applied. Caches, request sizes, host capacity and other limits still affect
-          performance. This does not simulate disk access latency or set a bandwidth ceiling. Shared
-          storage contention can affect other services.
+          Each backing device gets separate read and write ceilings. Seed copying, native repair and
+          preparation run uncapped. All setup scripts finish before limits apply. The limits are
+          verified before the benchmark database starts. Caches, request sizes, host capacity and
+          other limits still affect performance. This does not simulate disk access latency or set a
+          bandwidth ceiling. Shared storage contention can affect other services.
         </FieldHelp>
       </span>
       <button

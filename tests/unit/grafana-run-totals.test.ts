@@ -12,13 +12,13 @@ test("run totals sum independent epochs once, isolate runs and preserve their so
   const rows = [row("a", "one", "10"), row("a", "two", "20"), row("b", "one", "7")];
   const before = structuredClone(rows);
   assert.deepEqual(sumRunTotals(rows), [
-    { metric: { run_id: "a", aggregation: "run_total" }, value: [100, "30"] },
-    { metric: { run_id: "b", aggregation: "run_total" }, value: [100, "7"] }
+    { metric: { run_id: "a", aggregation: "run_total", coverage_status: "complete", coverage_note: "" }, value: [100, "30"] },
+    { metric: { run_id: "b", aggregation: "run_total", coverage_status: "complete", coverage_note: "" }, value: [100, "7"] }
   ]);
   assert.deepEqual(rows, before);
 });
 
-test("totals preserve zero, propagate missing or overflowing contributions, and invent no absent run", () => {
+test("totals mark supported missing contributions partial, preserve zeros and reject invalid arithmetic", () => {
   assert.deepEqual(sumRunTotals([]), []);
   for (const missing of ["NaN", "+Inf", "-Inf", "", "-1"]) {
     const totals = sumRunTotals([
@@ -26,7 +26,8 @@ test("totals preserve zero, propagate missing or overflowing contributions, and 
       row("a", "two", missing),
       row("b", "one", "0")
     ]);
-    assert.equal(totals.find((r) => r.metric.run_id === "a")!.value[1], "NaN");
+    assert.equal(totals.find((r) => r.metric.run_id === "a")!.value[1], missing === "NaN" ? "10" : "NaN");
+    assert.equal(totals.find((r) => r.metric.run_id === "a")!.metric.coverage_status, missing === "NaN" ? "partial" : "unavailable");
     assert.equal(totals.find((r) => r.metric.run_id === "b")!.value[1], "0");
   }
   assert.equal(
@@ -64,7 +65,8 @@ test("ranked table totals count top ten, complementary Other and CRUD writes exa
     const incomplete = sumRunTotals(
       rankCanonicalTables(missing, "total", operation, true, 0, 100000)
     );
-    assert.equal(incomplete.find((r) => r.metric.run_id === "a")!.value[1], "NaN");
+    assert.equal(incomplete.find((r) => r.metric.run_id === "a")!.value[1], String(91 * 2 * operations.length - 1));
+    assert.equal(incomplete.find((r) => r.metric.run_id === "a")!.metric.coverage_status, "partial");
     assert.equal(
       incomplete.find((r) => r.metric.run_id === "b")!.value[1],
       String(91 * 2 * operations.length)

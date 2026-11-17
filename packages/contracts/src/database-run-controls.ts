@@ -225,3 +225,25 @@ export function validateWriterCapacity(
       `database_writer_capacity_insufficient:required=${required}:available=${capacity}`
     );
 }
+
+/** Additive native observation evidence; legacy records may omit it. */
+export interface DatabaseWriterCapture {
+  outcome: "SUCCEEDED" | "TIMEOUT" | "EXIT_FAILED" | "MISSING" | "MALFORMED" | "STALE";
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number;
+  exitCode: number | null;
+  timedOut?: boolean;
+  lastSuccessAt: string | null;
+  lastSuccessAgeMs?: number | null;
+  logRef: string;
+}
+export interface DatabaseWriterProcessCheck {
+  type: "APW" | "BIW";
+  pid: number;
+  startIdentity: number | null;
+  expectedStartIdentity: number | null;
+  matched: boolean;
+  checkedAt?: string;
+  reason?: "MATCHED" | "LOST_OR_REPLACED" | "UNAVAILABLE";
+}

@@ -13,7 +13,6 @@ if ! data_root="$(node "$SCRIPT_DIR/lib/resolve-paths.cjs" --root "$ROOT_DIR" --
   data_root="$ROOT_DIR/.parkbench"
 fi
 log_dir="$data_root/bootstrap"
-echo "making dir $log_dir"
 mkdir -p "$log_dir"
 
 
@@ -154,8 +153,8 @@ load_generated_environment() {
 }
 
 run_stage host_preflight host-environment node "$SCRIPT_DIR/host-preflight.mjs"
-run_stage input_preflight openedge-inputs npm run openedge:preflight -- --image-stage all
 run_stage dependency_install npm-dependencies npm ci
+run_stage input_preflight openedge-inputs npm run openedge:preflight -- --image-stage all
 run_stage application_build parkbench-application "$SCRIPT_DIR/build.sh"
 run_stage openedge_generic generic-openedge-images npm run openedge:build -- --image-stage generic
 run_stage openedge_final final-openedge-image npm run openedge:build -- --image-stage final

@@ -99,3 +99,15 @@ test("generated dashboards omit all measurement availability charts and queries"
     for (const target of panel.targets ?? [])
       assert.doesNotMatch(target.expr, /parkbench_openedge_db_metric_available/);
 });
+
+test("all native total panels disclose partial coverage and distinguish unavailable from zero", () => {
+  for (const dashboard of Object.values(dashboards))
+    for (const {panel} of panelsOf(dashboard)) {
+      const totals=(panel.targets ?? []).filter((t:any)=>/parkbench_(?:db_diagnostic|table_rank)\{/.test(t.expr) && t.expr.includes('view="total"'));
+      if(!totals.length) continue;
+      assert.match(panel.description,/Partial totals sum only observed continuous counter intervals/);
+      assert.equal(panel.fieldConfig.defaults.noValue,"Unavailable");
+      assert.ok(panel.fieldConfig.defaults.mappings.some((m:any)=>m.type==="special"&&m.options.match==="null"&&m.options.result.text==="Unavailable"));
+      for(const target of totals) assert.match(target.legendFormat,/\{\{coverage_note\}\}/);
+    }
+});

@@ -27,6 +27,7 @@ export function buildRunContext(run: Run, final = false): RunContext {
   const context: RunContext = {
     contractVersion: "run-context.v1",
     runId: run.id,
+    executionRevision: run.executionRevision,
     scenario: e.scenario ?? {},
     requested: e.requestedConfiguration ?? {
       measurementDiagnostics: e.measurementDiagnostics,

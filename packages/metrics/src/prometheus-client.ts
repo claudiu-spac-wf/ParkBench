@@ -86,14 +86,22 @@ export class PrometheusMetricBuffer implements MetricSink, MetricTextExporter {
       reasonCodes: ["http_response_finished"]
     });
   }
+  authorizeSample?: (sample: MetricSample) => MetricSample | undefined;
   private readonly series = new Map<string, MetricSample>();
+  removeRuns(runIds: string[]): void {
+    const ids = new Set(runIds);
+    for (const [key, sample] of this.series)
+      if (ids.has(sample.labels.run_id)) this.series.delete(key);
+  }
 
   append(samples: MetricSample[]): void {
     const startedAtMs = Date.now(),
       monotonicStart = performance.now();
     const groups = new Map<string, { appendedSamples: number; overwrittenEntries: number }>();
     let omittedGroups = 0;
-    for (const sample of samples) {
+    for (const candidate of samples) {
+      const sample = this.authorizeSample ? this.authorizeSample(candidate) : candidate;
+      if (!sample) continue;
       const key = `${sample.metricName}|${JSON.stringify(sample.labels)}`;
       if (this.onEvidence && sample.labels.run_id) {
         const runId = sample.labels.run_id;

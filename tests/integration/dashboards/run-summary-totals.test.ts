@@ -92,13 +92,13 @@ for (const kind of ["table", "index"] as const) {
     assert.equal(await total(kind, false, "idle"), "200");
     assert.equal(await total(kind, false, ".*", 55, 175), "1200");
   });
-  test(`${kind} totals preserve real gaps and missing active edges as unavailable`, async () => {
-    for (const keep of [
-      (t: number) => t < 120 || t > 135,
-      (t: number) => t >= 90,
-      (t: number) => t <= 170
-    ])
-      assert.equal(await total(kind, false, ".*", 0, 220, keep), "NaN");
+  test(`${kind} totals retain only observed intervals when gaps or active edges are missing`, async () => {
+    for (const [keep, expected] of [
+      [(t: number) => t < 120 || t > 135, "1350"],
+      [(t: number) => t >= 90, "1100"],
+      [(t: number) => t <= 170, "1300"]
+    ] as const)
+      assert.equal(await total(kind, false, ".*", 0, 220, keep), expected);
     assert.equal(await total(kind, false, ".*", 0, 30), "NaN");
   });
   test(`${kind} totals retain selected-window values at an earlier instant evaluation time`, async () => {

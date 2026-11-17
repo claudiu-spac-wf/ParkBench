@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { DATABASE_IOPS_CATALOG } from "../../packages/contracts/src/database-iops";
 import { createIopsFixture, nativeDocker } from "../helpers/iops-native";
 const enabled = process.env.PARKBENCH_RUN_IOPS_TESTS === "1";
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 test(
-  "physical HDD IOPS enforcement and exact higher presets on owned storage",
+  "physical HDD T1 IOPS enforcement and exact higher presets on owned storage",
   { skip: !enabled, timeout: 900000 },
   async () => {
     const image = process.env.PARKBENCH_IOPS_TEST_IMAGE;
@@ -21,7 +22,7 @@ test(
     fs.mkdirSync(path.dirname(out), { recursive: true });
     try {
       // Qualify the same real policy path before spending time on physical baseline windows.
-      for (const preset of ["hdd", "sata-ssd", "slow-nvme", "fast-nvme"] as const) {
+      for (const preset of DATABASE_IOPS_CATALOG.presets.filter(p => p.id !== "unlimited").map(p => p.id)) {
         const f = await createIopsFixture(image);
         try {
           const evidence = await f.apply(preset);
@@ -44,7 +45,7 @@ test(
       }
       for (const direction of ["read", "write"] as const) {
         let baseline: number;
-        for (const preset of ["unlimited", "hdd"] as const) {
+        for (const preset of ["unlimited", "hdd-t1"] as const) {
           const f = await createIopsFixture(image);
           try {
             await nativeDocker([
@@ -63,8 +64,8 @@ test(
             ]);
             const scope = await f.snapshot();
             const evidence = await f.apply(preset);
-            if (preset === "hdd") assert.equal(evidence.verification.status, "MATCHED");
-            if (direction === "write" && preset === "hdd") {
+            if (preset === "hdd-t1") assert.equal(evidence.verification.status, "MATCHED");
+            if (direction === "write" && preset === "hdd-t1") {
               const before = await f.counters();
               await nativeDocker([
                 "exec",
@@ -134,10 +135,10 @@ test(
             );
             if (preset === "unlimited") {
               baseline = rate;
-              assert.ok(rate > 300, `baseline demand insufficient: ${rate}`);
+              assert.ok(rate > 2000, `baseline demand insufficient: ${rate}`);
             } else {
-              assert.ok(baseline > 300);
-              assert.ok(rate <= 165, `HDD ceiling not enforced: ${rate}`);
+              assert.ok(baseline > 2000);
+              assert.ok(rate <= 1100, `HDD ceiling not enforced: ${rate}`);
             }
             results.directions.push({
               runId: f.runId,

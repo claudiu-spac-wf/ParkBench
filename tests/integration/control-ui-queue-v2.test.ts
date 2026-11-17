@@ -54,8 +54,11 @@ test("Start eligible work uses resolved saved inputs and retries a blocked exper
   fs.writeFileSync(path.join(inner, "openedge/Workloads/Sports2020/crud_cycle.r"), "compiled");
   execFileSync("zip", ["-q", path.join(outer, "ablapps/parkbench.zip"), "openedge/Workloads/Sports2020/crud_cycle.r"], { cwd: inner });
   execFileSync("zip", ["-q", path.join(root, "application.zip"), "ablapps/parkbench.zip"], { cwd: outer });
-  const seed = path.join(root, "seed.tar.gz");
-  fs.writeFileSync(seed, "seed fixture");
+  const seed = path.join(root, "seed");
+  fs.mkdirSync(seed);
+  fs.writeFileSync(path.join(seed,"parkbench.db"),"seed fixture");
+  fs.writeFileSync(path.join(seed,"parkbench.st"),'b .\nd "Schema Area":6,32;1 .\n');
+  for(const file of ["parkbench.b1","parkbench.d1"]) fs.writeFileSync(path.join(seed,file),"extent fixture");
   const platform = createPlatform({ host: "127.0.0.1", port: 0, dbPath: ":memory:",
     artifactRoot: path.join(root, "artifacts"), prometheusUrl: "http://127.0.0.1:9090",
     prometheusRetention: "7d", discoveryRoots: { scenarios }, openedge: {} } as any,
@@ -83,6 +86,13 @@ test("Start eligible work uses resolved saved inputs and retries a blocked exper
     runtime.prometheusHealth = async () => true;
     runtime.inspectImage = async () => true;
     runtime.diskIoSources = async () => ({ cadvisor: true, nodeExporterBlockDevice: true });
+    // This queue test uses the fake runner; provide the current image contract
+    // rather than pretending that an unlabelled image passes native preflight.
+    (platform.coordinator as any).options.orchestrator.inspectImageDetails=async()=>({Config:{Labels:{
+      "org.parkbench.writer-supervision":"writer-supervision.v1",
+      "org.parkbench.database-iops-startup":"database-iops-startup.v1",
+      "org.parkbench.database-setup":"database-setup.v1"
+    }}});
     const started = await platform.controlUi.startQueue();
     assert.equal(started.started, submitted.id);
     assert.equal(platform.controlUi.getExperiment(submitted.id)?.status, "RUNNING");

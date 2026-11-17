@@ -40,14 +40,14 @@ export function registerReportRoutes(app: any, platform: Platform) {
   route("post", "", (r, reply) => {
     const report = service.create(r.body, r.headers["idempotency-key"]);
     reply.code(202);
-    return { report };
+    return { report: queries.require(report.id) };
   });
   route("get", "", (r) => queries.history(r.query));
   route("get", "/:id", (r) => ({ report: queries.require(r.params.id) }));
   route("post", "/:id/cancel", (r, reply) => {
     const report = service.cancel(r.params.id);
     reply.code(terminalReport(report.state) ? 200 : 202);
-    return { report };
+    return { report: queries.require(report.id) };
   });
   route("get", "/:id/summary", (r) => queries.summary(r.params.id));
   route("get", "/:id/datasets/:kind/rows", (r) =>

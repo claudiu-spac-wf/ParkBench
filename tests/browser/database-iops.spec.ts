@@ -1,4 +1,5 @@
 import os from "node:os";
+import { DATABASE_IOPS_CATALOG } from "../../packages/contracts/src/database-iops";
 import { createSeedFixture } from "../helpers/seed";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -21,7 +22,16 @@ test("disk preset dropdown supports keyboard, empty validation, matrix preview a
     const trigger = page.getByRole("button", { name: /^Database disk IOPS:/ });
     await expect(trigger).toContainText("Unlimited", { timeout: 30000 });
     await trigger.click();
-    await page.getByRole("checkbox", { name: /^HDD/ }).check();
+    await expect(field.getByRole("checkbox")).toHaveCount(10);
+    for (const preset of DATABASE_IOPS_CATALOG.presets) {
+      const option = field.getByRole("checkbox", { name: new RegExp("^" + preset.label + "\\b") });
+      await expect(option).toBeVisible();
+      if (preset.readIopsPerDevice !== null)
+        await expect(option.locator("..")).toContainText(
+          `${preset.readIopsPerDevice.toLocaleString()} read / ${preset.writeIopsPerDevice.toLocaleString()} write`
+        );
+    }
+    await page.getByRole("checkbox", { name: /^HDD T1\b/ }).check();
     await expect(page.getByRole("checkbox", { name: /^Unlimited/ })).toBeChecked();
     for (const width of [375, 768, 1280, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -36,6 +46,29 @@ test("disk preset dropdown supports keyboard, empty validation, matrix preview a
       fs.writeFileSync(path.join(out, `${width}.json`), JSON.stringify(geometry));
       expect(geometry.overflow).toBeLessThanOrEqual(1);
     }
+    for (const preset of DATABASE_IOPS_CATALOG.presets)
+      await field.getByRole("checkbox", { name: new RegExp("^" + preset.label + "\\b") }).check();
+    for (const width of [375, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.screenshot({ path: path.join(out, `${width}-all-tiers.png`), fullPage: true });
+      const geometry = await field.evaluate((el) => ({
+        overflow: document.documentElement.scrollWidth - innerWidth,
+        trigger: el.querySelector("button").getBoundingClientRect().toJSON(),
+        labels: Array.from(el.querySelectorAll(".database-iops-options > label")).map((label) => {
+          const checkbox = label.querySelector("input").getBoundingClientRect();
+          const text = label.querySelector("span").getBoundingClientRect();
+          return { checkbox: checkbox.toJSON(), text: text.toJSON() };
+        })
+      }));
+      expect(geometry.overflow).toBeLessThanOrEqual(1);
+      for (const row of geometry.labels)
+        expect(row.checkbox.right).toBeLessThanOrEqual(row.text.left);
+      fs.writeFileSync(path.join(out, `${width}-all-tiers.json`), JSON.stringify(geometry));
+    }
+    for (const preset of DATABASE_IOPS_CATALOG.presets.filter(
+      (p) => !["hdd-t1", "unlimited"].includes(p.id)
+    ))
+      await field.getByRole("checkbox", { name: new RegExp("^" + preset.label + "\\b") }).uncheck();
     await page.getByRole("textbox", { name: "Run name", exact: true }).fill("iops-browser");
     await page.getByRole("combobox").nth(1).selectOption("input:seeds/iops-seed");
     await page
@@ -46,16 +79,23 @@ test("disk preset dropdown supports keyboard, empty validation, matrix preview a
     await page.getByRole("button", { name: "Preview matrix" }).click();
     await expect(page.locator(".preview-panel tbody tr")).toHaveCount(8);
     await expect(page.locator(".database-iops-preview").first()).toContainText(
-      "150 read / 150 write"
+      "1,000 read / 1,000 write"
     );
-    await page.getByRole("checkbox", { name: /^HDD/ }).uncheck();
+    await page.getByRole("checkbox", { name: /^HDD T1\b/ }).uncheck();
     await expect(page.locator(".preview-panel")).toHaveCount(0);
     await page.getByRole("checkbox", { name: /^Unlimited/ }).uncheck();
     await expect(field.getByRole("alert")).toContainText("Select at least one");
     await expect(page.getByRole("button", { name: "Preview matrix" })).toBeDisabled();
-    await page.getByRole("checkbox", { name: /^HDD/ }).focus();
+    for (const width of [375, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.screenshot({ path: path.join(out, `${width}-empty-tiers.png`), fullPage: true });
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+      ).toBeLessThanOrEqual(1);
+    }
+    await page.getByRole("checkbox", { name: /^HDD T1\b/ }).focus();
     await page.keyboard.press("Space");
-    await expect(page.getByRole("checkbox", { name: /^HDD/ })).toBeChecked();
+    await expect(page.getByRole("checkbox", { name: /^HDD T1\b/ })).toBeChecked();
     await page.keyboard.press("Escape");
     await expect(trigger).toBeFocused();
   } finally {
@@ -101,7 +141,9 @@ test("disk presets preserve alignment at actual 200 percent browser zoom", async
     await installControlUiFixture(page, fixture);
     await page.goto(zoomOrigin + "/#experiments", { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /^Database disk IOPS:/ }).click();
-    for (const name of ["HDD", "SATA SSD", "Slow NVME", "Fast NVME"])
+    for (const name of DATABASE_IOPS_CATALOG.presets
+      .filter((p) => p.id !== "unlimited")
+      .map((p) => p.label))
       await page.getByRole("checkbox", { name: new RegExp("^" + name) }).check();
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
     await worker.evaluate(async (zoomOrigin) => {
@@ -118,7 +160,10 @@ test("disk presets preserve alignment at actual 200 percent browser zoom", async
     expect(geometry.overflow).toBeLessThanOrEqual(1);
     const out = path.resolve(".parkbench/validation/feature025/ui");
     fs.mkdirSync(out, { recursive: true });
-    await page.locator(".database-iops-field").scrollIntoViewIfNeeded();
+    await page.locator(".database-iops-field").evaluate((el) => {
+      const header = document.querySelector(".topbar").getBoundingClientRect();
+      window.scrollTo(0, el.getBoundingClientRect().top + scrollY - header.height - 12);
+    });
     await page.evaluate(
       () =>
         new Promise<void>((resolve) =>
@@ -136,5 +181,45 @@ test("disk presets preserve alignment at actual 200 percent browser zoom", async
     await context.close();
     await fixture.close();
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("tier options retain aligned disabled loading states at every required width", async ({
+  page
+}) => {
+  test.setTimeout(90000);
+  const fixture = await createControlUiFixture();
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const out = path.resolve(".parkbench/validation/feature025/ui");
+  try {
+    await installControlUiFixture(page, fixture);
+    await page.route("**/api/v1/ui-options", async (route) => {
+      await gate;
+      await route.fallback();
+    });
+    await page.goto("/#experiments", { waitUntil: "domcontentloaded" });
+    const field = page.locator(".database-iops-field");
+    for (const width of [375, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await expect(field.getByRole("button", { name: /^Database disk IOPS:/ })).toBeDisabled();
+      await expect(field.getByRole("button", { name: /^Database disk IOPS:/ })).toContainText(
+        "Loading presets"
+      );
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+      ).toBeLessThanOrEqual(1);
+      await page.screenshot({ path: path.join(out, `${width}-loading-tiers.png`), fullPage: true });
+    }
+    release();
+    await expect(field.getByRole("button", { name: /^Database disk IOPS:/ })).toBeEnabled();
+    await expect(field.getByRole("button", { name: /^Database disk IOPS:/ })).toContainText(
+      "Unlimited"
+    );
+  } finally {
+    release();
+    await fixture.close();
   }
 });

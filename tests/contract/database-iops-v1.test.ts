@@ -1,12 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  DATABASE_IOPS_CATALOG,
+  LEGACY_DATABASE_IOPS_CATALOG as DATABASE_IOPS_CATALOG,
   resolveDatabaseIops,
   validateDatabaseIopsCondition,
   validateDatabaseIopsCoverage,
   validateDatabaseIopsIntent,
   validateDatabaseIopsEvidence,
+  unlimitedDatabaseIops,
   acceptIopsTermination
 } from "../../packages/contracts/src/database-iops";
 import { iopsCoverage } from "../fixtures/database-iops";
@@ -99,4 +100,12 @@ test("immutable intent and terminal decision survive JSON storage", () => {
       }
     })
   );
+});
+
+test("timing evidence distinguishes uncapped setup from historical capped preparation", () => {
+  for (const applicationTiming of ["BEFORE_DATABASE_STARTUP", "AFTER_DATABASE_PREPARATION", "AFTER_SETUP_BEFORE_DATABASE_STARTUP"] as const) {
+    const evidence = {...unlimitedDatabaseIops(), applicationTiming};
+    assert.equal(validateDatabaseIopsEvidence(JSON.parse(JSON.stringify(evidence))).applicationTiming, applicationTiming);
+  }
+  assert.throws(() => validateDatabaseIopsEvidence({...unlimitedDatabaseIops(), applicationTiming: "guessed" as any}));
 });

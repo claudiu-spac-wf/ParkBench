@@ -20,3 +20,6 @@ progress.cfg
 private-runtime/
 generated-openedge/
 .playwright/
+
+# Local backups of platform runtime data are never image inputs.
+.parkbench_backup/

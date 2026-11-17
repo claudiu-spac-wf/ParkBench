@@ -1,3 +1,6 @@
+import { isArtifactVisible } from "../../../../../packages/contracts/src/artifacts";
+import { ExperimentActions } from "../../shared/ExperimentActions";
+import { onExperimentAction } from "../../shared/experiment-action-events";
 import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
 import { DatabaseSetupStatus } from "../runs/DatabaseSetupStatus";
 import React, { useEffect, useRef, useState } from "react";
@@ -22,6 +25,18 @@ export function ActiveRunPage({ runId }: { runId: string }) {
   const [clock, setClock] = useState(Date.now());
   const latestEvent = useRef(0 as number);
 
+  useEffect(
+    () =>
+      onExperimentAction((id) => {
+        if (id === run?.experimentId) {
+          setRun({ id: runId, experimentId: id });
+          setEvents([]);
+          setMetrics({ samples: [], summaries: [], stale: false });
+          setRefreshEpoch((x) => x + 1);
+        }
+      }),
+    [run?.experimentId, runId]
+  );
   useEffect(() => {
     latestEvent.current = 0;
     setEvents([]);
@@ -183,9 +198,27 @@ export function ActiveRunPage({ runId }: { runId: string }) {
           />
         )}
         <h2>Run status</h2>
+        {run?.experimentId && (
+          <ExperimentActions
+            experimentId={run.experimentId}
+            runId={runId}
+            onAccepted={() => {
+              setEvents([]);
+              setMetrics({ samples: [], summaries: [], stale: false });
+              setRun({ id: runId, experimentId: run.experimentId });
+              setRefreshEpoch((x) => x + 1);
+            }}
+            onComplete={(kind) => {
+              if (kind === "REMOVE") window.location.hash = "history";
+              else setRefreshEpoch((x) => x + 1);
+            }}
+          />
+        )}
         <p>State: {run?.state ?? (sources.status.error ? "unavailable" : "loading")}</p>
         {run?.failureReason && <p className="notice error">Failure: {run.failureReason}</p>}
-        {run&&<DatabaseIopsSummary snapshot={run.environmentSnapshot??run.snapshot} runId={runId}/>}
+        {run && (
+          <DatabaseIopsSummary snapshot={run.environmentSnapshot ?? run.snapshot} runId={runId} />
+        )}
         <p>Measurement validity: {run?.measurementValidity ?? "pending"}</p>
         <p>
           Measurement completeness:{" "}
@@ -281,11 +314,13 @@ export function ActiveRunPage({ runId }: { runId: string }) {
           <h2>Terminal evidence</h2>
           <p>Measurement quality: {run.measurementValidity}</p>
           <ul>
-            {(evidence.links ?? []).map((link: any) => (
-              <li key={link.url}>
-                <a href={link.url}>{link.label}</a>
-              </li>
-            ))}
+            {(evidence.links ?? [])
+              .filter((link: any) => isArtifactVisible({ kind: link.label ?? "" }))
+              .map((link: any) => (
+                <li key={link.url}>
+                  <a href={link.url}>{link.label}</a>
+                </li>
+              ))}
           </ul>
           {run.experimentId && <a href={`#comparison/${run.experimentId}`}>Open comparison</a>}
           <a href="#history">View run history</a>

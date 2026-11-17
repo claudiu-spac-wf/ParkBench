@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
-test("history discovers and downloads retained diagnostics without scheduling or replaying a workload", async ({
+test("history hides retained diagnostics without scheduling or replaying a workload", async ({
   page
 }) => {
   const mutations: string[] = [];
@@ -60,17 +60,11 @@ test("history discovers and downloads retained diagnostics without scheduling or
   await page.goto("/#history");
   await page.getByRole("button", { name: "Inspect run-evidence" }).click();
   await expect(page.getByText("State: SUCCEEDED")).toBeVisible();
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.getByRole("link", { name: "diagnostics artifact" }).click()
-  ]);
-  expect(download.suggestedFilename()).toBe("measurement-diagnostics.json");
-  expect(JSON.parse(await fs.readFile((await download.path())!, "utf8")).diagnosticAttemptId).toBe(
-    "attempt-1"
-  );
+  await expect(page.getByRole("link", { name: "diagnostics artifact" })).toHaveCount(0);
+  await expect(page.locator('a[href$="/artifacts/manifest"]')).toHaveCount(0);
   await page.reload();
   await page.getByRole("button", { name: "Inspect run-evidence" }).click();
-  await expect(page.getByRole("link", { name: "diagnostics artifact" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "diagnostics artifact" })).toHaveCount(0);
   expect(mutations).toEqual([]);
 });
 test("rendered capture fixtures preserve zero/unavailability/gaps and reject missing or mismatched query proof", async ({

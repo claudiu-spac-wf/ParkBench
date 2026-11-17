@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { DATABASE_IOPS_CATALOG } from "../../packages/contracts/src/database-iops";
 import { createIopsFixture, nativeDocker } from "../helpers/iops-native";
 test(
   "direct Engine read-only probes retain exact policies within the runtime deadline under owned CPU demand",
@@ -20,7 +21,7 @@ test(
         "-e",
         'const {Worker}=require("node:worker_threads");for(let i=0;i<4;i++)new Worker("while(true){}",{eval:true});'
       ]);
-      for (const preset of ["hdd", "sata-ssd", "slow-nvme", "fast-nvme"] as const) {
+      for (const preset of DATABASE_IOPS_CATALOG.presets.filter(p => p.id !== "unlimited").map(p => p.id)) {
         const e = await fixture.apply(preset);
         workers.push(fixture.runtimeWorkerId());
         const ctx = (fixture.orchestrator as any).iopsContexts.get(fixture.bundle.projectName);

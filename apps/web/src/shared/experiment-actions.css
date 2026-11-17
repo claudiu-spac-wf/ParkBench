@@ -1,0 +1,49 @@
+.experiment-actions {
+  min-width: 0;
+  margin-block: 1rem;
+}
+.experiment-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: stretch;
+}
+.experiment-action-buttons button {
+  flex: 1 1 10rem;
+  min-height: 2.75rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.experiment-action-dialog {
+  box-sizing: border-box;
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 1.5rem;
+  border: 1px solid #8c9cae;
+  border-radius: 0.75rem;
+  color: inherit;
+  background: var(--surface, #fff);
+}
+.experiment-action-dialog::backdrop {
+  background: rgb(12 23 38 / 65%);
+}
+.experiment-action-dialog h2 {
+  margin-top: 0;
+}
+.experiment-action-dialog p {
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+.experiment-action-dialog .experiment-action-buttons {
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+@media (max-width: 480px) {
+  .experiment-action-dialog {
+    padding: 1rem;
+  }
+  .experiment-action-dialog .experiment-action-buttons button {
+    flex: 1 1 8rem;
+  }
+}

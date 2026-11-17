@@ -1,4 +1,5 @@
 import { Run } from "../../../../packages/contracts/src/run";
+import { recordedPrometheusCadenceSeconds } from "../runs/source-cadences";
 
 export type PhaseName = "warmup" | "measurement" | "cooldown";
 
@@ -19,6 +20,7 @@ export interface RunTimeline {
   continuousMetrics?: boolean;
   nativePublisher?: "endpoint" | "controller";
   nativeRefreshSeconds?: number;
+  prometheusScrapeSeconds?: number;
 }
 
 export interface RunTimelineSource {
@@ -49,8 +51,12 @@ export function timelineFromRun(
   return {
     runId: run.id,
     continuousMetrics: run.environmentSnapshot?.metricsCollectionMode === "continuous",
-    nativePublisher: (run.environmentSnapshot as any)?.sourceCadences?.observers?.find((o:any)=>o.kind==="openedge_db_v1")?.publisher,
-    nativeRefreshSeconds: (run.environmentSnapshot as any)?.sourceCadences?.nativeDatabaseRefreshSeconds,
+    nativePublisher: (run.environmentSnapshot as any)?.sourceCadences?.observers?.find(
+      (o: any) => o.kind === "openedge_db_v1"
+    )?.publisher,
+    nativeRefreshSeconds: (run.environmentSnapshot as any)?.sourceCadences
+      ?.nativeDatabaseRefreshSeconds,
+    prometheusScrapeSeconds: recordedPrometheusCadenceSeconds(run.environmentSnapshot),
     startedAt,
     endedAt: ms(run.finishedAt),
     phases,
@@ -63,17 +69,22 @@ export function effectiveEnd(timeline: RunTimeline, now = Date.now()): number {
   return timeline.endedAt ?? now;
 }
 
-export function repositoryTimelineSource(repositories: {
-  getRun(id: string): Run | undefined;
-  listAllRuns?(): Run[];
-}): RunTimelineSource {
+export function repositoryTimelineSource(
+  repositories: {
+    getRun(id: string): Run | undefined;
+    listAllRuns?(): Run[];
+  },
+  readable: (runId: string) => boolean = () => true
+): RunTimelineSource {
   return {
     get: (runId) => {
+      if (!readable(runId)) return undefined;
       const run = repositories.getRun(runId);
       return run ? timelineFromRun(run) : undefined;
     },
     list: () =>
       (repositories.listAllRuns?.() ?? [])
+        .filter((r) => readable(r.id))
         .map(timelineFromRun)
         .sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0))
   };

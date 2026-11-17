@@ -1,4 +1,9 @@
-import { DATABASE_IOPS_PARAMETER, DATABASE_IOPS_CATALOG, resolveDatabaseIops, validateDatabaseIopsCondition } from "./database-iops";
+import {
+  DATABASE_IOPS_PARAMETER,
+  DATABASE_IOPS_CATALOG,
+  resolveDatabaseIops,
+  validateDatabaseIopsCondition
+} from "./database-iops";
 import { normalizeMeasurementDiagnostics } from "./measurement-diagnostics";
 import { normalizeDatabaseSetup } from "./database-setup";
 import { Variant } from "./experiment";
@@ -10,8 +15,12 @@ import {
 import { isDatabaseRunControl, validateDatabaseRunControl } from "./database-run-controls";
 export { ALLOWED_PARAMETERS } from "./allowed-parameters";
 export function validateVariant(variant: Variant): void {
-  if(variant.databaseIops) validateDatabaseIopsCondition(variant.databaseIops);
-  if(Object.hasOwn(variant.parameters,DATABASE_IOPS_PARAMETER)) resolveDatabaseIops(variant.parameters[DATABASE_IOPS_PARAMETER]);
+  if (variant.databaseIops) validateDatabaseIopsCondition(variant.databaseIops);
+  if (Object.hasOwn(variant.parameters, DATABASE_IOPS_PARAMETER))
+    resolveDatabaseIops(
+      variant.parameters[DATABASE_IOPS_PARAMETER],
+      variant.databaseIops?.catalogVersion
+    );
   normalizeDatabaseSetup(variant.databaseSetup);
   normalizeMeasurementDiagnostics(variant.measurementDiagnostics);
   for (const [key, value] of Object.entries(variant.parameters)) {

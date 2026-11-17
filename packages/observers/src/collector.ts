@@ -42,7 +42,9 @@ export class ObserverCollector {
   }
 
   /** Bounded aggregate progress remains available when a phase throws. No raw samples. */
-  progress(): ObserverCollectionResult[] { return structuredClone([...this.counts.values()]); }
+  progress(): ObserverCollectionResult[] {
+    return structuredClone([...this.counts.values()]);
+  }
 
   async latchInventory(context: ObserverContext) {
     const databases = this.runtimes.filter((r) => r.declaration.kind === "openedge_db_v1");
@@ -192,37 +194,40 @@ export class ObserverCollector {
         }
       }
     };
-    let first = true;
-    do {
-      if (shouldStop()) break;
-      if (timing && Date.now() >= deadline) break;
-      skipElapsedSlots(Date.now());
+    const checkHealth = async () => {
       if (checkInfrastructure) {
         const infrastructureStart = Date.now(),
           monotonicStart = performance.now();
         emitMeasurementEvidence(context, "INFRASTRUCTURE", "STARTED", {
           startedAtMs: infrastructureStart,
-          scheduledAtMs: nextSampleAt
+          scheduledAtMs: Number.isFinite(nextSampleAt) ? nextSampleAt : null
         });
         try {
           await checkInfrastructure();
           emitMeasurementEvidence(context, "INFRASTRUCTURE", "SUCCEEDED", {
             startedAtMs: infrastructureStart,
             finishedAtMs: Date.now(),
-            scheduledAtMs: nextSampleAt,
+            scheduledAtMs: Number.isFinite(nextSampleAt) ? nextSampleAt : null,
             durationMs: performance.now() - monotonicStart
           });
         } catch (error) {
           emitMeasurementEvidence(context, "INFRASTRUCTURE", "FAILED", {
             startedAtMs: infrastructureStart,
             finishedAtMs: Date.now(),
-            scheduledAtMs: nextSampleAt,
+            scheduledAtMs: Number.isFinite(nextSampleAt) ? nextSampleAt : null,
             durationMs: performance.now() - monotonicStart,
             reasonCodes: ["infrastructure_check_failed"]
           });
           throw error;
         }
       }
+    };
+    let first = true;
+    do {
+      if (shouldStop()) break;
+      if (timing && Date.now() >= deadline) break;
+      skipElapsedSlots(Date.now());
+      await checkHealth();
       // Infrastructure may itself cross a slot or phase boundary.
       skipElapsedSlots(Date.now());
       if (timing && Date.now() >= deadline) break;
@@ -248,7 +253,7 @@ export class ObserverCollector {
                 measurementEvidence: {
                   ...context.measurementEvidence,
                   slotId,
-                  scheduledAtMs: nextSampleAt
+                  scheduledAtMs: Number.isFinite(nextSampleAt) ? nextSampleAt : null
                 }
               }
             : context;
@@ -263,8 +268,18 @@ export class ObserverCollector {
       skipElapsedSlots(now);
       // Schedule sample starts against the phase clock. Scrape work itself
       // must not add extra delay to every configured sampling interval.
-      const wait = Math.min(Math.max(0, nextSampleAt - now), Math.max(0, deadline - now));
-      if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
+      const wakeAt = Math.min(nextSampleAt, deadline);
+      // Health polling must continue even when observers are disabled or slow.
+      // Keep observer acquisitions on their own clock; never add extra samples.
+      while (!shouldStop() && Date.now() < wakeAt) {
+        await new Promise((resolve) =>
+          setTimeout(
+            resolve,
+            Math.min(checkInfrastructure ? 5000 : Infinity, Math.max(0, wakeAt - Date.now()))
+          )
+        );
+        if (!shouldStop() && Date.now() < wakeAt) await checkHealth();
+      }
     } while (!shouldStop() && (first || Date.now() < deadline));
     for (const runtime of this.runtimes) {
       const count = this.counts.get(`${runtime.declaration.id}:${context.phase}`) as

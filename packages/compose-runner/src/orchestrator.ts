@@ -1,3 +1,8 @@
+import {
+  waitForDatabaseStartupGate as waitStartupGate,
+  publishDatabaseStartupRelease,
+  startupGateBinding
+} from "./database-iops-startup-gate";
 import { EngineApi } from "./engine-api";
 import { DatabaseIopsInspector } from "./database-iops-inspection";
 import { applyIopsPolicy, checkIopsPolicy, verifyIopsPolicy } from "./database-iops";
@@ -125,7 +130,25 @@ export interface MeasurementTopologyMember {
   memberId: string;
   imageId: string;
 }
+export interface WorkloadState {
+  state: "running" | "exited" | "missing" | "unavailable";
+  capturedAt: string;
+  exitCode?: number;
+  oomKilled?: boolean;
+}
 export interface RunOrchestrator {
+  checkWorkload?(bundle: ComposeBundle): Promise<WorkloadState>;
+  waitForDatabaseStartupGate?(
+    bundle: ComposeBundle,
+    deadline: number,
+    cancelled: () => boolean
+  ): Promise<void>;
+  releaseDatabaseStartupGate?(
+    bundle: ComposeBundle,
+    deadline: number,
+    cancelled: () => boolean,
+    current: () => void
+  ): Promise<void>;
   inspectDatabaseIopsRecovery?(
     bundle: ComposeBundle,
     evidence: DatabaseIopsEvidence
@@ -271,7 +294,13 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
       cancelled: isCancelled,
       persistIntent,
       deadline,
-      ownedPrevious: bundle.databaseIopsEvidence?.applicationIntent
+      ownedPrevious: bundle.databaseIopsEvidence?.applicationIntent,
+      startupIdentity: bundle.databaseIopsStartupGate
+        ? {
+            executionRevision: bundle.databaseIopsStartupGate.executionRevision,
+            startupNonce: bundle.databaseIopsStartupGate.nonce
+          }
+        : undefined
     });
     bundle.databaseIopsEvidence = evidence;
     try {
@@ -331,9 +360,91 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
     private readonly docker = "docker"
   ) {}
 
+  async waitForDatabaseStartupGate(
+    bundle: ComposeBundle,
+    deadline: number,
+    cancelled: () => boolean
+  ): Promise<void> {
+    const gate = bundle.databaseIopsStartupGate;
+    if (!gate) throw Error("database_iops_unsupported:startup_gate_required");
+    const running = async () => {
+      const selected = await this.command(
+        [
+          "compose",
+          "-p",
+          bundle.projectName,
+          "-f",
+          this.fileFor(bundle),
+          "ps",
+          "--all",
+          "-q",
+          "database"
+        ],
+        true
+      );
+      const id = selected.stdout.trim();
+      if (!/^[a-f0-9]{12,64}$/.test(id)) return false;
+      return (
+        (
+          await this.command(["inspect", "--format", "{{.State.Running}}", id], true)
+        ).stdout.trim() === "true"
+      );
+    };
+    await waitStartupGate(gate, deadline, cancelled, running);
+  }
+  async releaseDatabaseStartupGate(
+    bundle: ComposeBundle,
+    deadline: number,
+    cancelled: () => boolean,
+    current: () => void
+  ): Promise<void> {
+    const gate = bundle.databaseIopsStartupGate!;
+    publishDatabaseStartupRelease(gate, bundle.databaseIopsEvidence!, deadline, cancelled, current);
+    if (!bundle.databaseSetup)
+      await waitStartupGate(gate, deadline, cancelled, undefined, "database-started");
+  }
   async provision(bundle: ComposeBundle, isCancelled = () => false): Promise<RunResource[]> {
     if (isCancelled()) throw new Error("run_cancelled");
     this.validateDockerPaths(bundle);
+    if (
+      bundle.databaseIops?.presetId !== undefined &&
+      bundle.databaseIops.presetId !== "unlimited" &&
+      !bundle.databaseIopsStartupGate
+    )
+      throw new DatabaseIopsError("database_iops_unsupported", undefined, "startup_gate_required");
+    const databaseImage = bundle.databaseImage;
+    if (bundle.databaseRunControls) {
+      const capability = await this.command(
+        [
+          "image",
+          "inspect",
+          "--format",
+          '{{index .Config.Labels "org.parkbench.writer-supervision"}}',
+          databaseImage
+        ],
+        true
+      );
+      if (capability.stdout.trim() !== "writer-supervision.v1")
+        throw new DatabaseRunControlsError("database_writer_unavailable");
+    }
+    if (bundle.databaseIopsStartupGate) {
+      const capability = await this.command(
+        [
+          "image",
+          "inspect",
+          "--format",
+          '{{index .Config.Labels "org.parkbench.database-iops-startup"}}',
+          databaseImage
+        ],
+        true
+      );
+      if (capability.stdout.trim() !== "database-iops-startup.v2")
+        throw new DatabaseIopsError(
+          "database_iops_unsupported",
+          undefined,
+          "image_startup_gate_capability"
+        );
+    }
     fs.mkdirSync(this.root, { recursive: true });
     const file = this.fileFor(bundle);
     fs.writeFileSync(
@@ -393,19 +504,20 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
       file,
       "up",
       "-d",
-      ...(bundle.databaseSetup ? ["database"] : services)
+      ...(bundle.databaseSetup || bundle.databaseIopsStartupGate ? ["database"] : services)
     ]);
-    if (!bundle.databaseSetup)
+    if (!bundle.databaseSetup && !bundle.databaseIopsStartupGate)
       await this.refreshObserverPorts(bundle, ["db-observer", "pas-observer", "file-sampler"]);
-    const createdResources = bundle.databaseSetup
-      ? bundle.resources.filter(
-          (resource) =>
-            resource.type === "compose_project" ||
-            resource.type === "network" ||
-            resource.name === "database" ||
-            resource.name === `${bundle.projectName}_run-db-data`
-        )
-      : bundle.resources;
+    const createdResources =
+      bundle.databaseSetup || bundle.databaseIopsStartupGate
+        ? bundle.resources.filter(
+            (resource) =>
+              resource.type === "compose_project" ||
+              resource.type === "network" ||
+              resource.name === "database" ||
+              resource.name === `${bundle.projectName}_run-db-data`
+          )
+        : bundle.resources;
     return createdResources.map((resource) => ({
       resourceType: resource.type as RunResource["resourceType"],
       resourceId: resource.name,
@@ -887,6 +999,78 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
       "stop",
       "loadgen"
     ]);
+  }
+
+  async checkWorkload(bundle: ComposeBundle): Promise<WorkloadState> {
+    const observed = (state: WorkloadState["state"], extra = {}): WorkloadState => ({
+      state,
+      capturedAt: new Date().toISOString(),
+      ...extra
+    });
+    const owner = bundle.resources[0]?.labels;
+    if (!owner?.["parkbench.run_id"] || !owner["parkbench.experiment_id"])
+      return observed("unavailable");
+    try {
+      const selected = await this.command(
+        [
+          "ps",
+          "--all",
+          "--quiet",
+          "--no-trunc",
+          "--filter",
+          `label=com.docker.compose.project=${bundle.projectName}`,
+          "--filter",
+          "label=com.docker.compose.service=loadgen",
+          "--filter",
+          `label=parkbench.run_id=${owner["parkbench.run_id"]}`,
+          "--filter",
+          "label=parkbench.managed=true"
+        ],
+        true,
+        5000
+      );
+      if (selected.stderr.trim()) return observed("unavailable");
+      const ids = selected.stdout.trim().split(/\s+/).filter(Boolean);
+      if (!ids.length) return observed("missing");
+      if (ids.length !== 1 || !/^[a-f0-9]{64}$/.test(ids[0])) return observed("unavailable");
+      const result = await this.command(
+        ["inspect", "--format", "{{json .State}}\n{{json .Config.Labels}}", ids[0]],
+        true,
+        5000
+      );
+      if (result.stderr.trim()) return observed("unavailable");
+      const lines = result.stdout.trim().split(/\r?\n/);
+      if (lines.length !== 2) return observed("unavailable");
+      const state = JSON.parse(lines[0]),
+        labels = JSON.parse(lines[1]);
+      if (
+        labels["parkbench.run_id"] !== owner["parkbench.run_id"] ||
+        labels["parkbench.experiment_id"] !== owner["parkbench.experiment_id"] ||
+        labels["parkbench.managed"] !== "true" ||
+        labels["com.docker.compose.project"] !== bundle.projectName ||
+        labels["com.docker.compose.service"] !== "loadgen"
+      )
+        return observed("unavailable");
+      if (
+        state.Status === "running" &&
+        state.Running === true &&
+        state.Paused === false &&
+        state.Restarting === false
+      )
+        return observed("running");
+      if (
+        ["exited", "dead"].includes(state.Status) &&
+        state.Running === false &&
+        Number.isInteger(state.ExitCode) &&
+        state.ExitCode >= 0 &&
+        state.ExitCode <= 255 &&
+        typeof state.OOMKilled === "boolean"
+      )
+        return observed("exited", { exitCode: state.ExitCode, oomKilled: state.OOMKilled });
+      return observed("unavailable");
+    } catch {
+      return observed("unavailable");
+    }
   }
 
   async waitForWorkload(
@@ -1460,10 +1644,11 @@ export class DockerComposeOrchestrator implements RunOrchestrator {
 
   private async command(
     args: string[],
-    tolerateFailure = false
+    tolerateFailure = false,
+    timeout?: number
   ): Promise<{ stdout: string; stderr: string }> {
     try {
-      return await execFileAsync(this.docker, args, { maxBuffer: 4 * 1024 * 1024 });
+      return await execFileAsync(this.docker, args, { maxBuffer: 4 * 1024 * 1024, timeout });
     } catch (error: any) {
       if (tolerateFailure)
         return { stdout: String(error?.stdout ?? ""), stderr: String(error?.stderr ?? error) };
@@ -1622,6 +1807,12 @@ export class FakeRunOrchestrator implements RunOrchestrator {
       contractVersion: "database-iops-application-intent.v1",
       attemptId: crypto.randomUUID(),
       experimentId: labels["parkbench.experiment_id"],
+      ...(bundle.databaseIopsStartupGate
+        ? {
+            executionRevision: bundle.databaseIopsStartupGate.executionRevision,
+            startupNonce: bundle.databaseIopsStartupGate.nonce
+          }
+        : {}),
       runId: owner.runId,
       variantId: bundle.variantId,
       preparedAt: new Date().toISOString(),
@@ -1678,6 +1869,41 @@ export class FakeRunOrchestrator implements RunOrchestrator {
     private readonly metadataValue: Record<string, unknown> = { docker: "fake" },
     private readonly localImages: Array<Record<string, unknown>> = []
   ) {}
+  async startRemainingServices(_bundle: ComposeBundle, cancelled: () => boolean): Promise<void> {
+    if (cancelled()) throw Error("run_cancelled");
+    this.calls.push("startRemainingServices");
+  }
+  async waitForDatabaseStartupGate(
+    bundle: ComposeBundle,
+    _deadline: number,
+    cancelled: () => boolean
+  ): Promise<void> {
+    if (cancelled()) throw Error("run_cancelled");
+    this.calls.push("iops-startup-held");
+    const gate = bundle.databaseIopsStartupGate!;
+    fs.mkdirSync(gate.directory, { recursive: true });
+    fs.writeFileSync(path.join(gate.directory, "held"), startupGateBinding(gate));
+    gate.heldAt = new Date().toISOString();
+  }
+  async releaseDatabaseStartupGate(
+    bundle: ComposeBundle,
+    deadline: number,
+    cancelled: () => boolean,
+    current: () => void
+  ): Promise<void> {
+    this.calls.push("iops-startup-release");
+    publishDatabaseStartupRelease(
+      bundle.databaseIopsStartupGate!,
+      bundle.databaseIopsEvidence!,
+      deadline,
+      cancelled,
+      current
+    );
+    fs.renameSync(
+      path.join(bundle.databaseIopsStartupGate!.directory, "release"),
+      path.join(bundle.databaseIopsStartupGate!.directory, "consumed")
+    );
+  }
   async provision(bundle: ComposeBundle): Promise<RunResource[]> {
     this.calls.push("provision");
     const resources = bundle.resources.map((resource) => ({
@@ -1733,6 +1959,9 @@ export class FakeRunOrchestrator implements RunOrchestrator {
   }
   async startWorkload(): Promise<void> {
     this.calls.push("start-workload");
+  }
+  async checkWorkload(): Promise<WorkloadState> {
+    return { state: "running", capturedAt: new Date().toISOString() };
   }
   async applyDatabaseLatency(
     _bundle: ComposeBundle,

@@ -13,7 +13,7 @@
   },
   "phases": {
     "warmupSeconds": 60,
-    "measurementSeconds": 180,
+    "measurementSeconds": 600,
     "cooldownSeconds": 30
   },
   "observers": [
@@ -70,7 +70,7 @@
           "input": {
             "mode": "run",
             "TableName": "Currency",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -95,7 +95,7 @@
           "input": {
             "mode": "run",
             "TableName": "TransactionType",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -120,7 +120,7 @@
           "input": {
             "mode": "run",
             "TableName": "AccountType",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -152,7 +152,7 @@
           "input": {
             "mode": "run",
             "TableName": "Customer",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -177,7 +177,7 @@
           "input": {
             "mode": "run",
             "TableName": "Account",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -202,7 +202,7 @@
           "input": {
             "mode": "run",
             "TableName": "CustomerContact",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -227,7 +227,7 @@
           "input": {
             "mode": "run",
             "TableName": "DebitTransaction",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "FieldsList": [
               "AccountId",
@@ -256,7 +256,7 @@
           "input": {
             "mode": "run",
             "TableName": "CardAuthorization",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "FieldsList": [
               "CardId",
@@ -285,7 +285,7 @@
           "input": {
             "mode": "run",
             "TableName": "CreditTransaction",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -310,7 +310,7 @@
           "input": {
             "mode": "run",
             "TableName": "LoginEvent",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -335,7 +335,7 @@
           "input": {
             "mode": "run",
             "TableName": "AuditLog",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0
           }
         },
@@ -360,7 +360,7 @@
           "input": {
             "mode": "run",
             "TableName": "StatementDocument",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "LobFields": [
               "PdfContent",
@@ -389,7 +389,7 @@
           "input": {
             "mode": "run",
             "TableName": "CustomerDocument",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "LobFields": [
               "Content"
@@ -417,7 +417,7 @@
           "input": {
             "mode": "run",
             "TableName": "CustomerNote",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "LobFields": [
               "NoteText"
@@ -445,7 +445,7 @@
           "input": {
             "mode": "run",
             "TableName": "Employee",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "LobFields": [
               "Photo"
@@ -473,7 +473,7 @@
           "input": {
             "mode": "run",
             "TableName": "AccountStatement",
-            "WhereClause": "RandomInt100 <= 100 AND RandomInt100 = {{band}}",
+            "WhereClause": "RandomInt100 = {{band}}",
             "Limit": 0,
             "LobFields": [
               "NoticeText"

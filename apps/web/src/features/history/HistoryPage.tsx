@@ -1,3 +1,5 @@
+import { isArtifactVisible } from "../../../../../packages/contracts/src/artifacts";
+import { ExperimentActions } from "../../shared/ExperimentActions";
 import { DatabaseIopsSummary } from "../../shared/DatabaseIopsSummary";
 import { DatabaseSetupStatus } from "../runs/DatabaseSetupStatus";
 import { RunControlsSummary } from "../experiments/RunControlsFields";
@@ -23,6 +25,7 @@ const emptyFilters = (): HistoryFilters => ({
 });
 
 export function HistoryPage() {
+  const [actions, setActions] = useState([] as any[]);
   const [items, setItems] = useState([] as any[]);
   const [status, setStatus] = useState("");
   const [scenario, setScenario] = useState("");
@@ -58,6 +61,7 @@ export function HistoryPage() {
           append ? [...current, ...(value.items ?? [])] : (value.items ?? [])
         );
         setNextPageToken(value.nextPageToken);
+        setActions(value.actions ?? []);
       })
       .catch((reason) => {
         if (requestId === requestEpoch.current) setError(reason.message);
@@ -137,7 +141,7 @@ export function HistoryPage() {
       <header className="page-heading">
         <div>
           <p className="eyebrow">REVIEW / HISTORY</p>
-          <h1>Run history</h1>
+          <h1 tabIndex={-1}>Run history</h1>
           <p>Every terminal result remains searchable with its evidence classification.</p>
         </div>
       </header>
@@ -207,6 +211,17 @@ export function HistoryPage() {
       {loading && <WorkflowState state="loading" message="Loading run history…" />}
       {error && (
         <WorkflowState state="error" message={error} action="Retry" onAction={() => refresh()} />
+      )}
+      {actions.length > 0 && (
+        <section className="panel" aria-label="Experiment cleanup">
+          <h2>Experiment cleanup</h2>
+          {actions.map((a) => (
+            <div key={a.id}>
+              <p className="mono">{a.experimentId}</p>
+              <ExperimentActions experimentId={a.experimentId} onComplete={() => refresh()} />
+            </div>
+          ))}
+        </section>
       )}
       <section className="card-grid">
         <section className="panel">
@@ -293,6 +308,26 @@ export function HistoryPage() {
             <>
               <p className="mono">{selected.run?.name ?? selected.run?.id}</p>
               {selected.run?.name && <small className="run-identity">{selected.run.id}</small>}
+              <ExperimentActions
+                key={selected.run?.experimentId}
+                experimentId={selected.run?.experimentId}
+                runId={selected.run?.id}
+                onAccepted={() => {
+                  detailEpoch.current++;
+                  setSelected((current: any) =>
+                    current
+                      ? { run: { id: current.run.id, experimentId: current.run.experimentId } }
+                      : undefined
+                  );
+                }}
+                onComplete={() => {
+                  detailEpoch.current++;
+                  setSelected(undefined);
+                  setSelectedId("");
+                  refresh();
+                  document.querySelector<HTMLElement>("h1")?.focus();
+                }}
+              />
               <p>State: {selected.run?.state}</p>
               <p>Measurement: {selected.run?.measurementValidity}</p>
               <p>Cleanup: {selected.run?.cleanupStatus}</p>
@@ -362,7 +397,10 @@ export function HistoryPage() {
                   )}
                 </section>
               )}
-              <DatabaseIopsSummary snapshot={selected.run?.environmentSnapshot} runId={selected.run?.id}/>
+              <DatabaseIopsSummary
+                snapshot={selected.run?.environmentSnapshot}
+                runId={selected.run?.id}
+              />
               {selected.run?.environmentSnapshot?.databaseStartup && (
                 <section aria-label="Database startup settings">
                   <h3>Database startup settings</h3>
@@ -461,7 +499,7 @@ export function HistoryPage() {
               )}
               <h3>Artifacts</h3>
               <ul>
-                {(selected.artifacts ?? []).map((artifact: any) => (
+                {(selected.artifacts ?? []).filter(isArtifactVisible).map((artifact: any) => (
                   <li key={artifact.id}>
                     <a href={artifact.downloadUrl}>{artifact.kind} artifact</a>
                   </li>

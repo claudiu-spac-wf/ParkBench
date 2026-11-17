@@ -6,6 +6,11 @@ export function sendControlUiError(
   code = "control_ui_request_failed",
   status = 422
 ): unknown {
+  const codeValue = error instanceof Error ? error.message : String(error);
+  if (/unavailable_experiment_rerun|dashboard_context_execution_replaced/.test(codeValue))
+    status = 410;
+  if (["experiment_action_in_progress", "experiment_revision_stale"].includes(codeValue))
+    status = 409;
   reply.code(status);
   const fields = error instanceof ValidationError ? error.fields : [];
   return {

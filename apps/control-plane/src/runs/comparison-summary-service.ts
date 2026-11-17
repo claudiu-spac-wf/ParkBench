@@ -36,6 +36,7 @@ import { Repositories } from "../db/repositories";
 import { ArtifactStorage } from "../artifacts/storage";
 import { writeStagedSummary } from "../artifacts/summary-stream";
 import { persistRunContext } from "./run-context";
+import { recordedPrometheusCadenceSeconds } from "./source-cadences";
 export interface PreparedSummary {
   token?: string;
   header: RunSummaryHeader;
@@ -115,7 +116,7 @@ export class ComparisonSummaryService {
           ? AbortSignal.any([jobSignal, finalizationQueryOptions(run).signal!])
           : jobSignal,
       e = (run.environmentSnapshot as any) ?? {},
-      cadence = Number(e.sourceCadences?.prometheusScrapeSeconds ?? this.defaultCadence) || 5,
+      cadence = Number(recordedPrometheusCadenceSeconds(e) ?? this.defaultCadence) || 5,
       nativeCadence = Math.max(
         cadence,
         Number(e.sourceCadences?.nativeDatabaseRefreshSeconds ?? cadence) || cadence

@@ -31,7 +31,7 @@ FOR EACH _Connect NO-LOCK WHERE _Connect-Pid > 0:
   connectionCount = connectionCount + 1.
   kind = TRIM(_Connect-Type).
   IF kind <> "APW" AND kind <> "BIW" THEN NEXT.
-  IF writers:Length >= 16 THEN RETURN ERROR "startup_writer_inventory_overflow".
+  IF writers:Length >= 10 THEN RETURN ERROR "startup_writer_inventory_overflow".
   writer = NEW JsonObject().
   writer:Add("type", kind).
   writer:Add("pid", _Connect-Pid).
@@ -55,10 +55,14 @@ state:Add("connectedCount", connectionCount).
 state:Add("apwCount", apws).
 state:Add("biwCount", biws).
 state:Add("writers", writers).
-state:WriteFile(prefix + ".json", TRUE).
-OUTPUT TO VALUE(prefix + ".env").
+IF NOT state:WriteFile(prefix + ".json.tmp", TRUE) THEN RETURN ERROR "startup_state_output_failed".
+OS-RENAME VALUE(prefix + ".json.tmp") VALUE(prefix + ".json").
+IF OS-ERROR <> 0 THEN RETURN ERROR "startup_state_output_failed".
+OUTPUT TO VALUE(prefix + ".env.tmp").
 PUT UNFORMATTED "clusterKiB=" clusterKiB SKIP "biBuffers=" biBuffers SKIP
   "capacity=" capacity SKIP "apwCount=" apws SKIP "biwCount=" biws SKIP
   "apwPids=" apwPids SKIP "biwPids=" biwPids SKIP.
 OUTPUT CLOSE.
+OS-RENAME VALUE(prefix + ".env.tmp") VALUE(prefix + ".env").
+IF OS-ERROR <> 0 THEN RETURN ERROR "startup_state_output_failed".
 QUIT.

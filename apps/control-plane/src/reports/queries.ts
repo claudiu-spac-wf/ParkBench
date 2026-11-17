@@ -1,3 +1,4 @@
+import { isArtifactVisible } from "../../../../packages/contracts/src/artifacts";
 import { ReportRepository } from "./repository";
 import { parseColumnFilters, appendColumnFilters } from "./column-filters";
 import { DATASET_KINDS } from "../../../../packages/contracts/src/database-analysis-report";
@@ -40,7 +41,7 @@ export class ReportQueries {
   require(id: string) {
     const r = this.repo.get(id);
     if (!r) throw new Error("report_not_found");
-    return r;
+    return { ...r, artifacts: r.artifacts.filter(isArtifactVisible) };
   }
   history(q: any = {}) {
     const limit = reportLimit(q.limit, 50, 100),

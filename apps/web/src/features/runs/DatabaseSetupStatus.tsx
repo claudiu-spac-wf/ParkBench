@@ -130,16 +130,6 @@ export function DatabaseSetupStatus({ runId }: { runId: string }) {
                           </dd>
                         </dl>
                       )}
-                      {[set.stdout, set.stderr].filter(Boolean).map((log) => {
-                        const artifact = value.artifacts?.find((a) =>
-                          a.path.endsWith(`/output/${log}`)
-                        );
-                        return artifact ? (
-                          <a key={log} href={artifact.url}>
-                            {log!.endsWith("stdout") ? "Standard output" : "Standard error"}
-                          </a>
-                        ) : null;
-                      })}
                     </li>
                   ))}
                 </ol>

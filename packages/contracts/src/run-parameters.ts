@@ -1,4 +1,9 @@
-import { DATABASE_IOPS_PARAMETER, DATABASE_IOPS_CATALOG, resolveDatabaseIops, validateDatabaseIopsCondition } from "./database-iops";
+import {
+  DATABASE_IOPS_PARAMETER,
+  DATABASE_IOPS_CATALOG,
+  resolveDatabaseIops,
+  validateDatabaseIopsCondition
+} from "./database-iops";
 import type { DatabaseParameterDefinition } from "./control-ui";
 
 /** One-way delay added in each direction between every PAS replica and the database. */
@@ -10,7 +15,19 @@ export const DATABASE_LATENCY_PARAMETER = "network.databaseLatencyMs";
  * configuration like any other parameter.
  */
 export const PLATFORM_RUN_PARAMETER_DEFINITIONS: DatabaseParameterDefinition[] = [
-  { id:"param_storage_databaseIopsPreset",canonicalName:DATABASE_IOPS_PARAMETER,type:"enum",allowedValues:DATABASE_IOPS_CATALOG.presets.map(p=>p.id),defaultValue:"unlimited",description:"Independent read/write IOPS ceilings on each database working-storage device, applied after preparation. Unlimited adds no cap.",source:"platform-run-parameters.v1",matrixAllowed:true,secret:false,definitionVersion:"1" },
+  {
+    id: "param_storage_databaseIopsPreset",
+    canonicalName: DATABASE_IOPS_PARAMETER,
+    type: "enum",
+    allowedValues: DATABASE_IOPS_CATALOG.presets.map((p) => p.id),
+    defaultValue: "unlimited",
+    description:
+      "Independent read/write IOPS ceilings on each database working-storage device, verified before native database repair, setup and startup. Unlimited adds no cap.",
+    source: "platform-run-parameters.v1",
+    matrixAllowed: true,
+    secret: false,
+    definitionVersion: "2"
+  },
   {
     id: "param_network_databaseLatencyMs",
     canonicalName: DATABASE_LATENCY_PARAMETER,

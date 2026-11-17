@@ -24,7 +24,23 @@ export function nativeLimits(overrides: Partial<NativeLimits> = {}): NativeLimit
   limits.responseBytes = Math.min(limits.responseBytes, NATIVE_QUERY_LIMITS.responseBytes);
   return limits;
 }
+const activeBudgets = new Set<WeakRef<NativeQueryBudget>>();
+const matrixCaches = new Set<WeakRef<NativeMatrixCache>>();
+export function invalidateNativeQueryCaches(ids: string[]): void {
+  for (const ref of activeBudgets) {
+    const value = ref.deref();
+    if (!value) activeBudgets.delete(ref);
+    else if (ids.some((id) => value.queryText.includes(id))) value.fail("native_query_cancelled");
+  }
+  for (const ref of matrixCaches) {
+    const value = ref.deref();
+    if (!value) matrixCaches.delete(ref);
+    else value.invalidate(ids);
+  }
+}
 export class NativeQueryBudget {
+  queryText = "";
+  private readonly registryRef = new WeakRef(this);
   readonly controller = new AbortController();
   private requests = 0;
   private bytes = 0;
@@ -36,6 +52,7 @@ export class NativeQueryBudget {
     readonly limits = nativeLimits(),
     private now = () => Date.now()
   ) {
+    activeBudgets.add(this.registryRef);
     this.deadline = now() + limits.deadlineMs;
     this.timer = setTimeout(() => this.fail("native_query_deadline_exceeded"), limits.deadlineMs);
     this.timer.unref?.();
@@ -63,6 +80,9 @@ export class NativeQueryBudget {
     });
   }
   async fetch(url: string, params: URLSearchParams, fetcher: typeof fetch = fetch) {
+    params.forEach((value) => {
+      this.queryText += value;
+    });
     const entered = performance.now();
     this.check();
     if (this.active >= this.limits.concurrency)
@@ -113,7 +133,18 @@ export class NativeQueryBudget {
       this.check();
       if (!response.ok || body.status !== "success")
         throw new NativeBudgetError("native_query_upstream_error");
-      recordChartDecision({ stage: "UPSTREAM", outcome: "SUCCEEDED", counts: { requestCount: 1, responseBytes: bytes, queueWaitMs: dispatched - entered, requestDurationMs: performance.now() - dispatched, bodyReadMs: performance.now() - bodyStarted }, reasonCodes: ["native_bounded_upstream_response"] });
+      recordChartDecision({
+        stage: "UPSTREAM",
+        outcome: "SUCCEEDED",
+        counts: {
+          requestCount: 1,
+          responseBytes: bytes,
+          queueWaitMs: dispatched - entered,
+          requestDurationMs: performance.now() - dispatched,
+          bodyReadMs: performance.now() - bodyStarted
+        },
+        reasonCodes: ["native_bounded_upstream_response"]
+      });
       return body;
     } catch (error) {
       this.fail(error instanceof NativeBudgetError ? error.code : "native_query_upstream_error");
@@ -125,6 +156,7 @@ export class NativeQueryBudget {
     }
   }
   close() {
+    activeBudgets.delete(this.registryRef);
     clearTimeout(this.timer);
     if (this.waiting.length || this.active) this.fail("native_query_cancelled");
   }
@@ -132,7 +164,13 @@ export class NativeQueryBudget {
 export class NativeMatrixCache {
   private entries = new Map<string, { serialized: string; bytes: number }>();
   private used = 0;
-  constructor(private limits = nativeLimits()) {}
+  constructor(private limits = nativeLimits()) {
+    matrixCaches.add(new WeakRef(this));
+  }
+  invalidate(ids: string[]): void {
+    for (const [key, value] of this.entries)
+      if (ids.some((id) => key.includes(id) || value.serialized.includes(id))) this.delete(key);
+  }
   get accountedBytes() {
     return this.used;
   }

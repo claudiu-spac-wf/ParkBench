@@ -10,6 +10,13 @@ export class DatabaseClient {
   }
   migrate(sql: string): void {
     this.db.exec(sql);
+    this.db.exec(
+      fs.readFileSync(path.join(__dirname, "migrations/009_experiment_actions.sql"), "utf8")
+    );
+    this.db.exec(
+      "INSERT OR IGNORE INTO experiment_execution(experiment_id,revision) SELECT id,lower(hex(randomblob(16))) FROM experiments"
+    );
+    this.db.exec(fs.readFileSync(path.join(__dirname, "migrations/010_run_execution.sql"), "utf8"));
     for (const column of ["summary", "observer_health", "phase_boundaries", "failure_code"]) {
       try {
         this.db.exec(`ALTER TABLE runs ADD COLUMN ${column} TEXT`);

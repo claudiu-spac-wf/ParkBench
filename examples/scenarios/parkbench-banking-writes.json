@@ -12,7 +12,7 @@
   },
   "phases": {
     "warmupSeconds": 60,
-    "measurementSeconds": 1200,
+    "measurementSeconds": 600,
     "cooldownSeconds": 30
   },
   "observers": [
@@ -358,7 +358,7 @@
     ],
     "load": {
       "mode": "constant-concurrency",
-      "concurrency": 5,
+      "concurrency": 15,
       "maxInFlightPerWorker": 1,
       "seed": 2026
     }

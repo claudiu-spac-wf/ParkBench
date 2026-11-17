@@ -7,10 +7,10 @@ logs, and manifests are stored below `.parkbench/openedge/`.
 
 For the Ubuntu migration profile, use native Ubuntu 26.04.1 LTS on x86_64 with
 Node.js 24 or later and the local Linux Docker Engine. Run
-`node scripts/host-preflight.mjs` and
-`npm run openedge:preflight -- --image-stage all` before installing
-dependencies or starting builds. Preflight checks the configured compiler
-adapter's execute permission before the final image stage. If the adapter does
+`node scripts/host-preflight.mjs`, install locked dependencies with `npm ci`, then
+run `npm run openedge:preflight -- --image-stage all` before starting builds.
+The licensed-input validators require installed application dependencies.
+Preflight checks the configured compiler adapter's execute permission before the final image stage. If the adapter does
 not return a safe `--version` value, the host profile records a warning and
 continues.
 

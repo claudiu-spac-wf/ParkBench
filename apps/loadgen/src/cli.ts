@@ -1,6 +1,6 @@
 import { loadLoadgenConfig } from "./config";
 import { runLoadgen } from "./runner";
-import { EXIT_CODES } from "./exit-codes";
+import { EXIT_CODES, loadgenExitCode } from "./exit-codes";
 import { loadLocalEnvironment } from "../../../packages/contracts/src/local-env";
 loadLocalEnvironment();
 if (require.main === module) {
@@ -15,14 +15,7 @@ if (require.main === module) {
     runLoadgen(config)
       .then((summary) => {
         console.log(JSON.stringify(summary, null, 2));
-        process.exitCode =
-          summary.shutdownReason === "cancelled"
-            ? EXIT_CODES.cancelled
-            : summary.shutdownReason === "timeout" || summary.timeoutCount > 0
-              ? EXIT_CODES.infrastructure
-              : summary.thresholdFailed
-                ? EXIT_CODES.threshold
-                : EXIT_CODES.success;
+        process.exitCode = loadgenExitCode(summary);
       })
       .catch((error) => {
         console.error(error);

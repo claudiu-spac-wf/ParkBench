@@ -24,7 +24,10 @@ test("recorded IOPS survives detail projections and legacy absence stays Not rec
         delete (metadata.snapshot as any).databaseIops;
         delete (metadata.snapshot as any).databaseIopsEvidence;
       } else {
-        const condition = resolveDatabaseIops(i === 1 ? "unlimited" : "hdd");
+        const condition = resolveDatabaseIops(
+          i === 1 ? "unlimited" : "hdd",
+          "database-iops-presets.v1"
+        );
         snapshot.databaseIops = condition;
         snapshot.requestedConfiguration.databaseIops = condition;
         snapshot.variant.databaseIops = condition;
@@ -70,7 +73,7 @@ test("recorded IOPS survives detail projections and legacy absence stays Not rec
         i === 3 ? "Not recorded" : i === 1 ? "no added cap" : "150 read / 150 write"
       );
       if (i === 0)
-        await expect(detail.getByRole("link", { name: "IOPS diagnostics" })).toBeVisible();
+        await expect(detail.getByRole("link", { name: "IOPS diagnostics" })).toHaveCount(0);
     }
     await page.goto(`/#runs/${ids[0]}`);
     await expect(page.locator(".database-iops-summary")).toContainText("150 read / 150 write");

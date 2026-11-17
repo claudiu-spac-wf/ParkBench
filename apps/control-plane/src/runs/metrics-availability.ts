@@ -29,6 +29,9 @@ export class RunMetricsAvailability {
     private retention: string,
     private now = () => Date.now()
   ) {}
+  invalidate(ids: string[]): void {
+    for (const id of ids) this.cache.delete(id);
+  }
   async forRuns(ids: string[]): Promise<Record<string, MetricsAvailability>> {
     return Object.fromEntries(await Promise.all(ids.map(async (id) => [id, await this.get(id)])));
   }

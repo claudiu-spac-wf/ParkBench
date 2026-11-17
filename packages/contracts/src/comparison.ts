@@ -91,7 +91,15 @@ export interface ComparisonRunResult {
   };
   context?: Record<string, unknown>;
 }
+export interface ComparisonUnavailableNotice {
+  contractVersion: "comparison-availability.v1";
+  id: string;
+  reason: "UNAVAILABLE_EXPERIMENT_RERUN";
+  invalidatedAt: string;
+}
 export interface ComparisonResult {
+  unavailableMemberCount?: number;
+  baselineRemoved?: boolean;
   contractVersion: typeof COMPARISON_CONTRACT_VERSION;
   id: string;
   experimentId?: string;

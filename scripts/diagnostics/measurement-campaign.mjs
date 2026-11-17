@@ -933,7 +933,7 @@ export async function assessCampaign(store, client) {
         run = detail.run ?? detail;
       if (!terminal.has(run.state)) continue;
       const artifactListing = await client.get(
-        `/api/v1/runs/${encodeURIComponent(runId)}/artifacts`
+        `/api/v1/runs/${encodeURIComponent(runId)}/artifacts?includeDiagnostics=true`
       );
       const artifacts = artifactListing.artifacts ?? [],
         manifestReceipt =

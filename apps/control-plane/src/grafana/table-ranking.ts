@@ -1,5 +1,6 @@
 import { RunTimeline } from "./run-timeline";
 import { continuousPhaseQuery } from "./continuous-phases";
+import { sumDiagnosticTotals, totalCoverageLabels, TOTAL_COVERAGE_LABELS } from "./diagnostic-totals";
 /** Read-only Grafana display ranking. These identities and remainders are never persisted. */
 
 export class TableRankSelector {
@@ -85,6 +86,7 @@ export function rankCanonicalTables(
     const metric = { ...row.metric };
     delete metric.operation;
     delete metric.availability;
+    for (const label of TOTAL_COVERAGE_LABELS) delete metric[label];
     const key = JSON.stringify(Object.entries(metric).sort(([a], [b]) => a.localeCompare(b)));
     const entry = grouped.get(key) ?? { metric, contributors: [] };
     entry.contributors.push(row);
@@ -98,8 +100,17 @@ export function rankCanonicalTables(
     const complete = operations.every((op) =>
       entry.contributors.some((row) => row.metric.operation === op)
     );
+    let coverage = {};
     const values = points.map(([time]: [number, string]) => {
       check();
+      if (view === "total") {
+        const total = sumDiagnosticTotals([
+          ...maps.map((map, i) => ({ value: map.get(time), coverage: entry.contributors[i].metric.coverage_status })),
+          ...(!complete ? [{ value: "NaN" }] : [])
+        ]);
+        coverage = totalCoverageLabels(total.coverage);
+        return [time, total.value === null ? "NaN" : String(total.value)];
+      }
       const numbers = maps.map((map) => Number(map.get(time)));
       return [
         time,
@@ -108,7 +119,10 @@ export function rankCanonicalTables(
           : "NaN"
       ];
     });
-    return { metric: { ...entry.metric, operation, ranking: "diagnostic_range_activity" }, values };
+    if (instant && view === "rate")
+      coverage = totalCoverageLabels(!Number.isFinite(Number(values.at(-1)?.[1])) ? "unavailable"
+        : entry.contributors.some((row) => row.metric.coverage_status === "partial") ? "partial" : "complete");
+    return { metric: { ...entry.metric, operation, ranking: "diagnostic_range_activity", ...coverage }, values };
   });
   const selected = new Map<string, Set<string>>();
   for (const runId of new Set(aggregated.map((row) => row.metric.run_id))) {
@@ -152,22 +166,32 @@ export function rankCanonicalTables(
     }
     const metric = { ...row.metric };
     delete metric.table;
+    for (const label of TOTAL_COVERAGE_LABELS) delete metric[label];
     const key = JSON.stringify(Object.entries(metric).sort(([a], [b]) => a.localeCompare(b)));
     const remainder = remainders.get(key) ?? [];
     remainder.push(row);
     remainders.set(key, remainder);
   }
   for (const contributors of remainders.values()) {
+    let coverage = {};
     const points = contributors[0].values,
       maps = contributors.map((row) => new Map<number, string>(row.values));
     const values = points.map(([time]: [number, string]) => {
       check();
+      if (view === "total") {
+        const total = sumDiagnosticTotals(maps.map((map, i) => ({ value: map.get(time), coverage: contributors[i].metric.coverage_status })));
+        coverage = totalCoverageLabels(total.coverage);
+        return [time, total.value === null ? "NaN" : String(total.value)];
+      }
       const numbers = maps.map((map) => Number(map.get(time)));
       return [
         time,
         numbers.every(Number.isFinite) ? String(numbers.reduce((a, b) => a + b, 0)) : "NaN"
       ];
     });
+    if (instant && view === "rate")
+      coverage = totalCoverageLabels(!Number.isFinite(Number(values.at(-1)?.[1])) ? "unavailable"
+        : contributors.some((row) => row.metric.coverage_status === "partial") ? "partial" : "complete");
     // Keep a verified all-zero result visible when there are no active tables.
     // Missing observations remain NaN; individual zero-activity tables stay excluded.
     if (
@@ -180,13 +204,13 @@ export function rankCanonicalTables(
           table: "Other",
           display_remainder: "true",
           coverage_model: "diagnostic_prometheus",
-          coverage_status: "not_evaluated"
+          ...(view === "total" || instant ? coverage : { coverage_status: "not_evaluated" })
         },
         values
       });
   }
   const clipped = output.map((row) => {
-    const values = row.values.filter(([time]: any) => time * 1000 >= start && time * 1000 <= end);
+    const values = row.values.filter(([time]: any) => (instant || time * 1000 >= start) && time * 1000 <= end);
     return {
       metric: row.metric,
       ...(instant
@@ -200,7 +224,12 @@ export function rankCanonicalTables(
 // Legacy query helper retained for existing saved-snapshot integrations; dashboard ranks use canonical samples.
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const literal = (s: string) => JSON.stringify(s);
-const caches = new WeakMap<PromQuery, Map<string, { names: string[]; expires: number }>>();
+let caches = new WeakMap<PromQuery, Map<string, { names: string[]; expires: number }>>();
+let cacheEpoch = 0;
+export function invalidateTableRankingCache(): void {
+  caches = new WeakMap();
+  cacheEpoch++;
+}
 const MAX_CACHE = 128;
 export interface RankedQuery {
   runId: string;
@@ -222,6 +251,7 @@ export type PromQuery = (
   method?: "GET" | "POST"
 ) => Promise<any>;
 export async function rankedTableQuery(input: RankedQuery, upstream: PromQuery): Promise<any[]> {
+  const epoch = cacheEpoch;
   const { runId, operation, phase, start, end, view } = input;
   let cache = caches.get(upstream);
   if (!cache) {
@@ -299,7 +329,7 @@ export async function rankedTableQuery(input: RankedQuery, upstream: PromQuery):
     }
     names = selector.names();
     if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value!);
-    cache.set(key, { names, expires: Date.now() + 300_000 });
+    if (epoch === cacheEpoch) cache.set(key, { names, expires: Date.now() + 300_000 });
   }
   const regex = names.map(escapeRegex).join("|");
   const expression = (filter: string) =>

@@ -39,9 +39,9 @@ function tablePanels(kind: "reads" | "writes"): Panel[] {
     description:
       "Diagnostic range activity: ten fixed named tables per metric/run, plus the complementary display Other. " +
       (view === "total"
-        ? "The additional Total sums every table and Other exactly once per run; unavailable contributions make the Total unavailable. "
+        ? "The additional Total sums every table and Other exactly once per run; supported contributions remain visible and missing contributions mark the Total partial. "
         : "") +
-      "Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
+      "Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded. Full table detail is available in Database Activity.",
     category: view === "rate" ? "table_rate" : "table_total",
     split: "none",
     breakdown: "table",
@@ -67,9 +67,9 @@ function indexPanels(kind: "reads" | "writes"): Panel[] {
     description:
       "Database-wide index block activity over the selected phase and time range. Separate runs and database epochs retain their identity; unavailable observations remain gaps. " +
       (view === "total"
-        ? "The additional Total sums all database series per run; unavailable contributions make the Total unavailable. "
+        ? "The additional Total sums all database series per run; supported contributions remain visible and missing contributions mark the Total partial. "
         : "") +
-      "Totals include observed startup/drain activity and require coverage throughout selected workload phases; unobserved provisioning/cleanup is excluded.",
+      "Totals include observed startup/drain activity. Missing workload intervals yield explicitly partial observed totals; unobserved provisioning/cleanup is excluded.",
     category: view === "rate" ? "event_rate" : "count",
     unit: view === "rate" ? "suffix:blocks/s" : "suffix:blocks",
     split: "none",

@@ -49,6 +49,8 @@ export interface RunDiagnosticsMount {
   producers: Record<string, MeasurementProducerConfig>;
 }
 export interface ComposeBundle {
+  databaseImage?: string;
+  databaseIopsStartupGate?: import("./database-iops-startup-gate").DatabaseIopsStartupGate;
   variantId?: string;
   databaseIopsDeadline?: number;
   databaseIops?: import("../../contracts/src/database-iops").DatabaseIopsCondition;
@@ -76,6 +78,9 @@ export interface ComposeBundle {
   resources: Array<{ type: string; name: string; labels: Record<string, string> }>;
 }
 export interface RunInputMounts {
+  databaseIopsStartupGate?: import("./database-iops-startup-gate").DatabaseIopsStartupGate;
+  projectName?: string;
+  executionRevision?: string;
   databaseIops?: import("../../contracts/src/database-iops").DatabaseIopsCondition;
   measurementDiagnostics?: RunDiagnosticsMount;
   databaseSetup?: import("../../contracts/src/database-setup").DatabaseSetupManifest;
@@ -158,7 +163,8 @@ export function generateRunCompose(
         throw new Error("workload_runtime_path_invalid");
     }
   }
-  const projectName = composeProjectName(runId);
+  const projectName = inputs.projectName ?? composeProjectName(runId);
+  if (!/^[a-z0-9][a-z0-9_-]{0,62}$/.test(projectName)) throw Error("run_project_invalid");
   const metricsNetworkName = process.env.PARKBENCH_METRICS_NETWORK ?? "parkbench-platform";
   const labels = ownershipLabels(runId, experimentId, "run");
   const services = [
@@ -336,6 +342,13 @@ export function generateRunCompose(
           : `      PARKBENCH_VARIANT_ID: "baseline"`,
         `      PARKBENCH_REPETITION: "${inputs.repetition ?? 1}"`
       );
+    if (service === "database" && inputs.databaseIopsStartupGate)
+      lines.push(
+        `      PARKBENCH_IOPS_GATE_NONCE: "${escapeYaml(inputs.databaseIopsStartupGate.nonce)}"`,
+        `      PARKBENCH_EXECUTION_REVISION: "${escapeYaml(inputs.databaseIopsStartupGate.executionRevision)}"`,
+        `      PARKBENCH_IOPS_GATE_DIR: /run/parkbench/iops-startup`,
+        `      PARKBENCH_IOPS_GATE_TIMEOUT_SECONDS: "${Math.ceil(inputs.databaseIopsStartupGate.timeoutMs / 1000)}"`
+      );
     if (service === "database" && inputs.databaseSetup)
       lines.push(
         `      PARKBENCH_SETUP_ATTEMPT_ID: "${escapeYaml(inputs.databaseSetup.attemptId)}"`
@@ -456,14 +469,22 @@ export function generateRunCompose(
     `networks:\n  run-private:\n    name: ${escapeYaml(`${projectName}_run-private`)}\n    labels:\n${volumeLabels("run-private")}\n  run-metrics:\n    external: true\n    name: ${escapeYaml(metricsNetworkName)}`,
     volumeLines.join("\n")
   ].join("\n");
+  if (inputs.executionRevision) labels["parkbench.execution_revision"] = inputs.executionRevision;
   return {
     variantId: inputs.variantId,
+    databaseImage: images.db,
     projectName,
     measurementDiagnostics: inputs.measurementDiagnostics
       ? structuredClone(inputs.measurementDiagnostics)
       : undefined,
+    databaseIopsStartupGate: inputs.databaseIopsStartupGate,
     databaseSetup: inputs.databaseSetup ? { manifest: inputs.databaseSetup } : undefined,
-    file: yaml,
+    file: inputs.executionRevision
+      ? yaml.replaceAll(
+          `parkbench.run_id: "${runId}"`,
+          `parkbench.run_id: "${runId}"\n      parkbench.execution_revision: "${inputs.executionRevision}"`
+        )
+      : yaml,
     scenario,
     metricsNetworkName,
     brokerArgv,
@@ -475,6 +496,7 @@ export function generateRunCompose(
       inputs.dbObserverProcedure,
       inputs.dbObserverRuntimePath,
       inputs.runtimeDirectory,
+      inputs.databaseIopsStartupGate?.directory,
       inputs.databaseSetup?.paths.input,
       inputs.databaseSetup?.paths.output,
       inputs.databaseSetup?.paths.control,
@@ -573,7 +595,7 @@ function serviceYaml(
   const cpuSetLine = cpuSet ? `\n    cpuset: "${escapeYaml(cpuSet)}"` : "";
   const volumes =
     service === "database"
-      ? `\n    volumes:\n      - run-db-data:/psc/wrk\n      - ./${composeProjectName(runId)}-broker.argv:/run/parkbench/broker.argv:ro\n      - ./${composeProjectName(runId)}-broker-directories:/run/parkbench/broker-directories:ro${localMount(inputs.seed, "/run/parkbench/seed/db")}${inputs.databaseSetup ? localMount(inputs.databaseSetup.paths.input, "/run/parkbench/setup-input") + localMount(inputs.databaseSetup.paths.output, "/run/parkbench/setup-output", "rw") + localMount(inputs.databaseSetup.paths.control, "/run/parkbench/setup-control", "rw") : ""}`
+      ? `\n    volumes:\n      - run-db-data:/psc/wrk\n      - ./${projectName}-broker.argv:/run/parkbench/broker.argv:ro\n      - ./${projectName}-broker-directories:/run/parkbench/broker-directories:ro${localMount(inputs.seed, "/run/parkbench/seed/db")}${inputs.databaseIopsStartupGate ? localMount(inputs.databaseIopsStartupGate.directory, "/run/parkbench/iops-startup", "rw") : ""}${inputs.databaseSetup ? localMount(inputs.databaseSetup.paths.input, "/run/parkbench/setup-input") + localMount(inputs.databaseSetup.paths.output, "/run/parkbench/setup-output", "rw") + localMount(inputs.databaseSetup.paths.control, "/run/parkbench/setup-control", "rw") : ""}`
       : isPasReplica(service)
         ? `\n    volumes:\n      - run-service-data-${service}:/psc/wrk${localMount(inputs.applicationArchive, "/deploy/artifacts/oepas1.zip")}`
         : service === "loadgen"
